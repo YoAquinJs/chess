@@ -1,4 +1,12 @@
 import pygame
+from typing import Type, Union, Mapping, List
+import datetime
+
+from models.board import Board
+
+(Board.start_board()).matrix
+
+
 
 # pygame setup
 pygame.init()
