@@ -1,8 +1,13 @@
+from os import getcwd, makedirs, path
 from enum import Enum, EnumMeta
 
-# Paths to asset folders
+# Paths
 SPRITE = 'assets/sprites/'
 AUDIO = 'assets/audios/'
+SAVINGS = f"{getcwd()}/savings/"
+
+if not path.exists(SAVINGS):
+    makedirs(SAVINGS)
 
 # Meta Enum class for parsing from string value to Enum
 class CustomEnumMeta(EnumMeta):
@@ -33,6 +38,7 @@ class PlayerColor(Enum, metaclass=CustomEnumMeta):
 
     white = 'w'
     black = 'b'
+    empty = '#'
 
 # Unique identifiers for game states
 class OnGameState(Enum):
@@ -51,7 +57,7 @@ class GameScreen(Enum):
     settings = 'settings'
     on_game = 'on_game'
 
-# Unique identifiers for pieces, always a single character, the format it's f"{PieceType}{PlayerColor}"
+# Unique identifiers for pieces, always a single character, the format it's f"{PlayerColor}{PieceType}"
 class PieceType(Enum, metaclass=CustomEnumMeta):
     """Enum for each type of piece"""
 
@@ -84,9 +90,9 @@ pawn_rank = [PieceType.pawn.value,PieceType.pawn.value,PieceType.pawn.value,Piec
              PieceType.pawn.value,PieceType.pawn.value,PieceType.pawn.value,PieceType.pawn.value]
 empty_rank = [PieceType.empty.value,PieceType.empty.value,PieceType.empty.value,PieceType.empty.value,
               PieceType.empty.value,PieceType.empty.value,PieceType.empty.value,PieceType.empty.value]
-BOARD_START = {row: {key: value for key, value in zip(COLUMNS, empty_rank)} for row in ROWS}
-BOARD_START['8'] = {key: value for key, value in zip(COLUMNS, [x+PlayerColor.black.value for x in back_rank])}
-BOARD_START['7'] = {key: value for key, value in zip(COLUMNS, [x+PlayerColor.black.value for x in pawn_rank])}
-BOARD_START['2'] = {key: value for key, value in zip(COLUMNS, [x+PlayerColor.white.value for x in pawn_rank])}
-BOARD_START['1'] = {key: value for key, value in zip(COLUMNS, [x+PlayerColor.white.value for x in back_rank])}
-# The start board has type Dict[str, Dict[str, str]], when used, the board class converts it to Dict[str, Dict[str, Piece]]
+BOARD_START = [[PlayerColor.empty.value + value for value in empty_rank] for _ in ROWS]
+BOARD_START[ROWS.index('8')] = [value for value in [PlayerColor.black.value+x for x in back_rank]]
+BOARD_START[ROWS.index('7')] = [value for value in [PlayerColor.black.value+x for x in pawn_rank]]
+BOARD_START[ROWS.index('2')] = [value for value in [PlayerColor.white.value+x for x in pawn_rank]]
+BOARD_START[ROWS.index('1')] = [value for value in [PlayerColor.white.value+x for x in back_rank]]
+# The start board has type List[List[str]], when used, the board class converts it to List[List[Piece]]

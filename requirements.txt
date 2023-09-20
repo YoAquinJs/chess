@@ -3,3 +3,4 @@ typing
 enum
 datetime
 time
+json

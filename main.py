@@ -4,8 +4,7 @@ import datetime
 
 from models.board import Board
 
-(Board.start_board()).matrix
-
+Board.deserialize("data").print_board()
 
 
 # pygame setup
