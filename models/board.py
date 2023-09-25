@@ -3,7 +3,7 @@ import sys
 from json import dumps, load
 from typing import Dict, Union, List
 
-from models.consts import COLUMNS, ROWS, BOARD_START, SAVINGS, PieceType, PlayerColor
+from models.consts import PieceType, PlayerColor, MovementSpecialCase, COLUMNS, ROWS, BOARD_START, SAVINGS
 from models.piece import Piece
 
 class Board():
@@ -84,7 +84,26 @@ class Board():
             List[Union[int, int]]: List of the valid movements
         """
         
-        return []
+        validMovements = []
+        for direction, specialCases in piece.posibleMovements.items():
+            movement = (piece.row + direction[1], piece.column + direction[0])
+            if movement[0] < 0 or movement[1] < 0 or movement[0] > len(ROWS)-1 or movement[1] > len(COLUMNS)-1:
+                continue
+            
+            if piece.extendMovement:
+                validMovements.append(movement)
+            else:
+                if MovementSpecialCase.canCastle in specialCases and self.can_castle:
+                    validMovements.append(movement)
+                if MovementSpecialCase.doublePawnMove in specialCases and not piece.moved:
+                    #TODO Register for enPassant
+                    validMovements.append(movement)
+                if MovementSpecialCase.isEnemy in specialCases and self.is_enemy(movement[0], movement[1]):
+                    validMovements.append(movement)
+                elif MovementSpecialCase.enPassant in specialCases: #TODO enPassant validation
+                    validMovements.append(movement)  
+                         
+        return validMovements
     
     def move_piece(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Moves a piece from it's origin, to a destination.
@@ -99,8 +118,18 @@ class Board():
             bool: Whether the movement was performed or not
         """
         
-        if Union[destinationRow, destinationColumn] in self.get_valid_movements(self.__grid[originRow][originColumn]):
+        piece = self.__grid[originRow][originColumn]
+        if Union[destinationRow, destinationColumn] in self.get_valid_movements(piece):
             self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
+            piece.row = destinationRow
+            piece.column = destinationColumn
+            
+            if piece.type == PieceType.pawn:
+                piece.moved = True
+                if piece.row + next(key for key, value in piece.posibleMovements.items() if value == [])[1] > len(ROWS)-1:
+                    #TODO promotion
+                    pass
+            
             return True
             
         return False

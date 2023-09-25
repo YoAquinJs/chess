@@ -69,9 +69,20 @@ class PieceType(Enum, metaclass=CustomEnumMeta):
     king = '@'
     empty = '#'
     
+# It's assumed you can never move to a square with a piece of your own
+class MovementSpecialCase(Enum):
+    """Enum for each type of piece"""
+
+    canCastle = 'canCastle'
+    isEnemy = 'isEnemy'
+    enPassant = 'enPassant'
+    doublePawnMove = 'doublePawnMove'
+    
 # Constants for board
 COLUMNS = ['a','b','c','d','e','f','g','h']
 ROWS    = ['8','7','6','5','4','3','2','1']
+BLACK_MOV_DIR = 1
+WHITE_MOV_DIR = -1
 
 """
 8 bR bK bB bQ b@ bB bK bR

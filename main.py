@@ -4,9 +4,6 @@ import datetime
 
 from models.board import Board
 
-Board.deserialize("data").print_board()
-
-
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
