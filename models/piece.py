@@ -21,6 +21,7 @@ class Piece():
         
         self.kingLocked = kingLocked
         self.movingDir = WHITE_MOV_DIR if self.color == PlayerColor.white else BLACK_MOV_DIR
+        self.posibleMovements = None
         
         # Direction (column direction, (x movement), row direction (y movement))
         if self.type == PieceType.pawn:
@@ -34,9 +35,9 @@ class Piece():
             self.moved = False
             self.extendMovement = False
             self.posibleMovements = {
-                (0, 1 * self.movingDir) : [],#TODO check that isn't enemy either
-                (-1, 1 * self.movingDir) : [MovementSpecialCase.isEnemy, MovementSpecialCase.enPassant],
-                (1, 1 * self.movingDir) : [MovementSpecialCase.isEnemy, MovementSpecialCase.enPassant],
+                (0, 1 * self.movingDir) : [MovementSpecialCase.neitherIsEnemy],
+                (-1, 1 * self.movingDir) : [MovementSpecialCase.enPassant],
+                (1, 1 * self.movingDir) : [MovementSpecialCase.enPassant],
                 (0, 2 * self.movingDir) : [MovementSpecialCase.doublePawnMove]
                 }
         elif self.type == PieceType.bishop:
@@ -111,7 +112,7 @@ class Piece():
             """
             _ _ _ _ _
             _ _ # _ _
-            _ # @ # _
+            # # @ # #
             _ _ # _ _
             _ _ _ _ _
             """
@@ -121,6 +122,8 @@ class Piece():
                 (-1, 0) : [],
                 (0, 1) : [],
                 (0, -1) : [],
+                (-2,0) : [MovementSpecialCase.canCastle],
+                (2,0) : [MovementSpecialCase.canCastle]
                 }
 
     

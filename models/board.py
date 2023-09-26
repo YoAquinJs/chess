@@ -11,6 +11,11 @@ class Board():
 
     Attributes:
         __grid (List[List[Piece]]): Grid representing the board configuration, it's private
+        can_castle (bool): Whether castling is available for this board or not. Defaults to True.
+        possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
+        whitePieces (List[Piece]): List of all pieces of color white.
+        blackPieces (List[Piece]): List of all pieces of color black.
+
     """
 
     def __init__(self, grid: List[List[Piece]], can_castle: bool = True) -> None:
@@ -23,8 +28,7 @@ class Board():
         
         self.__grid = grid
         self.can_castle = can_castle
-        self.rows = ROWS
-        self.columns = COLUMNS
+        self.possibleEnPassant = None
         
         self.whitePieces = []
         self.blackPieces = []
@@ -47,8 +51,21 @@ class Board():
         """
         
         return self.__grid[row][column].type == PieceType.empty
-                
-    def is_enemy(self, row: int, column: int, playerColor: PlayerColor) -> bool:
+    
+    def select_square(self, row: int, column: int) -> Piece:
+        """Returns the piece in the specified square
+
+        Args:
+            row (int): Specified row
+            column (int): Specified column
+
+        Returns:
+            Piece: Piece in the square
+        """
+        
+        return self.__grid[row][column]
+    
+    def is_opponent(self, row: int, column: int, playerColor: PlayerColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not
 
         Args:
@@ -61,6 +78,38 @@ class Board():
         """
         
         return self.__grid[row][column].type != PieceType.empty and self.__grid[row][column].color != playerColor
+
+    def is_player(self, row: int, column: int, playerColor: PlayerColor) -> bool:
+        """Returns whether the square is ocuppied by a piece of the player or not
+
+        Args:
+            row (int): Row
+            column (int): Column
+            playerColor(PlayerColor): The player which is checking for it's color
+
+        Returns:
+            bool: Ocuppied or not
+        """
+        
+        return self.__grid[row][column].type != PieceType.empty and self.__grid[row][column].color == playerColor
+    
+    def is_square_under_attack(self, row: int, column: int, playerColor: PlayerColor) -> bool:
+        """Return whether the square is under attack by an opponent piece or not
+
+        Args:
+            row (int): Square row
+            column (int): Square column
+
+        Returns:
+            bool: Under attack or not
+        """
+        
+        # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
+        for opponent_piece in self.blackPieces if playerColor == PlayerColor.white else self.whitePieces:
+            if (row, column) in self.get_valid_movements(opponent_piece):
+                return True
+        
+        return False
     
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -72,8 +121,44 @@ class Board():
             column2 (int): column for square 2
         """
         
+        self.__grid[row1][column1].row = row2
+        self.__grid[row1][column1].column = column2
+        self.__grid[row2][column2].row = row1
+        self.__grid[row2][column2].column = column1
         self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
+    
+    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], limitRow: int, limitColumn: int) -> int:
+        """Given a piece and direction, returns the number of movements it can perform before reaching a given limit
+
+        Args:
+            piece (Piece): Piece to move.
+            direction (Union[int, int]): Direction of the extenable movement.
+            limitRow (int): The limit row that the extendable movement can go to.
+            limitColumn (int): The limit column that the extendable movement can go to.
+            
+        Returns:
+           Int: Maximun number of movements in that direction.
+        """
         
+        # The row and column ranges for iterating from the piece coordinate to the limit coordinate
+        row_range = range(piece.row+direction[1], limitRow, direction[1])
+        if piece.row > limitRow if direction[1] == 1 else limitRow > piece.row:
+            raise Exception(f"The row limit must be {'greater' if direction[1] == 1 else 'lower'} or equal than the piece row '{piece.row}'")
+        column_range = range(piece.row+direction[0], limitRow, direction[0])
+        if piece.column > limitColumn if direction[0] == 1 else limitColumn > piece.column:
+            raise Exception(f"The column limit must be {'greater' if direction[0] == 1 else 'lower'} or equal than the piece column '{piece.column}'")
+        
+        #Check if the square is an opponent or if it's a player piece, if not return the limit
+        for i, row, column in enumerate(zip(row_range, column_range)):
+            
+            if self.is_player(row, column, piece.color):
+                return i
+
+            if self.is_opponent(row, column, piece.color):
+                return i+1
+        
+        return len(row_range)
+    
     def get_valid_movements(self, piece: Piece) -> List[Union[int, int]]:
         """Return all the valid movements of a piece
 
@@ -87,21 +172,27 @@ class Board():
         validMovements = []
         for direction, specialCases in piece.posibleMovements.items():
             movement = (piece.row + direction[1], piece.column + direction[0])
-            if movement[0] < 0 or movement[1] < 0 or movement[0] > len(ROWS)-1 or movement[1] > len(COLUMNS)-1:
+            # If the movement it's out of the boundaries of the board or the square is occupied by a piece of the player, is rejected
+            if movement[0] < 0 or movement[1] < 0 or movement[0] > len(ROWS)-1 or movement[1] > len(COLUMNS)-1 or \
+            (self.is_player(movement[0], movement[1], piece.color)):
                 continue
             
+            # If the movement it's extenable or its a piece with a special movement 
             if piece.extendMovement:
-                validMovements.append(movement)
+                max_movs = self.get_max_extendable_movements(piece, direction, 8 if direction[1] == 1 else -1, 8 if direction[1] == 1 else -1)
+                for i in range(max_movs):
+                    validMovements.append((piece.row+(direction[1]*i), piece.column+(direction[0]*i)))                    
             else:
-                if MovementSpecialCase.canCastle in specialCases and self.can_castle:
+                # Check for special cases
+                #TODO check for when trying to castle, the squares the king move througth arent't attacked and king not in mate
+                if (MovementSpecialCase.neitherIsEnemy in specialCases and not self.is_opponent(movement[0], movement[1])) or \
+                   (MovementSpecialCase.enPassant in specialCases and \
+                    movement[0] == self.possibleEnPassant[0] and movement[1] == self.possibleEnPassant[1]) or \
+                   (MovementSpecialCase.canCastle in specialCases and self.can_castle and \
+                    self.get_max_extendable_movements(piece, direction, piece.row, piece.column+(3*direction[1]))) or \
+                   (MovementSpecialCase.doublePawnMove in specialCases and not piece.moved and \
+                    self.get_max_extendable_movements(piece, direction, piece.row+(3*direction[1]), piece.column)):
                     validMovements.append(movement)
-                if MovementSpecialCase.doublePawnMove in specialCases and not piece.moved:
-                    #TODO Register for enPassant
-                    validMovements.append(movement)
-                if MovementSpecialCase.isEnemy in specialCases and self.is_enemy(movement[0], movement[1]):
-                    validMovements.append(movement)
-                elif MovementSpecialCase.enPassant in specialCases: #TODO enPassant validation
-                    validMovements.append(movement)  
                          
         return validMovements
     
@@ -119,17 +210,21 @@ class Board():
         """
         
         piece = self.__grid[originRow][originColumn]
-        if Union[destinationRow, destinationColumn] in self.get_valid_movements(piece):
+        if (destinationRow, destinationColumn) in self.get_valid_movements(piece):
             self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
             piece.row = destinationRow
             piece.column = destinationColumn
             
+            self.possibleEnPassant = None
             if piece.type == PieceType.pawn:
                 piece.moved = True
                 if piece.row + next(key for key, value in piece.posibleMovements.items() if value == [])[1] > len(ROWS)-1:
                     #TODO promotion
                     pass
-            
+
+                if abs(destinationRow-originRow) == 2:
+                    self.possibleEnPassant = (destinationRow - piece.movingDir, destinationColumn)
+
             return True
             
         return False

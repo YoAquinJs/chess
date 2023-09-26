@@ -74,7 +74,7 @@ class MovementSpecialCase(Enum):
     """Enum for each type of piece"""
 
     canCastle = 'canCastle'
-    isEnemy = 'isEnemy'
+    neitherIsEnemy = 'isEnemy'
     enPassant = 'enPassant'
     doublePawnMove = 'doublePawnMove'
     
