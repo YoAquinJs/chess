@@ -4,17 +4,16 @@ import datetime
 
 from models.board import Board
 
+board = Board.deserialize("data")
+#board.swap_pieces(0,3,3,3)
+board.print_board()
+board.get_valid_movements(board.select_square(3,3))
+
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
-
-
-board = Board.deserialize("data")
-#board.swap_pieces(0,3,3,3)
-board.print_board()
-board.get_valid_movements(board.select_square(3,3))
 
 #?while running:
 #?    # poll for events

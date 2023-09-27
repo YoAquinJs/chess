@@ -1,4 +1,5 @@
-"""This module contains the Board model object"""
+"""This module contains the Board model object and it's properties"""
+
 import sys
 from json import dumps, load
 from typing import Dict, Union, List
@@ -15,7 +16,7 @@ class Board():
         possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
         whitePieces (List[Piece]): List of all pieces of color white.
         blackPieces (List[Piece]): List of all pieces of color black.
-
+        attackedSquares (Union[int, int]]): List of the positions attacked by the opponent pieces in this turn
     """
 
     def __init__(self, grid: List[List[Piece]], can_castle: bool = True) -> None:
@@ -29,6 +30,7 @@ class Board():
         self.__grid = grid
         self.can_castle = can_castle
         self.possibleEnPassant = None
+        self.check = False
         
         self.whitePieces = []
         self.blackPieces = []
@@ -38,6 +40,10 @@ class Board():
                 piece = self.__grid[row][column]
                 if piece.type != PieceType.empty:
                     self.whitePieces.append(piece) if piece.color == PlayerColor.white else self.blackPieces.append(piece)
+                    
+        self.attackedSquares = []
+        #Calculate black squares because white starts the game
+        self.squares_under_attack(PlayerColor.black)
                     
     def is_empty(self, row: int, column: int) -> bool:
         """Returns whether the square is empty or not
@@ -93,23 +99,26 @@ class Board():
         
         return self.__grid[row][column].type != PieceType.empty and self.__grid[row][column].color == playerColor
     
-    def is_square_under_attack(self, row: int, column: int, playerColor: PlayerColor) -> bool:
-        """Return whether the square is under attack by an opponent piece or not
+    def squares_under_attack(self, playerColor: PlayerColor) -> bool:
+        """Calculate the squares under attack by the opponent pieces
 
         Args:
-            row (int): Square row
-            column (int): Square column
-
-        Returns:
-            bool: Under attack or not
+            playerColor (playerColor): Player who's moving.
         """
         
-        # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
-        for opponent_piece in self.blackPieces if playerColor == PlayerColor.white else self.whitePieces:
-            if (row, column) in self.get_valid_movements(opponent_piece):
-                return True
+        self.check = False
+        self.attackedSquares = []
         
-        return False
+        opponentPieces = self.blackPieces if playerColor == PlayerColor.black else self.whitePieces
+        opponentKing = [item for item in opponentPieces if item.type == PieceType.king][0]
+        
+        # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
+        for opponentPiece in opponentPieces:
+            for movement in self.get_valid_movements(opponentPiece):
+                if movement not in self.attackedSquares:
+                    self.attackedSquares.append(movement)
+                if movement[0] == opponentKing.row and movement[1] == opponentKing.column:
+                    self.check = True
     
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -149,15 +158,16 @@ class Board():
             raise Exception(f"The column limit must be {'greater' if direction[0] == 1 else 'lower'} or equal than the piece column '{piece.column}'")
         
         #Check if the square is an opponent or if it's a player piece, if not return the limit
-        for i, row, column in enumerate(zip(row_range, column_range)):
-            
+        i = 0
+        for i, row, column in zip(row_range, column_range):
             if self.is_player(row, column, piece.color):
                 return i
 
             if self.is_opponent(row, column, piece.color):
                 return i+1
-        
-        return len(row_range)
+            i +=1
+            
+        return i
     
     def get_valid_movements(self, piece: Piece) -> List[Union[int, int]]:
         """Return all the valid movements of a piece
@@ -184,15 +194,17 @@ class Board():
                     validMovements.append((piece.row+(direction[1]*i), piece.column+(direction[0]*i)))                    
             else:
                 # Check for special cases
-                #TODO check for when trying to castle, the squares the king move througth arent't attacked and king not in mate
                 if (MovementSpecialCase.neitherIsEnemy in specialCases and not self.is_opponent(movement[0], movement[1])) or \
                    (MovementSpecialCase.enPassant in specialCases and \
                     movement[0] == self.possibleEnPassant[0] and movement[1] == self.possibleEnPassant[1]) or \
-                   (MovementSpecialCase.canCastle in specialCases and self.can_castle and \
-                    self.get_max_extendable_movements(piece, direction, piece.row, piece.column+(3*direction[1]))) or \
+                   (MovementSpecialCase.canCastle in specialCases and self.can_castle and self.check == False and \
+                    self.get_max_extendable_movements(piece, direction, piece.row, piece.column+(3*direction[1])) == 2 and \
+                    (piece.row,piece.column+direction[0]-1) not in self.attackedSquares and \
+                    (piece.row,piece.column+direction[0]) not in self.attackedSquares) or \
                    (MovementSpecialCase.doublePawnMove in specialCases and not piece.moved and \
-                    self.get_max_extendable_movements(piece, direction, piece.row+(3*direction[1]), piece.column)):
-                    validMovements.append(movement)
+                    self.get_max_extendable_movements(piece, direction, piece.row+(3*direction[1]), piece.column) == 2) or\
+                    len(specialCases) == 0:
+                        validMovements.append(movement)
                          
         return validMovements
     
@@ -212,19 +224,19 @@ class Board():
         piece = self.__grid[originRow][originColumn]
         if (destinationRow, destinationColumn) in self.get_valid_movements(piece):
             self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
-            piece.row = destinationRow
-            piece.column = destinationColumn
             
             self.possibleEnPassant = None
             if piece.type == PieceType.pawn:
                 piece.moved = True
-                if piece.row + next(key for key, value in piece.posibleMovements.items() if value == [])[1] > len(ROWS)-1:
-                    #TODO promotion
+                if piece.row + piece.movingDirection == len(ROWS)-1:
+                    self.promote_pawn()
+                    #TODO trigger promotion
                     pass
 
                 if abs(destinationRow-originRow) == 2:
-                    self.possibleEnPassant = (destinationRow - piece.movingDir, destinationColumn)
-
+                    self.possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
+                    
+            self.squares_under_attack(piece.color)
             return True
             
         return False

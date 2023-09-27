@@ -1,4 +1,4 @@
- #//from typing import Dict
+"""This module contains the Piece model object and it's properties"""
 
 from models.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR#//, COLUMNS, ROWS, BOARD_START
 
@@ -20,7 +20,7 @@ class Piece():
         self.column = column
         
         self.kingLocked = kingLocked
-        self.movingDir = WHITE_MOV_DIR if self.color == PlayerColor.white else BLACK_MOV_DIR
+        self.movingDirection = WHITE_MOV_DIR if self.color == PlayerColor.white else BLACK_MOV_DIR
         self.posibleMovements = None
         
         # Direction (column direction, (x movement), row direction (y movement))
@@ -35,10 +35,10 @@ class Piece():
             self.moved = False
             self.extendMovement = False
             self.posibleMovements = {
-                (0, 1 * self.movingDir) : [MovementSpecialCase.neitherIsEnemy],
-                (-1, 1 * self.movingDir) : [MovementSpecialCase.enPassant],
-                (1, 1 * self.movingDir) : [MovementSpecialCase.enPassant],
-                (0, 2 * self.movingDir) : [MovementSpecialCase.doublePawnMove]
+                (0, 1 * self.movingDirection) : [MovementSpecialCase.neitherIsEnemy],
+                (-1, 1 * self.movingDirection) : [MovementSpecialCase.enPassant],
+                (1, 1 * self.movingDirection) : [MovementSpecialCase.enPassant],
+                (0, 2 * self.movingDirection) : [MovementSpecialCase.doublePawnMove]
                 }
         elif self.type == PieceType.bishop:
             """
@@ -126,7 +126,6 @@ class Piece():
                 (2,0) : [MovementSpecialCase.canCastle]
                 }
 
-    
     #//@classmethod
     #//def empty(cls) -> object:
     #//    return cls(PieceType.empty, None, str(), str())
