@@ -4,10 +4,16 @@ import datetime
 
 from models.board import Board
 
-board = Board.deserialize("data")
+#board = Board.start_board()
+#board.serialize("data")
 #board.swap_pieces(0,3,3,3)
-board.print_board()
-board.get_valid_movements(board.select_square(3,3))
+#board.print_board()
+#board.get_valid_movements(board.select_square(3,3))
+board = Board.deserialize("data")
+print(board.canCastle)
+print(board.possibleEnPassant)
+print(board.turn)
+print(board.canCastle)
 
 # pygame setup
 pygame.init()
