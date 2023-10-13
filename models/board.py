@@ -14,18 +14,25 @@ class Board():
         __grid (List[List[Piece]]): Grid representing the board configuration, it's private
         canCastle (bool): Whether castling is available for this board or not. Defaults to True.
         check (bool): Whether the player whoose turn is next is checked or not. Defaults to False.
+        turn (PlayerColor): The player whoose turn it's the on going one. Defaults to PlayerColor.white.
         possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
         whitePieces (List[Piece]): List of all pieces of color white.
         blackPieces (List[Piece]): List of all pieces of color black.
-        #//attackedSquares (Union[int, int]]): List of the positions attacked by the opponent pieces in this turn
-        turn (PlayerColor): The player whoose turn it's the on going one. Defaults to PlayerColor.white.
+        attackedSquares (Union[int, int]]): List of the positions attacked by the opponent pieces in this turn
     """
 
-    def __init__(self, grid: List[List[Piece]]) -> None:
+    def __init__(self, grid: List[List[Piece]], turn: PlayerColor = PlayerColor.white) -> None:
         """Creates a board object instance
 
         Args:
             __grid (List[List[Piece]]): Grid representing the chess board and the game pieces.
+            turn (PlayerColor, optional): Current turn player. Defaults to PlayerColor.white.
+
+        Raises:
+            ValueError: When there are no White kings on the board.
+            ValueError: When there are no Black kings on the board.
+            ValueError: When there are multiple White kings on the board.
+            ValueError: When there are multiple Black kings on the board.
         """
         
         self.__grid = grid
@@ -33,23 +40,42 @@ class Board():
         # Default board params
         self.canCastle = True
         self.check = False
-        self.turn = PlayerColor.white
+        self.turn = turn
         self.possibleEnPassant = None
         
-        # Get all the color pieces in their correspondent lists
+        # Buffer Attributes
         self.whitePieces = []
         self.blackPieces = []
+        self.attackedSquares = []
+        self.whiteKing = None
+        self.blackKing = None
         
+        # Get all the color pieces in their correspondent lists
         for row in range(len(ROWS)):
             for column in range(len(COLUMNS)):
                 piece = self.__grid[row][column]
-                if piece.type != PieceType.empty:
+                
+                if piece.type == PieceType.king:
+                    if piece.color == PlayerColor.white:
+                        if self.whiteKing != None:
+                            raise ValueError("There are multiple white kings in this board")
+                        self.whiteKing = piece
+                    else:
+                        if self.blackKing != None:
+                            raise ValueError("There are multiple black kings in this board")
+                        self.blackKing = piece
+                elif piece.type != PieceType.empty:
                     self.whitePieces.append(piece) if piece.color == PlayerColor.white else self.blackPieces.append(piece)
                     
-        self.attackedSquares = []
-        self.squares_under_attack()
+        if self.whiteKing == None:
+            raise ValueError("There is no white king in this board")
+        if self.blackKing == None:
+            raise ValueError("There is no black king in this board")
+        
+        self.squares_under_attack(PlayerColor.black if self.turn == PlayerColor.white else PlayerColor.white)
+        self.in_check()
 
-    def select_square(self, row: int, column: int) -> Piece:
+    def square(self, row: int, column: int) -> Piece:
         """Returns the piece in the specified square
 
         Args:
@@ -61,19 +87,6 @@ class Board():
         """
         
         return self.__grid[row][column]
-
-    def is_empty(self, row: int, column: int) -> bool:
-        """Returns whether the square is empty or not
-
-        Args:
-            row (int): Row
-            column (int): Column
-
-        Returns:
-            bool: Empty or not
-        """
-        
-        return self.__grid[row][column].type == PieceType.empty
 
     def is_opponent(self, row: int, column: int, playerColor: PlayerColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not
@@ -103,24 +116,29 @@ class Board():
         
         return self.__grid[row][column].type != PieceType.empty and self.__grid[row][column].color == playerColor
 
-    def squares_under_attack(self):
+    def squares_under_attack(self, opponent: PlayerColor):
         """Calculate the squares under attack by the opponent pieces
+
+        Args:
+            opponent (PlayerColor): Opponent color.
         """
-        
-        self.check = False
+
         self.attackedSquares = []
         
-        turnPieces = self.blackPieces if self.turn == PlayerColor.black else self.whitePieces
-        opponentPieces = self.whitePieces if self.turn == PlayerColor.black else self.blackPieces
-        opponentKing = [item for item in opponentPieces if item.type == PieceType.king][0]
-        
+        opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
+
         # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
-        for turnPiece in turnPieces:
-            for movement in self.get_valid_movements(turnPiece, True):
+        for piece in opponentPieces:
+            for movement in self.get_valid_movements(piece, True):
                 if movement not in self.attackedSquares:
                     self.attackedSquares.append(movement)
-                if movement[0] == opponentKing.row and movement[1] == opponentKing.column:
-                    self.check = True
+
+    def in_check(self):
+        """Evaluates if the player whoose turn is next is in check
+        """
+        
+        playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
+        self.check = (playerKing.row, playerKing.column) in self.attackedSquares
 
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -138,6 +156,8 @@ class Board():
         self.__grid[row2][column2].column = column1
         self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
 
+#TODO Redo get_max_extendable_movements & get_valid_movements
+#TODO Refactor get_max_extendable_movements get_valid_movements move_piece
     def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], limitRow: int, limitColumn: int, includePossibleChecks: bool) -> int:
         """Given a piece and direction, returns the number of movements it can perform before reaching a given limit
 
@@ -212,6 +232,7 @@ class Board():
                          
         return validMovements
 
+#TODO check if only kings left
     def move_piece(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Moves a piece from it's origin, to a destination.
 
@@ -243,12 +264,14 @@ class Board():
             if abs(destinationRow-originRow) == 2:
                 self.possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
                 
-        self.squares_under_attack()
         self.turn = PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white
+        self.squares_under_attack(piece.color)
+        self.in_check()
         return True
 
-    #! Development Only method
-    def print_board(self):
+#TODO Validate when check if it's a checkmate
+
+    def print_board(self): #! Development Only method
         for row in range(len(ROWS)):
             for column in range(len(COLUMNS)):
                 print(f"{self.__grid[row][column].color.value}{self.__grid[row][column].type.value} ", end='')
@@ -310,23 +333,22 @@ class Board():
         with open(f"{SAVINGS}{filename}_board.json", "r") as file:
             json_data = load(file)
         
-            board = cls.start_board(json_data["__grid"])
-            board.turn = PlayerColor[json_data['turn']]
+            board = cls.start_board(json_data["__grid"], json_data['turn'])
             board.canCastle = json_data['canCastle']
             board.possibleEnPassant = tuple(json_data['possibleEnPassant']) if json_data['possibleEnPassant'] != None else None
-            
         return board
 
     @classmethod
-    def start_board(cls, textGrid: List[List[str]] = BOARD_START) -> object:
+    def start_board(cls, textGrid: List[List[str]] = BOARD_START, turn: PlayerColor = PlayerColor.white) -> object:
         """Creates a Board object instance, from a string grid, and transforms it to a Piece Object grid
 
         Args:
             textGrid (List[List[str]], optional): The text grid to transform. Defaults to BOARD_START.
+            turn (PlayerColor, optional): Current turn player. Defaults to PlayerColor.white.
 
         Returns:
             Board: New instance of Board object
         """
         
         # Parse string matrix to Piece obj matrix, and return Board object
-        return cls([[Piece(PieceType[textGrid[row][column][1]], PlayerColor[textGrid[row][column][0]], row, column) for column in range(len(COLUMNS))] for row in range(len(ROWS))])
+        return cls([[Piece(PieceType[textGrid[row][column][1]], PlayerColor[textGrid[row][column][0]], row, column) for column in range(len(COLUMNS))] for row in range(len(ROWS))], turn)

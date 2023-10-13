@@ -5,22 +5,14 @@ import datetime
 from models.board import Board
 
 if __name__ == "__main__":
-    #board = Board.start_board()
-    #board.serialize("data")
-    #board.swap_pieces(0,3,3,3)
-    #board.print_board()
-    #board.get_valid_movements(board.select_square(3,3))
-    board = Board.deserialize("data")
-    print(board.canCastle)
-    print(board.possibleEnPassant)
-    print(board.turn)
-    
+    board = Board.start_board()
+
     # pygame setup
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     running = True
-    
+
     #?while running:
     #?    # poll for events
     #?    # pygame.QUIT event means the user clicked X to close your window
@@ -37,5 +29,5 @@ if __name__ == "__main__":
     #?    pygame.display.flip()
     #?
     #?    clock.tick(60)  # limits FPS to 60
-    
+
     pygame.quit()
