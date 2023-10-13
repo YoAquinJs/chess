@@ -31,7 +31,7 @@ class Board():
         self.__grid = grid
         
         # Default board params
-        self.canCastle = False
+        self.canCastle = True
         self.check = False
         self.turn = PlayerColor.white
         self.possibleEnPassant = None

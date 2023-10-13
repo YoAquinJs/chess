@@ -126,6 +126,8 @@ class Piece():
                 (2,0) : [MovementSpecialCase.canCastle]
                 }
 
+    def __str__(self):
+        return f"{self.color.value}{self.type.value}"
     #//@classmethod
     #//def empty(cls) -> object:
     #//    return cls(PieceType.empty, None, str(), str())
