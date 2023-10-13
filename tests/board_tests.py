@@ -20,7 +20,7 @@ class BoardTests():
             
             for r in range(len(ROWS)):
                 for c in range(len(COLUMNS)):
-                    if str(board.select_square(r,c)) != BOARD_START[r][c]:
+                    if str(board.square(r,c)) != BOARD_START[r][c]:
                         color_print(f"The start board generated is not acurrate in square ({r},{c})", PrintColor.red)
                         return False
                 

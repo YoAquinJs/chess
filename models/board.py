@@ -12,7 +12,8 @@ class Board():
 
     Attributes:
         __grid (List[List[Piece]]): Grid representing the board configuration, it's private
-        canCastle (bool): Whether castling is available for this board or not. Defaults to True.
+        canCastleLeft (bool): Whether castling to left is available for this board or not. Defaults to True.
+        canCastleRigth (bool): Whether castling to rigth is available for this board or not. Defaults to True.
         check (bool): Whether the player whoose turn is next is checked or not. Defaults to False.
         turn (PlayerColor): The player whoose turn it's the on going one. Defaults to PlayerColor.white.
         possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
@@ -38,7 +39,9 @@ class Board():
         self.__grid = grid
         
         # Default board params
-        self.canCastle = True
+        self.canCastleLeft = True
+        self.canCastleRigth = True
+        
         self.check = False
         self.turn = turn
         self.possibleEnPassant = None
@@ -158,36 +161,42 @@ class Board():
 
 #TODO Redo get_max_extendable_movements & get_valid_movements
 #TODO Refactor get_max_extendable_movements get_valid_movements move_piece
-    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], limitRow: int, limitColumn: int, includePossibleChecks: bool) -> int:
+    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], includePossibleChecks: bool, maxIterations: int = 8) -> int:
         """Given a piece and direction, returns the number of movements it can perform before reaching a given limit
 
         Args:
             piece (Piece): Piece to move.
             direction (Union[int, int]): Direction of the extenable movement.
-            limitRow (int): The limit row that the extendable movement can go to.
-            limitColumn (int): The limit column that the extendable movement can go to.
-            includePossibleChecks (bool): Determine whether it should include movements to pieces of itself
+            includePossibleChecks (bool): Determine whether it should include movements to pieces of itself.
+            maxIterations(int, optional): Maximum distance from piece origin. Defaults to 8.
             
         Returns:
            Int: Maximun number of movements in that direction.
         """
         
-        # The row and column ranges for iterating from the piece coordinate to the limit coordinate
-        row_range = range(piece.row+direction[1], limitRow, direction[1]) if direction[1] != 0 else []
-        if direction[1] != 0 and piece.row > limitRow if direction[1] == 1 else limitRow > piece.row:
-            raise Exception(f"The row limit {limitRow}, must be {'greater' if direction[1] == 1 else 'lower'} or equal than the piece row '{piece.row}'")
-        column_range = range(piece.row+direction[0], limitRow, direction[0]) if direction[0] != 0 else []
-        if direction[0] != 0 and piece.column > limitColumn if direction[0] == 1 else limitColumn > piece.column:
-            raise Exception(f"The column limit {limitColumn}, must be {'greater' if direction[0] == 1 else 'lower'} or equal than the piece column '{piece.column}'")
+        #// The row and column ranges for iterating from the piece coordinate to the limit coordinate
+        #//row_range = range(piece.row+direction[1], limitRow, direction[1]) if direction[1] != 0 else []
+        #//if direction[1] != 0 and piece.row > limitRow if direction[1] == 1 else limitRow > piece.row:
+        #//    raise Exception(f"The row limit {limitRow}, must be {'greater' if direction[1] == 1 else 'lower'} or equal than the piece row '{piece.row}'")
+        #//column_range = range(piece.row+direction[0], limitRow, direction[0]) if direction[0] != 0 else []
+        #//if direction[0] != 0 and piece.column > limitColumn if direction[0] == 1 else limitColumn > piece.column:
+        #//    raise Exception(f"The column limit {limitColumn}, must be {'greater' if direction[0] == 1 else 'lower'} or equal than the piece column '{piece.column}'")
         
         #Check if the square is an opponent or if it's a player piece, if not return the limit
         i = 0
-        for i, dir in enumerate(zip(row_range, column_range)):
-            if self.is_player(dir[0], dir[1], piece.color):
+        row = piece.row
+        column = piece.column
+        #//for i, dir in enumerate(zip(row_range, column_range)):
+        while (row > -1 and row < 8) and (column > -1 and column < 8) and i < maxIterations:
+            row += direction[1]
+            column += direction[0]
+            
+            if self.is_player(row, column, piece.color):
                 return i + (1 if includePossibleChecks else 0)
 
-            if self.is_opponent(dir[0], dir[1], piece.color):
+            if self.is_opponent(row, column, piece.color):
                 return i+1
+            
             i +=1
             
         return i
@@ -213,7 +222,7 @@ class Board():
             
             # If the movement it's extenable or its a piece with a special movement 
             if piece.extendMovement:
-                max_movs = self.get_max_extendable_movements(piece, direction, 8 if direction[1] == 1 else -1, 8 if direction[0] == 1 else -1, includePossibleChecks)
+                max_movs = self.get_max_extendable_movements(piece, direction, includePossibleChecks)
                 for i in range(max_movs):
                     validMovements.append((piece.row+(direction[1]*i), piece.column+(direction[0]*i)))                    
             else:
@@ -222,11 +231,11 @@ class Board():
                    (MovementSpecialCase.enPassant in specialCases and self.possibleEnPassant is not None and \
                     movement[0] == self.possibleEnPassant[0] and movement[1] == self.possibleEnPassant[1]) or \
                    (MovementSpecialCase.canCastle in specialCases and self.canCastle and self.check == False and \
-                    self.get_max_extendable_movements(piece, direction, piece.row, piece.column+(3*direction[1]), includePossibleChecks) == 2 and \
+                    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2 and \
                     (piece.row,piece.column+direction[0]-1) not in self.attackedSquares and \
                     (piece.row,piece.column+direction[0]) not in self.attackedSquares) or \
                    (MovementSpecialCase.doublePawnMove in specialCases and not piece.moved and \
-                    self.get_max_extendable_movements(piece, direction, piece.row+(3*direction[1]), piece.column, includePossibleChecks) == 2) or\
+                    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2) or\
                     len(specialCases) == 0:
                         validMovements.append(movement)
                          
@@ -291,7 +300,8 @@ class Board():
             with open(f"{SAVINGS}{filename}_board.json", "w") as file:
                 data = {
                     'turn' : self.turn.value,
-                    'canCastle' : self.canCastle,
+                    'canCastleLeft' : self.canCastleLeft,
+                    'canCastleRigth' : self.canCastleRigth,
                     'possibleEnPassant' : self.possibleEnPassant,
                     '__grid' : [[f"{piece.color.value}{piece.type.value}" for piece in row] for row in self.__grid]
                     }
@@ -334,7 +344,8 @@ class Board():
             json_data = load(file)
         
             board = cls.start_board(json_data["__grid"], json_data['turn'])
-            board.canCastle = json_data['canCastle']
+            board.canCastleRigth = json_data['canCastleRigth']
+            board.canCastleLeft = json_data['canCastleLeft']
             board.possibleEnPassant = tuple(json_data['possibleEnPassant']) if json_data['possibleEnPassant'] != None else None
         return board
 

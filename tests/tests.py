@@ -11,5 +11,4 @@ class Tests:
     @classmethod
     def execute_tests(cls):
         for method in cls.tests:
-            if not method():
-                break
+             method()
