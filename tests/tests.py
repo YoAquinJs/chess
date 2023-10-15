@@ -2,6 +2,7 @@
 
 from models.consts import TestType
 from typing import Dict, Union, List
+
 class Tests:
     tests = {}
     breakIfFailedTest = True
@@ -23,6 +24,7 @@ class Tests:
         if len(types) == 0:
             for t in cls.tests.values():
                 for method in t:
+                    print(f"Start test {method.__name__}")
                     if not method() and cls.breakIfFailedTest:
                         break
         else:

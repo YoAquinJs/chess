@@ -1,6 +1,5 @@
 """This module contains the Board model object and it's properties"""
 
-import sys
 from json import dumps, load
 from typing import Dict, Union, List
 
@@ -77,7 +76,7 @@ class Board():
             raise ValueError("There is no black king in this board")
         
         self.squares_under_attack(PlayerColor.black if self.turn == PlayerColor.white else PlayerColor.white)
-        self.in_check()
+        self.set_game_state()# TODO do something if stalemate checkmate
 
     def square(self, row: int, column: int) -> Piece:
         """Returns the piece in the specified square
@@ -193,14 +192,29 @@ class Board():
                 if movement not in self.attackedSquares:
                     self.attackedSquares.append(movement)
 
-#TODO Validate when check if it's a checkmate\
-    def in_check(self):
-        """Evaluates if the player whoose turn is next is in check
+    def set_game_state(self):
+        """Evaluates if the player whoose turn is next is in check, and if it's checkmate or stalemate
         """
         
         playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
         self.check = (playerKing.row, playerKing.column) in self.attackedSquares
-
+        
+        playerPieces = self.whitePieces if self.turn == PlayerColor.white else self.blackPieces
+        
+        # Determines if the check is mate or if stalemate
+        anyValidMov = False
+        for piece in playerPieces:
+            for movement in self.get_valid_movements(piece):
+                if self.is_valid_movement(piece.row, piece.column, movement[0], movement[1], True):
+                    # neither check nor stalemate 
+                    anyValidMov = True
+                    break
+                
+        if self.check and not anyValidMov:
+            pass # Checkmate
+        elif not anyValidMov:
+            pass # stalemate
+                        
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
 
@@ -301,7 +315,7 @@ class Board():
                 #//    len(specialCases) == 0:
                 #//        validMovements.append(movement)                         
     
-    def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
+    def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int, alreadyValidated: bool = False) -> bool:
         """Determines whether the piece movement is valid or not
 
         Args:
@@ -309,6 +323,7 @@ class Board():
             originColumn (int): Origin column
             destinationRow (int): Destination row
             destinationColumn (int): Destination column
+            alreadyValidated (bool, optional): Determine if it should validate it with get_valid_movements(). Defaults to False.
 
         Returns:
             bool: Whether the movement is valid or not.
@@ -320,7 +335,7 @@ class Board():
             return False
         
         # If you try to move an opponent square
-        if self.is_opponent(originRow, originColumn, self.turn):
+        if alreadyValidated or self.is_opponent(originRow, originColumn, self.turn):
             return False
         
         # If the movement is an ilegal movement
@@ -328,15 +343,15 @@ class Board():
             return False
 
         # Perform movement and determine if player was left in check
-        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
         eatenPiece = None
-        if self.__grid[originRow][originColumn].type != PieceType.empty:
-            eatenPiece = self.__grid[originRow][originColumn]
-            self.remove_piece(originRow, originColumn)
+        if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
+            eatenPiece = self.__grid[destinationRow][destinationColumn]
+            self.remove_piece(destinationRow, destinationColumn)
+        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
 
         pastAttackedSquares = [square for square in self.attackedSquares]
         self.squares_under_attack(PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white)
-        self.in_check()
+        self.set_game_state()#TODO if checkmate
         
         # Discard movement
         self.attackedSquares = pastAttackedSquares
@@ -350,7 +365,6 @@ class Board():
         
         return True
 
-#TODO staelmate detections
     def move_piece(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Moves a piece from it's origin, to a destination.
 
@@ -370,6 +384,7 @@ class Board():
         
         piece = self.__grid[originRow][originColumn]
         self.swap_pieces(originRow,originColumn,destinationRow,destinationColumn)
+        
         # Eat opponent piece
         if self.__grid[originRow][originColumn].type != PieceType.empty:
             self.empty_square(originRow, originColumn)
@@ -377,17 +392,21 @@ class Board():
         # Check for pawn special cases
         self.possibleEnPassant = None
         if piece.type == PieceType.pawn:
-            if piece.row + piece.movingDirection == len(ROWS)-1:
-                self.promote_pawn()
-                #TODO trigger promotion
-                pass
+            # If pawn reached the last square it can move, promote it
+            if piece.row + piece.movingDirection == len(ROWS) or piece.row + piece.movingDirection == -1:
+                self.remove_piece(piece.row, piece.column)
+                #TODO determine how the user should select the new piece
+                newPiece = None
+                #newPiece = await getPromotionPiece()
+                self.add_piece(piece.row,piece.column)
 
+            # If pawn performed doublemove, save it for en passant
             if abs(destinationRow-originRow) == 2:
                 self.possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
                 
         self.squares_under_attack(self.turn)
         self.turn = PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white
-        self.in_check()
+        self.set_game_state() #TODO do something if stalemate or checkmate
 
         return True
 

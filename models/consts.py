@@ -42,7 +42,7 @@ class ParseableEnum(EnumMeta):
             raise KeyError(f"No such value in {cls.__name__}: {item}")
         
         return match
-
+    
 class TestType(Enum, metaclass=ParseableEnum):
     """Enum for the multiple test type"""
 
