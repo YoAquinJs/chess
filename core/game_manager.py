@@ -1,7 +1,8 @@
 from consts import OnGameState, GameScreen, PlayerColor
 from board import Board
 
-class GameState():
+#TODO all
+class GameManager():
     """Class for handling game screens, and game states
 
     Attributes:

@@ -48,6 +48,7 @@ class TestType(Enum, metaclass=ParseableEnum):
 
     board = 'board'
     piece = 'piece'
+    game = 'game'
 
 # Unique identifiers for players, always a single character
 class PlayerColor(Enum, metaclass=ParseableEnum):

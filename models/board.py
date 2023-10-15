@@ -2,6 +2,7 @@
 
 from json import dumps, load
 from typing import Dict, Union, List
+from asyncio import run
 
 from utils.utils import color_print
 from models.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, COLUMNS, ROWS, BOARD_START, SAVINGS
@@ -396,8 +397,7 @@ class Board():
             if piece.row + piece.movingDirection == len(ROWS) or piece.row + piece.movingDirection == -1:
                 self.remove_piece(piece.row, piece.column)
                 #TODO determine how the user should select the new piece
-                newPiece = None
-                #newPiece = await getPromotionPiece()
+                newPiece = run(getPromotionPiece())
                 self.add_piece(piece.row,piece.column)
 
             # If pawn performed doublemove, save it for en passant
