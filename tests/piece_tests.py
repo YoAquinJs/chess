@@ -29,7 +29,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,0,2,0)], True
                  ),
                 (Board.start_board([# Case where pawn moves to a side without eating
@@ -41,7 +41,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,0,2,1)], False
                  ),
                 (Board.start_board([# Case where pawn moves to a side eating
@@ -53,7 +53,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,0,2,1)], True
                  ),
                 (Board.start_board([# Case where pawn moves to a side eating when check locked
@@ -65,10 +65,10 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,4,2,5)], False
                  ),
-                 (Board.start_board([# Case where pawn moves to the opposite direction
+                (Board.start_board([# Case where pawn moves to the opposite direction
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
                 ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
                 ['##', 'wQ', '##', '##', '##', 'wQ', '##', '##'],
@@ -77,7 +77,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(5,3,4,3)], False
                  )
             ]
@@ -122,7 +122,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,2,2,4)], True
                  ),
                 (Board.start_board([# case where bishop jumps piece
@@ -134,7 +134,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,2,2,4)], False
                  ),
                 (Board.start_board([# Case where bishop moves when check locked
@@ -146,7 +146,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,4,3,6)], False
                  ),
                 (Board.start_board([# Case where bishop moves like rook
@@ -158,7 +158,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,2,5,2)], False
                  )
             ]
@@ -203,7 +203,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,1,2,0)], True
                  ),
                 (Board.start_board([# Case where knigth moves like rook
@@ -215,7 +215,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,1,2,1)], False
                  ),
                 (Board.start_board([# case where knigth is check locked
@@ -227,7 +227,7 @@ class PieceTests():
                 ['##', '##', '##', '##', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,4,3,3)], False
                  )
             ]
@@ -272,8 +272,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
-                 [(0,0,0,6)], True
+                ], PlayerColor.black),
+                 [(0,0,6,0)], True
                  ),
                 (Board.start_board([# Case where rook moves like bishop
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
@@ -284,7 +284,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,0,1,1)], False
                  ),
                 (Board.start_board([# case where rook is check locked
@@ -296,7 +296,7 @@ class PieceTests():
                 ['##', '##', '##', '##', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,4,1,3)], False
                  ),
                  (Board.start_board([# case where rook jumps a pawn
@@ -308,7 +308,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,4,1,2)], False
                  )
             ]
@@ -353,7 +353,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,3,3,3)], True
                  ),
                 (Board.start_board([# Ideal case
@@ -365,7 +365,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(3,4,6,7)], True
                  ),
                 (Board.start_board([# Case where the queen is check locked
@@ -377,7 +377,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(1,4,2,5)], False
                  ),
                 (Board.start_board([# case where queen jumps another piece
@@ -389,7 +389,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,3,2,5)], False
                  ),
                 (Board.start_board([# case where queen moves like knigth
@@ -401,7 +401,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,3,2,4)], False
                  )
             ]
@@ -446,11 +446,11 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,4,1,3)], True
                  ),
                 (Board.start_board([# Ideal case
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
+                ['bR', 'bK', 'bB', 'bQ', '##', 'bB', 'bK', 'bR'],
                 ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
                 ['##', '##', '##', 'b@', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
@@ -458,7 +458,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(2,3,2,4)], True
                  ),
                 (Board.start_board([# Case where the square is attacked
@@ -470,19 +470,31 @@ class PieceTests():
                 ['##', '##', '##', 'wR', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
+                ], PlayerColor.black),
                  [(0,4,1,3)], False
                  ),
-                (Board.start_board([# case where the square is attacked after eating it
+                (Board.start_board([# case where after eating the eated piece could hack if not managed properly
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
                 ['bP', 'bP', 'bP', 'wR', 'bP', 'bP', 'bP', 'bP'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['##', '##', '##', 'wR', '##', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wP', 'wP', 'wP', 'wP', 'bQ', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
                 ]),
+                 [(7,4,6,4)], True
+                 ),
+                (Board.start_board([# case where the square is attacked after eating it
+                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
+                ['bP', 'bP', 'bP', 'wR', 'bP', 'bP', 'bP', 'bP'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'wR', '##', '##', '##', '##'],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ], PlayerColor.black),
                  [(0,4,1,3)], False
                  )
             ]
@@ -526,7 +538,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']]),
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']
+                ], PlayerColor.black),
                  [(0,4,0,2)], True
                  ),
                 (Board.start_board([# case with attacked square in king's path
@@ -537,7 +550,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', 'wQ', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']]),
+                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
+                ], PlayerColor.black),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case with attacked square where king castles
@@ -548,7 +562,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', 'wQ', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']]),
+                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
+                ], PlayerColor.black),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case with king checked
@@ -559,7 +574,8 @@ class PieceTests():
                 ['wQ', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']]),
+                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
+                ], PlayerColor.black),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case where king moves
@@ -570,7 +586,8 @@ class PieceTests():
                 ['wQ', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']]),
+                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
+                ], PlayerColor.black),
                  [(0,4,0,3),(0,3,0,1)], False
                  ),
                 (Board.start_board([ # case where tower moves
@@ -581,7 +598,8 @@ class PieceTests():
                 ['wQ', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']]),
+                ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
+                ], PlayerColor.black),
                  [(0,0,0,1),(0,1,0,0),(0,4,0,2)], False
                  ),
             ]
@@ -650,8 +668,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
-                 [(5,3,6,2)], False
+                ], PlayerColor.black),
+                 [(4,3,6,2)], False
                  )
             ]
             
@@ -695,8 +713,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
-                 [(0,1,0,3)], True
+                ], PlayerColor.black),
+                 [(1,0,3,0)], True
                  ),
                 (Board.start_board([# Case where pawn had already moved
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
@@ -707,8 +725,8 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
-                 [(0,2,0,4)], False
+                ], PlayerColor.black),
+                 [(2,0,4,0)], False
                  ),
                 (Board.start_board([# case where pawn moves, and then tries to double move
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
@@ -719,8 +737,8 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
-                 [(0,1,0,2),(0,2,0,4)], False
+                ], PlayerColor.black),
+                 [(1,0,2,0),(2,0,4,0)], False
                  )
             ]
             

@@ -106,9 +106,9 @@ class Piece():
         elif self.type == PieceType.king:
             """
             _ _ _ _ _
-            _ _ # _ _
+            _ # # # _
             # # @ # #
-            _ _ # _ _
+            _ # # # _
             _ _ _ _ _
             """
             self.maxExtend = 1
@@ -117,6 +117,11 @@ class Piece():
                 (-1, 0) : None,
                 (0, 1) : None,
                 (0, -1) : None,
+                (-1, 1) : None,
+                (1, -1) : None,
+                (1, 1) : None,
+                (-1, -1) : None,
+                
                 (0,-2) : MovementSpecialCase.canCastle,
                 (0,2) : MovementSpecialCase.canCastle
                 }

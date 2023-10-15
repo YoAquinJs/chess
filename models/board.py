@@ -4,7 +4,8 @@ import sys
 from json import dumps, load
 from typing import Dict, Union, List
 
-from models.consts import PieceType, PlayerColor, MovementSpecialCase, COLUMNS, ROWS, BOARD_START, SAVINGS
+from utils.utils import color_print
+from models.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, COLUMNS, ROWS, BOARD_START, SAVINGS
 from models.piece import Piece
 
 class Board():
@@ -128,6 +129,51 @@ class Board():
         """
         self.__grid[row][column] = Piece(PieceType.empty, PlayerColor.empty, row, column)
 
+    def add_piece(self, row: int, column: int, piece: Piece) -> bool:
+        """Adds a piece to the board if the square is empty
+
+        Args:
+            row (int): Row where the piece will be added.
+            column (int): Column where the piece will be added.
+            piece (Piece): Piece to be addded.
+
+        Returns:
+            bool: Whether the piece was added or not
+        """
+        
+        if self.__grid[row][column].type != PieceType.empty:
+            color_print(f"The piece {piece.color}{piece.type} is trying to be added in {(row,column)}, where piece {self.__grid[row][column].type}{self.__grid[row][column].type} is", PrintColor.yellow)
+            return False
+        
+        if piece.color == PlayerColor.white:
+            self.whitePieces.append(piece)
+        else:
+            self.blackPieces.append(piece)
+        self.__grid[row][column] = piece
+        return True
+    
+    def remove_piece(self, row: int, column: int) -> bool:
+        """Removes a piece from the board if the square is not empty
+
+        Args:
+            row (int): Row where the piece will be removed.
+            column (int): Column where the piece will be removed.
+
+        Returns:
+            bool: Whether the piece was removed or not
+        """
+        
+        if self.__grid[row][column].type == PieceType.empty:
+            color_print(f"An empty square {(row,column)} is trying be removed", PrintColor.yellow)
+            return False
+        
+        if self.__grid[row][column].color == PlayerColor.white:
+            self.whitePieces.remove(self.__grid[row][column])
+        else:
+            self.blackPieces.remove(self.__grid[row][column])
+        self.empty_square(row, column)
+        return True
+
     def squares_under_attack(self, opponent: PlayerColor):
         """Calculate the squares under attack by the opponent pieces
 
@@ -237,7 +283,7 @@ class Board():
                     elif specialCase == None and (self.is_opponent(movement[0], movement[1], piece.color) or countPawnAttacks or movement == self.possibleEnPassant):
                         validMovements.append(movement)
                 elif specialCase == MovementSpecialCase.canCastle and (piece.row, piece.column + (direction[1]/2)) not in self.attackedSquares\
-                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth):
+                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.check == False:
                     validMovements.append(movement)
                 elif specialCase == None:
                     validMovements.append(movement)
@@ -269,7 +315,6 @@ class Board():
         """
         
         piece = self.__grid[originRow][originColumn]
-        
         # If you try to move an empty square
         if piece.type == PieceType.empty:
             return False
@@ -284,11 +329,20 @@ class Board():
 
         # Perform movement and determine if player was left in check
         self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
+        eatenPiece = None
+        if self.__grid[originRow][originColumn].type != PieceType.empty:
+            eatenPiece = self.__grid[originRow][originColumn]
+            self.remove_piece(originRow, originColumn)
+
+        pastAttackedSquares = [square for square in self.attackedSquares]
         self.squares_under_attack(PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white)
         self.in_check()
         
         # Discard movement
+        self.attackedSquares = pastAttackedSquares
         self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
+        if eatenPiece != None:
+            self.add_piece(destinationRow, destinationColumn, eatenPiece)
         
         # If player left in check is invalid
         if self.check:
@@ -296,7 +350,7 @@ class Board():
         
         return True
 
-#TODO check if only kings left
+#TODO staelmate detections
     def move_piece(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Moves a piece from it's origin, to a destination.
 
@@ -316,7 +370,10 @@ class Board():
         
         piece = self.__grid[originRow][originColumn]
         self.swap_pieces(originRow,originColumn,destinationRow,destinationColumn)
-        
+        # Eat opponent piece
+        if self.__grid[originRow][originColumn].type != PieceType.empty:
+            self.empty_square(originRow, originColumn)
+            
         # Check for pawn special cases
         self.possibleEnPassant = None
         if piece.type == PieceType.pawn:
