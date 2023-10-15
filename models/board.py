@@ -119,6 +119,15 @@ class Board():
         
         return self.__grid[row][column].type != PieceType.empty and self.__grid[row][column].color == playerColor
 
+    def empty_square(self, row: int, column: int):
+        """Empty the specified square
+
+        Args:
+            row (int): Row of the square.
+            column (int): Column of the square.
+        """
+        self.__grid[row][column] = Piece(PieceType.empty, PlayerColor.empty, row, column)
+
     def squares_under_attack(self, opponent: PlayerColor):
         """Calculate the squares under attack by the opponent pieces
 
@@ -133,6 +142,9 @@ class Board():
         # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
         for piece in opponentPieces:
             for movement in self.get_valid_movements(piece, True):
+                if piece.type == PieceType.pawn and piece.column == movement[1]:
+                    continue
+                
                 if movement not in self.attackedSquares:
                     self.attackedSquares.append(movement)
 
@@ -159,15 +171,13 @@ class Board():
         self.__grid[row2][column2].column = column1
         self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
 
-#TODO Redo get_max_extendable_movements & get_valid_movements
-#TODO Refactor get_max_extendable_movements get_valid_movements move_piece
-    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], includePossibleChecks: bool, maxIterations: int = 8) -> int:
+#TODO Refactor get_valid_movements move_piece
+    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], maxIterations: int = 8) -> int:
         """Given a piece and direction, returns the number of movements it can perform before reaching a given limit
 
         Args:
             piece (Piece): Piece to move.
             direction (Union[int, int]): Direction of the extenable movement.
-            includePossibleChecks (bool): Determine whether it should include movements to pieces of itself.
             maxIterations(int, optional): Maximum distance from piece origin. Defaults to 8.
             
         Returns:
@@ -182,17 +192,17 @@ class Board():
         #//if direction[0] != 0 and piece.column > limitColumn if direction[0] == 1 else limitColumn > piece.column:
         #//    raise Exception(f"The column limit {limitColumn}, must be {'greater' if direction[0] == 1 else 'lower'} or equal than the piece column '{piece.column}'")
         
-        #Check if the square is an opponent or if it's a player piece, if not return the limit
         i = 0
         row = piece.row
         column = piece.column
         #//for i, dir in enumerate(zip(row_range, column_range)):
         while (row > -1 and row < 8) and (column > -1 and column < 8) and i < maxIterations:
-            row += direction[1]
-            column += direction[0]
+            row += direction[0]
+            column += direction[1]
             
-            if self.is_player(row, column, piece.color):
-                return i + (1 if includePossibleChecks else 0)
+            #Check if the square is an opponent or if it's a player piece, if not return the limit
+            if row < 0 or row > 7 or column < 0  or column > 7 or self.is_player(row, column, piece.color):
+                return i
 
             if self.is_opponent(row, column, piece.color):
                 return i+1
@@ -201,45 +211,91 @@ class Board():
             
         return i
 
-    def get_valid_movements(self, piece: Piece, includePossibleChecks: bool = False) -> List[Union[int, int]]:
+    def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> List[Union[int, int]]:
         """Return all the valid movements of a piece
 
         Args:
             piece (Piece): Piece to move
-            includePossibleChecks (bool, optional): Determine whether it should include movements to pieces of itself. Defaults to False.
+            countPawnAttacks (bool, optional): Determine whether to count the possible pawn attacks (used for the attacked squares calculation). Defaults to False.
 
         Returns:
             List[Union[int, int]]: List of the valid movements
         """
         
         validMovements = []
-        for direction, specialCases in piece.posibleMovements.items():
-            movement = (piece.row + direction[1], piece.column + direction[0])
-            # If the movement it's out of the boundaries of the board or the square is occupied by a piece of the player, is rejected
-            if movement[0] < 0 or movement[1] < 0 or movement[0] > len(ROWS)-1 or movement[1] > len(COLUMNS)-1 or \
-            (self.is_player(movement[0], movement[1], piece.color) and not includePossibleChecks):
-                continue
-            
-            # If the movement it's extenable or its a piece with a special movement 
-            if piece.extendMovement:
-                max_movs = self.get_max_extendable_movements(piece, direction, includePossibleChecks)
-                for i in range(max_movs):
-                    validMovements.append((piece.row+(direction[1]*i), piece.column+(direction[0]*i)))                    
-            else:
+
+        for direction, specialCase in piece.posibleMovements.items():
+            for i in range(1,self.get_max_extendable_movements(piece, direction, piece.maxExtend)+1):
+                movement = (piece.row + (direction[0]*i), piece.column + (direction[1]*i))
                 # Check for special cases
-                if (MovementSpecialCase.neitherIsEnemy in specialCases and not self.is_opponent(movement[0], movement[1], piece.color)) or \
-                   (MovementSpecialCase.enPassant in specialCases and self.possibleEnPassant is not None and \
-                    movement[0] == self.possibleEnPassant[0] and movement[1] == self.possibleEnPassant[1]) or \
-                   (MovementSpecialCase.canCastle in specialCases and self.canCastle and self.check == False and \
-                    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2 and \
-                    (piece.row,piece.column+direction[0]-1) not in self.attackedSquares and \
-                    (piece.row,piece.column+direction[0]) not in self.attackedSquares) or \
-                   (MovementSpecialCase.doublePawnMove in specialCases and not piece.moved and \
-                    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2) or\
-                    len(specialCases) == 0:
+                if piece.type == PieceType.pawn:
+                    if specialCase == MovementSpecialCase.doublePawnMove and\
+                        ((piece.row == 1 and piece.color == PlayerColor.black) or (piece.row == 6 and piece.color == PlayerColor.white))\
+                        and self.__grid[piece.row + int(direction[0]/2)][movement[1]].type == PieceType.empty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
                         validMovements.append(movement)
-                         
+                    elif specialCase == MovementSpecialCase.isEmpty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
+                        validMovements.append(movement)
+                    elif specialCase == None and (self.is_opponent(movement[0], movement[1], piece.color) or countPawnAttacks or movement == self.possibleEnPassant):
+                        validMovements.append(movement)
+                elif specialCase == MovementSpecialCase.canCastle and (piece.row, piece.column + (direction[1]/2)) not in self.attackedSquares\
+                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth):
+                    validMovements.append(movement)
+                elif specialCase == None:
+                    validMovements.append(movement)
+
         return validMovements
+                #//if (MovementSpecialCase.neitherIsEnemy in specialCases and not self.is_opponent(movement[0], movement[1], piece.color)) or \
+                #//   (MovementSpecialCase.enPassant in specialCases and self.possibleEnPassant is not None and \
+                #//    movement[0] == self.possibleEnPassant[0] and movement[1] == self.possibleEnPassant[1]) or \
+                #//   (MovementSpecialCase.canCastleLeft in specialCases and self.canCastle and self.check == False and \
+                #//    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2 and \
+                #//    (piece.row,piece.column+direction[0]-1) not in self.attackedSquares and \
+                #//    (piece.row,piece.column+direction[0]) not in self.attackedSquares) or \
+                #//   (MovementSpecialCase.doublePawnMove in specialCases and not piece.moved and \
+                #//    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2) or\
+                #//    len(specialCases) == 0:
+                #//        validMovements.append(movement)                         
+    
+    def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
+        """Determines whether the piece movement is valid or not
+
+        Args:
+            originRow (int): Origin row
+            originColumn (int): Origin column
+            destinationRow (int): Destination row
+            destinationColumn (int): Destination column
+
+        Returns:
+            bool: Whether the movement is valid or not.
+        """
+        
+        piece = self.__grid[originRow][originColumn]
+        
+        # If you try to move an empty square
+        if piece.type == PieceType.empty:
+            return False
+        
+        # If you try to move an opponent square
+        if self.is_opponent(originRow, originColumn, self.turn):
+            return False
+        
+        # If the movement is an ilegal movement
+        if (destinationRow, destinationColumn) not in self.get_valid_movements(piece):
+            return False
+
+        # Perform movement and determine if player was left in check
+        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
+        self.squares_under_attack(PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white)
+        self.in_check()
+        
+        # Discard movement
+        self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
+        
+        # If player left in check is invalid
+        if self.check:
+            return False
+        
+        return True
 
 #TODO check if only kings left
     def move_piece(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
@@ -255,12 +311,12 @@ class Board():
             bool: Whether the movement was performed or not
         """
         
-        piece = self.__grid[originRow][originColumn]
-        if (destinationRow, destinationColumn) not in self.get_valid_movements(piece):
+        # If you try to move an empty square
+        if not self.is_valid_movement(originRow, originColumn,destinationRow, destinationColumn):
             return False
-
-        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
-            
+        
+        piece = self.__grid[originRow][originColumn]
+        
         # Check for pawn special cases
         self.possibleEnPassant = None
         if piece.type == PieceType.pawn:
@@ -343,7 +399,7 @@ class Board():
         with open(f"{SAVINGS}{filename}_board.json", "r") as file:
             json_data = load(file)
         
-            board = cls.start_board(json_data["__grid"], json_data['turn'])
+            board = cls.start_board(json_data["__grid"], PlayerColor[json_data['turn']])
             board.canCastleRigth = json_data['canCastleRigth']
             board.canCastleLeft = json_data['canCastleLeft']
             board.possibleEnPassant = tuple(json_data['possibleEnPassant']) if json_data['possibleEnPassant'] != None else None

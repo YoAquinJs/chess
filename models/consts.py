@@ -21,7 +21,7 @@ class PrintColor(Enum):
     reset = '\033[0m'
     
 # Meta Enum class for parsing from string value to Enum
-class CustomEnumMeta(EnumMeta):
+class ParseableEnum(EnumMeta):
     def __getitem__(cls, item: str) -> object:
         """This method parse from a string to the Enum object
 
@@ -43,8 +43,14 @@ class CustomEnumMeta(EnumMeta):
         
         return match
 
+class TestType(Enum, metaclass=ParseableEnum):
+    """Enum for the multiple test type"""
+
+    board = 'board'
+    piece = 'piece'
+
 # Unique identifiers for players, always a single character
-class PlayerColor(Enum, metaclass=CustomEnumMeta):
+class PlayerColor(Enum, metaclass=ParseableEnum):
     """Enum for piece color"""
 
     white = 'w'
@@ -69,7 +75,7 @@ class GameScreen(Enum):
     onGame = 'on_game'
 
 # Unique identifiers for pieces, always a single character, the format it's f"{PlayerColor}{PieceType}"
-class PieceType(Enum, metaclass=CustomEnumMeta):
+class PieceType(Enum, metaclass=ParseableEnum):
     """Enum for each type of piece"""
 
     pawn = 'P'
@@ -85,8 +91,7 @@ class MovementSpecialCase(Enum):
     """Enum for each type of piece"""
 
     canCastle = 'canCastle'
-    neitherIsEnemy = 'isEnemy'
-    enPassant = 'enPassant'
+    isEmpty = 'isEmpty'
     doublePawnMove = 'doublePawnMove'
     
 # Constants for board

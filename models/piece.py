@@ -10,18 +10,17 @@ class Piece():
         color (PlayerColor): The color of the piece
         row (int): The row of the piece
         column (int): The column of the piece
-        kingLocked (bool, Optional): Is true, if at the moment the piece is moved, the king is checked. Defaults to False
     """
 
-    def __init__(self, type: PieceType, color: PlayerColor, row: int, column: int, kingLocked: bool = False) -> None:
+    def __init__(self, type: PieceType, color: PlayerColor, row: int, column: int) -> None:
         self.type = type
         self.color = color
         self.row = row
         self.column = column
         
-        self.kingLocked = kingLocked
-        self.movingDirection = WHITE_MOV_DIR if self.color == PlayerColor.white else BLACK_MOV_DIR
+        self.maxExtend = 8 # Meaning the piece can move without a limit
         self.posibleMovements = None
+        self.movingDirection = WHITE_MOV_DIR if self.color == PlayerColor.white else BLACK_MOV_DIR
         
         # Direction (column direction, (x movement), row direction (y movement))
         if self.type == PieceType.pawn:
@@ -32,13 +31,12 @@ class Piece():
             _ _ _ _ _
             _ _ _ _ _
             """
-            self.moved = False
-            self.extendMovement = False
+            self.maxExtend = 1
             self.posibleMovements = {
-                (0, 1 * self.movingDirection) : [MovementSpecialCase.neitherIsEnemy],
-                (-1, 1 * self.movingDirection) : [MovementSpecialCase.enPassant],
-                (1, 1 * self.movingDirection) : [MovementSpecialCase.enPassant],
-                (0, 2 * self.movingDirection) : [MovementSpecialCase.doublePawnMove]
+                (1 * self.movingDirection,0) : MovementSpecialCase.isEmpty,
+                (1 * self.movingDirection,-1) : None,
+                (1 * self.movingDirection,1) : None,
+                (2 * self.movingDirection,0) : MovementSpecialCase.doublePawnMove
                 }
         elif self.type == PieceType.bishop:
             """
@@ -48,12 +46,11 @@ class Piece():
             _ # _ # _
             # _ _ _ #
             """
-            self.extendMovement = True
             self.posibleMovements = {
-                (1, 1) : [],
-                (-1, 1) : [],
-                (1, -1) : [],
-                (-1, -1) : [],
+                (1, 1) : None,
+                (-1, 1) : None,
+                (1, -1) : None,
+                (-1, -1) : None,
                 }
         elif self.type == PieceType.knigth:
             """
@@ -63,16 +60,16 @@ class Piece():
             # _ _ _ #
             _ # _ # _
             """
-            self.extendMovement = False
+            self.maxExtend = 1
             self.posibleMovements = {
-                (1, 2) : [],
-                (2, 1) : [],
-                (2, -1) : [],
-                (1, -2) : [],
-                (-1, -2) : [],
-                (-2, -1) : [],
-                (-2, 1) : [],
-                (-1, 2) : [],
+                (1, 2) : None,
+                (2, 1) : None,
+                (2, -1) : None,
+                (1, -2) : None,
+                (-1, -2) : None,
+                (-2, -1) : None,
+                (-2, 1) : None,
+                (-1, 2) : None,
                 }
         elif self.type == PieceType.rook:
             """
@@ -82,12 +79,11 @@ class Piece():
             _ _ # _ _
             _ _ # _ _
             """
-            self.extendMovement = True
             self.posibleMovements = {
-                (1, 0) : [],
-                (-1, 0) : [],
-                (0, 1) : [],
-                (0, -1) : [],
+                (1, 0) : None,
+                (-1, 0) : None,
+                (0, 1) : None,
+                (0, -1) : None,
                 }
         elif self.type == PieceType.queen:
             """
@@ -97,16 +93,15 @@ class Piece():
             _ # # # _
             # _ # _ #
             """
-            self.extendMovement = True
             self.posibleMovements = {
-                (1, 1) : [],
-                (-1, 1) : [],
-                (1, -1) : [],
-                (-1, -1) : [],
-                (1, 0) : [],
-                (-1, 0) : [],
-                (0, 1) : [],
-                (0, -1) : [],
+                (1, 1) : None,
+                (-1, 1) : None,
+                (1, -1) : None,
+                (-1, -1) : None,
+                (1, 0) : None,
+                (-1, 0) : None,
+                (0, 1) : None,
+                (0, -1) : None,
                 }
         elif self.type == PieceType.king:
             """
@@ -116,14 +111,14 @@ class Piece():
             _ _ # _ _
             _ _ _ _ _
             """
-            self.extendMovement = False
+            self.maxExtend = 1
             self.posibleMovements = {
-                (1, 0) : [],
-                (-1, 0) : [],
-                (0, 1) : [],
-                (0, -1) : [],
-                (-2,0) : [MovementSpecialCase.canCastle],
-                (2,0) : [MovementSpecialCase.canCastle]
+                (1, 0) : None,
+                (-1, 0) : None,
+                (0, 1) : None,
+                (0, -1) : None,
+                (0,-2) : MovementSpecialCase.canCastle,
+                (0,2) : MovementSpecialCase.canCastle
                 }
 
     def __str__(self):
