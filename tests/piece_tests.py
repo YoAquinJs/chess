@@ -89,7 +89,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Pawn Movement", PrintColor.red)
                     return False
                 
@@ -170,7 +170,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Bishop Movement", PrintColor.red)
                     return False
                 
@@ -239,7 +239,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Knigth Movement", PrintColor.red)
                     return False
                 
@@ -320,7 +320,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Rook Movement", PrintColor.red)
                     return False
                 
@@ -413,7 +413,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Queen Movement", PrintColor.red)
                     return False
                 
@@ -494,7 +494,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for King Movement", PrintColor.red)
                     return False
                 
@@ -593,7 +593,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for castling", PrintColor.red)
                     return False
                 
@@ -662,7 +662,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Enpassant", PrintColor.red)
                     return False
                 
@@ -731,7 +731,7 @@ class PieceTests():
                         performed = False
                         break
                     
-                if performed != case[3]:
+                if performed != case[2]:
                     color_print(F"Failed Case #{i} for Double pawn move", PrintColor.red)
                     return False
                 

@@ -118,7 +118,7 @@ class BoardTests():
             
             for i, case in enumerate(cases):
                 if len(case[0]) != len(case[1]):
-                    color_print(F"Number of attacked squares wrong, Case #{i+1}", PrintColor.red)
+                    color_print(F"Number of attacked squares wrong, Case #{i}", PrintColor.red)
                     print(f"Ideal: {case[1]}\nActual: {case[0]}")
                     return False
             
@@ -164,12 +164,12 @@ class BoardTests():
                 ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['wB', '##', '##', 'bP', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
+                ['##', 'wB', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
                 ]),
-                 [], True
+                 [(5,1,4,0)], True
                  ),
                 (Board.start_board([
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
@@ -193,7 +193,7 @@ class BoardTests():
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
                 ]),
-                 [(4,4,3,5)], False
+                 [(4,4,3,5)], True
                  )
             ]
             
@@ -204,7 +204,7 @@ class BoardTests():
                         break
                     
                 if case[0].check != case[2]:
-                    color_print(F"Failed Case #{i+1} for Checking", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}", PrintColor.red)
                     return False
                 
             color_print("Checking PASSED", PrintColor.green)

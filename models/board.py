@@ -138,7 +138,6 @@ class Board():
         self.attackedSquares = []
         
         opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
-
         # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
         for piece in opponentPieces:
             for movement in self.get_valid_movements(piece, True):
@@ -148,6 +147,7 @@ class Board():
                 if movement not in self.attackedSquares:
                     self.attackedSquares.append(movement)
 
+#TODO Validate when check if it's a checkmate\
     def in_check(self):
         """Evaluates if the player whoose turn is next is in check
         """
@@ -171,7 +171,6 @@ class Board():
         self.__grid[row2][column2].column = column1
         self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
 
-#TODO Refactor get_valid_movements move_piece
     def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], maxIterations: int = 8) -> int:
         """Given a piece and direction, returns the number of movements it can perform before reaching a given limit
 
@@ -316,11 +315,11 @@ class Board():
             return False
         
         piece = self.__grid[originRow][originColumn]
+        self.swap_pieces(originRow,originColumn,destinationRow,destinationColumn)
         
         # Check for pawn special cases
         self.possibleEnPassant = None
         if piece.type == PieceType.pawn:
-            piece.moved = True
             if piece.row + piece.movingDirection == len(ROWS)-1:
                 self.promote_pawn()
                 #TODO trigger promotion
@@ -329,12 +328,11 @@ class Board():
             if abs(destinationRow-originRow) == 2:
                 self.possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
                 
+        self.squares_under_attack(self.turn)
         self.turn = PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white
-        self.squares_under_attack(piece.color)
         self.in_check()
-        return True
 
-#TODO Validate when check if it's a checkmate
+        return True
 
     def print_board(self): #! Development Only method
         for row in range(len(ROWS)):

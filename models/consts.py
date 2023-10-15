@@ -17,7 +17,7 @@ class PrintColor(Enum):
     
     red = '\033[31m'
     green = '\033[32m'
-    yellow = '"\033[33m'
+    yellow = '\033[33m'
     reset = '\033[0m'
     
 # Meta Enum class for parsing from string value to Enum

@@ -28,5 +28,6 @@ class Tests:
         else:
             for type in (TestType[_type] for _type in types):
                 for method in cls.tests[type]:
+                    print(f"Start test {method.__name__}")
                     if not method() and cls.breakIfFailedTest:
                         break
