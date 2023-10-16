@@ -18,3 +18,27 @@ class GameManager():
         self.gameScreen: GameScreen = None
         self.currentPlayer: PlayerColor = None
         self.currentBoard: Board = None
+        
+        
+    #* Game Functions
+    def quit_game(self):
+        pass
+    
+    def save_game(self):
+        pass
+    
+    def load_game(self):
+        pass
+    
+    def start_new_game(self):
+        pass
+    
+    #* Innerfunctions
+    def render(self):
+        pass
+        
+    def render_board(self):
+        pass
+    
+    def render_ui(self):
+        pass

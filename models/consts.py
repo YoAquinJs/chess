@@ -59,14 +59,22 @@ class PlayerColor(Enum, metaclass=ParseableEnum):
     empty = '#'
 
 # Unique identifiers for game states
-class OnGameState(Enum):
+class GameResult(Enum):
+    """Enum for endding states in a chess game"""
+
+    pending = 'pending'
+    whiteWin = 'whiteWin'
+    blackWin = 'blackWin'
+    stalemate = 'stalemate'
+    tie = 'tie'
+
+class BoardState(Enum):
     """Enum for states in a chess game"""
 
-    moveTurn = 'move_turn'
+    moveTurn = 'moveTurn'
     check = 'check'
     checkmate = 'checkmate'
     stalemate = 'stalemate'
-    tie = 'tie'
 
 class GameScreen(Enum):
     """Enum for states in a chess game"""
@@ -91,7 +99,7 @@ class PieceType(Enum, metaclass=ParseableEnum):
 class MovementSpecialCase(Enum):
     """Enum for each type of piece"""
 
-    canCastle = 'canCastle'
+    castle = 'canCastle'
     isEmpty = 'isEmpty'
     doublePawnMove = 'doublePawnMove'
     

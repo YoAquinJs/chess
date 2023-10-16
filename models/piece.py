@@ -122,8 +122,8 @@ class Piece():
                 (1, 1) : None,
                 (-1, -1) : None,
                 
-                (0,-2) : MovementSpecialCase.canCastle,
-                (0,2) : MovementSpecialCase.canCastle
+                (0,-2) : MovementSpecialCase.castle,
+                (0,2) : MovementSpecialCase.castle
                 }
 
     def __str__(self):

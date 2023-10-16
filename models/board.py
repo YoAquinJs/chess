@@ -5,14 +5,15 @@ from typing import Dict, Union, List
 from asyncio import run
 
 from utils.utils import color_print
-from models.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, COLUMNS, ROWS, BOARD_START, SAVINGS
 from models.piece import Piece
+from models.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, COLUMNS, ROWS, BOARD_START, SAVINGS
 
 class Board():
     """Class for handling game screens, and game states
 
     Attributes:
         __grid (List[List[Piece]]): Grid representing the board configuration, it's private
+        getPromotionPiece(function): Asynchronous function for getting the piece on promotion.
         canCastleLeft (bool): Whether castling to left is available for this board or not. Defaults to True.
         canCastleRigth (bool): Whether castling to rigth is available for this board or not. Defaults to True.
         check (bool): Whether the player whoose turn is next is checked or not. Defaults to False.
@@ -38,12 +39,13 @@ class Board():
         """
         
         self.__grid = grid
+        self.getPromotionPiece = None
         
         # Default board params
         self.canCastleLeft = True
         self.canCastleRigth = True
         
-        self.check = False
+        self.boardState = BoardState.moveTurn
         self.turn = turn
         self.possibleEnPassant = None
         
@@ -77,7 +79,7 @@ class Board():
             raise ValueError("There is no black king in this board")
         
         self.squares_under_attack(PlayerColor.black if self.turn == PlayerColor.white else PlayerColor.white)
-        self.set_game_state()# TODO do something if stalemate checkmate
+        self.set_game_state()
 
     def square(self, row: int, column: int) -> Piece:
         """Returns the piece in the specified square
@@ -193,12 +195,14 @@ class Board():
                 if movement not in self.attackedSquares:
                     self.attackedSquares.append(movement)
 
+#TOdo checkmate not working
     def set_game_state(self):
         """Evaluates if the player whoose turn is next is in check, and if it's checkmate or stalemate
         """
         
         playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
-        self.check = (playerKing.row, playerKing.column) in self.attackedSquares
+        if (playerKing.row, playerKing.column) in self.attackedSquares:
+            self.boardState = BoardState.check
         
         playerPieces = self.whitePieces if self.turn == PlayerColor.white else self.blackPieces
         
@@ -211,10 +215,10 @@ class Board():
                     anyValidMov = True
                     break
                 
-        if self.check and not anyValidMov:
-            pass # Checkmate
+        if self.boardState == BoardState.check and not anyValidMov:
+            self.boardState = BoardState.checkmate
         elif not anyValidMov:
-            pass # stalemate
+            self.boardState = BoardState.stalemate
                         
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -244,18 +248,10 @@ class Board():
            Int: Maximun number of movements in that direction.
         """
         
-        #// The row and column ranges for iterating from the piece coordinate to the limit coordinate
-        #//row_range = range(piece.row+direction[1], limitRow, direction[1]) if direction[1] != 0 else []
-        #//if direction[1] != 0 and piece.row > limitRow if direction[1] == 1 else limitRow > piece.row:
-        #//    raise Exception(f"The row limit {limitRow}, must be {'greater' if direction[1] == 1 else 'lower'} or equal than the piece row '{piece.row}'")
-        #//column_range = range(piece.row+direction[0], limitRow, direction[0]) if direction[0] != 0 else []
-        #//if direction[0] != 0 and piece.column > limitColumn if direction[0] == 1 else limitColumn > piece.column:
-        #//    raise Exception(f"The column limit {limitColumn}, must be {'greater' if direction[0] == 1 else 'lower'} or equal than the piece column '{piece.column}'")
-        
         i = 0
         row = piece.row
         column = piece.column
-        #//for i, dir in enumerate(zip(row_range, column_range)):
+
         while (row > -1 and row < 8) and (column > -1 and column < 8) and i < maxIterations:
             row += direction[0]
             column += direction[1]
@@ -288,33 +284,25 @@ class Board():
             for i in range(1,self.get_max_extendable_movements(piece, direction, piece.maxExtend)+1):
                 movement = (piece.row + (direction[0]*i), piece.column + (direction[1]*i))
                 # Check for special cases
+                if specialCase == MovementSpecialCase.castle:
+                    print((piece.row, piece.column + (direction[1]//2)) not in self.attackedSquares, self.boardState, (piece.row, piece.column + (direction[1]//2)))
                 if piece.type == PieceType.pawn:
                     if specialCase == MovementSpecialCase.doublePawnMove and\
                         ((piece.row == 1 and piece.color == PlayerColor.black) or (piece.row == 6 and piece.color == PlayerColor.white))\
-                        and self.__grid[piece.row + int(direction[0]/2)][movement[1]].type == PieceType.empty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
+                        and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.empty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
                         validMovements.append(movement)
                     elif specialCase == MovementSpecialCase.isEmpty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
                         validMovements.append(movement)
                     elif specialCase == None and (self.is_opponent(movement[0], movement[1], piece.color) or countPawnAttacks or movement == self.possibleEnPassant):
                         validMovements.append(movement)
-                elif specialCase == MovementSpecialCase.canCastle and (piece.row, piece.column + (direction[1]/2)) not in self.attackedSquares\
-                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.check == False:
+                elif specialCase == MovementSpecialCase.castle and (piece.row, piece.column + (direction[1]//2)) not in self.attackedSquares\
+                    and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.empty\
+                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != BoardState.check:
                     validMovements.append(movement)
                 elif specialCase == None:
                     validMovements.append(movement)
 
         return validMovements
-                #//if (MovementSpecialCase.neitherIsEnemy in specialCases and not self.is_opponent(movement[0], movement[1], piece.color)) or \
-                #//   (MovementSpecialCase.enPassant in specialCases and self.possibleEnPassant is not None and \
-                #//    movement[0] == self.possibleEnPassant[0] and movement[1] == self.possibleEnPassant[1]) or \
-                #//   (MovementSpecialCase.canCastleLeft in specialCases and self.canCastle and self.check == False and \
-                #//    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2 and \
-                #//    (piece.row,piece.column+direction[0]-1) not in self.attackedSquares and \
-                #//    (piece.row,piece.column+direction[0]) not in self.attackedSquares) or \
-                #//   (MovementSpecialCase.doublePawnMove in specialCases and not piece.moved and \
-                #//    self.get_max_extendable_movements(piece, direction, includePossibleChecks, 2) == 2) or\
-                #//    len(specialCases) == 0:
-                #//        validMovements.append(movement)                         
     
     def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int, alreadyValidated: bool = False) -> bool:
         """Determines whether the piece movement is valid or not
@@ -352,7 +340,7 @@ class Board():
 
         pastAttackedSquares = [square for square in self.attackedSquares]
         self.squares_under_attack(PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white)
-        self.set_game_state()#TODO if checkmate
+        self.set_game_state()
         
         # Discard movement
         self.attackedSquares = pastAttackedSquares
@@ -361,54 +349,71 @@ class Board():
             self.add_piece(destinationRow, destinationColumn, eatenPiece)
         
         # If player left in check is invalid
-        if self.check:
+        if self.boardState != BoardState.moveTurn and self.boardState != BoardState.stalemate:
             return False
         
         return True
 
-    def move_piece(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
+    def attempt_move(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> Union[bool, dict]:
         """Moves a piece from it's origin, to a destination.
 
         Args:
-            originRow (int): Origin row
-            originColumn (int): Origin column
-            destinationRow (int): Destination row
-            destinationColumn (int): Destination column
+            originRow (int): Origin row.
+            originColumn (int): Origin column.
+            destinationRow (int): Destination row.
+            destinationColumn (int): Destination column.
 
         Returns:
-            bool: Whether the movement was performed or not
+            bool: Whether the movement was performed or not.
+            dict: Dictionary containing info on the performed move, or None if no move was performed.
         """
         
         # If you try to move an empty square
         if not self.is_valid_movement(originRow, originColumn,destinationRow, destinationColumn):
-            return False
+            return False, None
         
+        eatPiece = self.__grid[destinationRow][destinationColumn]
+
         piece = self.__grid[originRow][originColumn]
-        self.swap_pieces(originRow,originColumn,destinationRow,destinationColumn)
-        
-        # Eat opponent piece
-        if self.__grid[originRow][originColumn].type != PieceType.empty:
-            self.empty_square(originRow, originColumn)
+        self.swap_pieces(originRow,originColumn,destinationRow,destinationColumn)        
             
         # Check for pawn special cases
-        self.possibleEnPassant = None
+        possibleEnPassant = None
         if piece.type == PieceType.pawn:
-            # If pawn reached the last square it can move, promote it
-            if piece.row + piece.movingDirection == len(ROWS) or piece.row + piece.movingDirection == -1:
-                self.remove_piece(piece.row, piece.column)
-                #TODO determine how the user should select the new piece
-                newPiece = run(getPromotionPiece())
-                self.add_piece(piece.row,piece.column)
-
+            # If move was enPassant
+            if self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn:
+                eatPiece = self.__grid[destinationRow-piece.movingDirection, destinationColumn]
             # If pawn performed doublemove, save it for en passant
-            if abs(destinationRow-originRow) == 2:
-                self.possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
-                
+            elif abs(destinationRow-originRow) == 2:
+                possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
+            # If pawn reached the last square it can move, promote it
+            elif piece.row + piece.movingDirection == len(ROWS) or piece.row + piece.movingDirection == -1:
+                self.remove_piece(piece.row, piece.column)
+                if self.getPromotionPiece == None:
+                    raise Exception("getPromotionPiece function not yet defined for board")
+                newPiece = run(self.getPromotionPiece())
+                self.add_piece(piece.row,piece.column, newPiece)
+        elif piece.type == PieceType.king:
+            self.canCastleLeft = False
+            self.canCastleRigth = False
+            # If move was castle
+            if abs(destinationColumn-originColumn) == 2:
+                direction = (destinationColumn-originColumn)//abs(destinationColumn-originColumn)
+                self.swap_pieces(originRow, 0 if direction == -1 else 7, originRow, destinationColumn - direction)
+        
+        self.possibleEnPassant = possibleEnPassant
+        # Eat opponent piece if it's eat move
+        if eatPiece.type != PieceType.empty:
+            self.empty_square(originRow, originColumn)
+
         self.squares_under_attack(self.turn)
         self.turn = PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white
-        self.set_game_state() #TODO do something if stalemate or checkmate
+        self.set_game_state()
 
-        return True
+        return True, {
+            'piece': piece,
+            'eatPiece': eatPiece if eatPiece.type !=PieceType.empty else None
+        }
 
     def print_board(self): #! Development Only method
         for row in range(len(ROWS)):

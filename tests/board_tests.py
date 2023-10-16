@@ -4,7 +4,7 @@ import traceback
 
 from tests.tests import Tests
 from models.board import Board
-from models.consts import PrintColor, PlayerColor, PieceType, TestType, BOARD_START, ROWS, COLUMNS
+from models.consts import PrintColor, PlayerColor, PieceType, TestType, BoardState, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
 
 class BoardTests():
@@ -199,12 +199,12 @@ class BoardTests():
             
             for i, case in enumerate(cases):
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
                         break
                     
-                if case[0].check != case[2]:
-                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}", PrintColor.red)
+                if (case[0].boardState == BoardState.check) != case[2]:
+                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
                     return False
                 
             color_print("Checking PASSED", PrintColor.green)

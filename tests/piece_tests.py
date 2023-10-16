@@ -85,7 +85,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -166,7 +166,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -235,7 +235,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -316,7 +316,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -409,7 +409,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -502,7 +502,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -588,7 +588,7 @@ class PieceTests():
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
                 ], PlayerColor.black),
-                 [(0,4,0,3),(0,3,0,1)], False
+                 [(0,4,0,3),(0,3,0,4)], False
                  ),
                 (Board.start_board([ # case where tower moves
                 ['bR', '##', '##', '##', 'b@', 'bB', 'bK', 'bR'],
@@ -600,14 +600,14 @@ class PieceTests():
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
                 ], PlayerColor.black),
-                 [(0,0,0,1),(0,1,0,0),(0,4,0,2)], False
+                 [(0,0,0,1),(6,0,5,0),(0,1,0,0),(6,1,5,1),(0,4,0,2)], False
                  ),
             ]
             
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -676,7 +676,7 @@ class PieceTests():
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
@@ -738,14 +738,14 @@ class PieceTests():
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
                 ], PlayerColor.black),
-                 [(1,0,2,0),(2,0,4,0)], False
+                 [(1,0,2,0),(6,0,5,0),(2,0,4,0)], False
                  )
             ]
             
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     

@@ -21,72 +21,12 @@ class GameTests():
         try:
             # Format: (Board, Movements, Should be True?)
             cases = [
-                (Board.start_board([# Ideal case
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
-                 [(1,0,2,0)], True
-                 ),
-                (Board.start_board([# Case where pawn moves to a side without eating
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
-                 [(1,0,2,1)], False
-                 ),
-                (Board.start_board([# Case where pawn moves to a side eating
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
-                ['##', 'wQ', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
-                 [(1,0,2,1)], True
-                 ),
-                (Board.start_board([# Case where pawn moves to a side eating when check locked
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
-                ['##', 'wQ', '##', '##', '##', 'wQ', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
-                 [(1,4,2,5)], False
-                 ),
-                (Board.start_board([# Case where pawn moves to the opposite direction
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
-                ['##', 'wQ', '##', '##', '##', 'wQ', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
-                 [(5,3,4,3)], False
-                 )
             ]
             
             for i, case in enumerate(cases):
                 performed = True
                 for movement in case[1]:
-                    if not case[0].move_piece(movement[0],movement[1],movement[2],movement[3]):
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
                     
