@@ -1,5 +1,5 @@
-from consts import OnGameState, GameScreen, PlayerColor
-from board import Board
+from models.consts import OnGameState, GameScreen, PlayerColor
+from models.board import Board
 
 #TODO all
 class GameManager():

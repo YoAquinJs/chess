@@ -1,6 +1,6 @@
 """This module contains the Piece model object and it's properties"""
 
-from models.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR#//, COLUMNS, ROWS, BOARD_START
+from models.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
 
 class Piece():
     """Class for handling game screens, and game states
@@ -128,6 +128,9 @@ class Piece():
 
     def __str__(self):
         return f"{self.color.value}{self.type.value}"
+    
+    def __hash__(self) -> int:
+        return (PLAYERCOLORINT[self.color]*1000)+(PIECETYPEINT[self.type]*100)+(self.row*10)+(self.column*1)
     #//@classmethod
     #//def empty(cls) -> object:
     #//    return cls(PieceType.empty, None, str(), str())

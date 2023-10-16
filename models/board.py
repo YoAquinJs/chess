@@ -19,8 +19,8 @@ class Board():
         check (bool): Whether the player whoose turn is next is checked or not. Defaults to False.
         turn (PlayerColor): The player whoose turn it's the on going one. Defaults to PlayerColor.white.
         possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
-        whitePieces (List[Piece]): List of all pieces of color white.
-        blackPieces (List[Piece]): List of all pieces of color black.
+        whitePieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color white.
+        blackPieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color black.
         attackedSquares (Union[int, int]]): List of the positions attacked by the opponent pieces in this turn
     """
 
@@ -50,8 +50,8 @@ class Board():
         self.possibleEnPassant = None
         
         # Buffer Attributes
-        self.whitePieces = []
-        self.blackPieces = []
+        self.whitePieces = {}
+        self.blackPieces = {}
         self.attackedSquares = []
         self.whiteKing = None
         self.blackKing = None
@@ -71,7 +71,10 @@ class Board():
                             raise ValueError("There are multiple black kings in this board")
                         self.blackKing = piece
                 elif piece.type != PieceType.empty:
-                    self.whitePieces.append(piece) if piece.color == PlayerColor.white else self.blackPieces.append(piece)
+                    if piece.color == PlayerColor.white:
+                        self.whitePieces[piece] = []
+                    else:
+                        self.blackPieces[piece] = []
                     
         if self.whiteKing == None:
             raise ValueError("There is no white king in this board")
@@ -148,9 +151,9 @@ class Board():
             return False
         
         if piece.color == PlayerColor.white:
-            self.whitePieces.append(piece)
+            self.whitePieces[piece] = []
         else:
-            self.blackPieces.append(piece)
+            self.blackPieces[piece] = []
         self.__grid[row][column] = piece
         return True
     
@@ -170,9 +173,9 @@ class Board():
             return False
         
         if self.__grid[row][column].color == PlayerColor.white:
-            self.whitePieces.remove(self.__grid[row][column])
+            self.whitePieces.pop(self.__grid[row][column], None)
         else:
-            self.blackPieces.remove(self.__grid[row][column])
+            self.blackPieces.pop(self.__grid[row][column], None)
         self.empty_square(row, column)
         return True
 
@@ -187,8 +190,13 @@ class Board():
         
         opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
         # iterate trougth all the opponent pieces, and determine if anyone can move to the desired square
-        for piece in opponentPieces:
+        for piece, posibleMovs in opponentPieces.items():
             for movement in self.get_valid_movements(piece, True):
+                if piece.type != PieceType.pawn:
+                    posibleMovs.append(movement)
+                elif piece.row != movement[1] and self.is_opponent(movement[0], movement[1], piece.color):
+                    posibleMovs.append(movement)
+                            
                 if piece.type == PieceType.pawn and piece.column == movement[1]:
                     continue
                 
@@ -200,25 +208,29 @@ class Board():
         """Evaluates if the player whoose turn is next is in check, and if it's checkmate or stalemate
         """
         
-        playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
-        if (playerKing.row, playerKing.column) in self.attackedSquares:
-            self.boardState = BoardState.check
-        
         playerPieces = self.whitePieces if self.turn == PlayerColor.white else self.blackPieces
+        anyValidMov = any(len(posibleMovs) > 0 for posibleMovs in playerPieces.values())
+
+        playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
+        inCheck = (playerKing.row, playerKing.column) in self.attackedSquares
         
-        # Determines if the check is mate or if stalemate
-        anyValidMov = False
-        for piece in playerPieces:
-            for movement in self.get_valid_movements(piece):
-                if self.is_valid_movement(piece.row, piece.column, movement[0], movement[1], True):
-                    # neither check nor stalemate 
-                    anyValidMov = True
-                    break
+        #//for piece in playerPieces:
+        #//    for movement in self.get_valid_movements(piece):
+        #//        if self.is_valid_movement(piece.row, piece.column, movement[0], movement[1], True):
+        #//            # neither check nor stalemate 
+        #//            anyValidMov = True
+        #//            break
                 
-        if self.boardState == BoardState.check and not anyValidMov:
+        if not anyValidMov and inCheck:
             self.boardState = BoardState.checkmate
+        elif inCheck:
+            self.boardState = BoardState.check
         elif not anyValidMov:
             self.boardState = BoardState.stalemate
+        else:
+            self.boardState = BoardState.moveTurn
+              
+        print(self.boardState)
                         
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -322,14 +334,16 @@ class Board():
             return False
         
         # If you try to move an opponent square
-        if alreadyValidated or self.is_opponent(originRow, originColumn, self.turn):
+        if self.is_opponent(originRow, originColumn, self.turn):
             return False
         
         # If the movement is an ilegal movement
-        if (destinationRow, destinationColumn) not in self.get_valid_movements(piece):
+        if alreadyValidated or (destinationRow, destinationColumn) not in self.get_valid_movements(piece):
             return False
 
-        # Perform movement and determine if player was left in check
+        # Save the past board conditions
+        pastAttackedSquares = [square for square in self.attackedSquares]
+        pastBoardState = self.boardState
         eatenPiece = None
         if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
             eatenPiece = self.__grid[destinationRow][destinationColumn]
@@ -337,24 +351,29 @@ class Board():
         # If move was enPassant
         enPassant = piece.type == PieceType.pawn and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
         if enPassant:
-            eatenPiece = self.__grid[destinationRow-piece.movingDirection, destinationColumn]
+            eatenPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
 
         if eatenPiece != None:
             self.remove_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn)
+            
+        # perform the movement
         self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
 
-        pastAttackedSquares = [square for square in self.attackedSquares]
+        # Compute the board conditions with the movement performed
         self.squares_under_attack(PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white)
         self.set_game_state()
+        postMovBoardState = self.boardState
         
         # Discard movement
         self.attackedSquares = pastAttackedSquares
+        self.boardState = pastBoardState
         self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
         if eatenPiece != None:
             self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
         
+        print(self.boardState, 2)
         # If player left in check is invalid
-        if self.boardState != BoardState.moveTurn and self.boardState != BoardState.stalemate:
+        if postMovBoardState == BoardState.check or postMovBoardState == BoardState.checkmate:
             return False
         
         return True
@@ -387,7 +406,7 @@ class Board():
         if piece.type == PieceType.pawn:
             # If move was enPassant
             if self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn:
-                eatPiece = self.__grid[destinationRow-piece.movingDirection, destinationColumn]
+                eatPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
             # If pawn performed doublemove, save it for en passant
             elif abs(destinationRow-originRow) == 2:
                 possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
@@ -409,7 +428,7 @@ class Board():
         self.possibleEnPassant = possibleEnPassant
         # Eat opponent piece if it's eat move
         if eatPiece.type != PieceType.empty:
-            self.empty_square(originRow, originColumn)
+            self.empty_square(eatPiece.row, eatPiece.column)
 
         self.turn = PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white
         self.squares_under_attack(piece.color)

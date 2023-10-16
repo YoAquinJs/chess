@@ -615,7 +615,6 @@ class PieceTests():
                     color_print(F"Failed Case #{i} for castling", PrintColor.red)
                     return False
                 
-                case[0].print_board()
             color_print("Castling PASSED", PrintColor.green)
             return True
         except Exception as e:
@@ -685,7 +684,6 @@ class PieceTests():
                     color_print(F"Failed Case #{i} for Enpassant", PrintColor.red)
                     return False
                 
-            case[0].print_board()
             color_print("Enpassant PASSED", PrintColor.green)
             return True
         except Exception as e:

@@ -58,6 +58,12 @@ class PlayerColor(Enum, metaclass=ParseableEnum):
     black = 'b'
     empty = '#'
 
+PLAYERCOLORINT = {
+    PlayerColor.empty: 1,
+    PlayerColor.white: 2,
+    PlayerColor.black: 3
+}
+
 # Unique identifiers for game states
 class GameResult(Enum):
     """Enum for endding states in a chess game"""
@@ -94,6 +100,16 @@ class PieceType(Enum, metaclass=ParseableEnum):
     queen = 'Q'
     king = '@'
     empty = '#'
+    
+PIECETYPEINT = {
+    PieceType.empty: 1,
+    PieceType.pawn: 2,
+    PieceType.bishop: 3,
+    PieceType.knigth: 4,
+    PieceType.rook: 5,
+    PieceType.queen: 6,
+    PieceType.king: 7
+}
     
 # It's assumed you can never move to a square with a piece of your own
 class MovementSpecialCase(Enum):
