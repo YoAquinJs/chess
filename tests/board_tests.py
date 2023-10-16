@@ -203,7 +203,7 @@ class BoardTests():
                         color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
                         break
                     
-                if (case[0].boardState == BoardState.check) != case[2]:
+                if (case[0].boardState == BoardState.check or case[0].boardState == BoardState.checkmate) != case[2]:
                     color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
                     return False
                 

@@ -195,7 +195,7 @@ class Board():
                 if movement not in self.attackedSquares:
                     self.attackedSquares.append(movement)
 
-#TOdo checkmate not working
+#TODO checkmate not working
     def set_game_state(self):
         """Evaluates if the player whoose turn is next is in check, and if it's checkmate or stalemate
         """
@@ -284,8 +284,6 @@ class Board():
             for i in range(1,self.get_max_extendable_movements(piece, direction, piece.maxExtend)+1):
                 movement = (piece.row + (direction[0]*i), piece.column + (direction[1]*i))
                 # Check for special cases
-                if specialCase == MovementSpecialCase.castle:
-                    print((piece.row, piece.column + (direction[1]//2)) not in self.attackedSquares, self.boardState, (piece.row, piece.column + (direction[1]//2)))
                 if piece.type == PieceType.pawn:
                     if specialCase == MovementSpecialCase.doublePawnMove and\
                         ((piece.row == 1 and piece.color == PlayerColor.black) or (piece.row == 6 and piece.color == PlayerColor.white))\
@@ -335,7 +333,14 @@ class Board():
         eatenPiece = None
         if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
             eatenPiece = self.__grid[destinationRow][destinationColumn]
-            self.remove_piece(destinationRow, destinationColumn)
+            
+        # If move was enPassant
+        enPassant = piece.type == PieceType.pawn and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
+        if enPassant:
+            eatenPiece = self.__grid[destinationRow-piece.movingDirection, destinationColumn]
+
+        if eatenPiece != None:
+            self.remove_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn)
         self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
 
         pastAttackedSquares = [square for square in self.attackedSquares]
@@ -346,7 +351,7 @@ class Board():
         self.attackedSquares = pastAttackedSquares
         self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
         if eatenPiece != None:
-            self.add_piece(destinationRow, destinationColumn, eatenPiece)
+            self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
         
         # If player left in check is invalid
         if self.boardState != BoardState.moveTurn and self.boardState != BoardState.stalemate:
@@ -406,8 +411,8 @@ class Board():
         if eatPiece.type != PieceType.empty:
             self.empty_square(originRow, originColumn)
 
-        self.squares_under_attack(self.turn)
         self.turn = PlayerColor.black if piece.color == PlayerColor.white else PlayerColor.white
+        self.squares_under_attack(piece.color)
         self.set_game_state()
 
         return True, {
