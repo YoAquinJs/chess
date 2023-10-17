@@ -130,7 +130,10 @@ class Piece():
         return f"{self.color.value}{self.type.value}"
     
     def __hash__(self) -> int:
-        return (PLAYERCOLORINT[self.color]*1000)+(PIECETYPEINT[self.type]*100)+(self.row*10)+(self.column*1)
+        return (PLAYERCOLORINT[self.color]*1000)+(PIECETYPEINT[self.type]*100)+((self.row+1)*10)+((self.column+1)*1)
+
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
     #//@classmethod
     #//def empty(cls) -> object:
     #//    return cls(PieceType.empty, None, str(), str())

@@ -17,11 +17,13 @@ class Board():
         getPromotionPiece(function): Asynchronous function for getting the piece on promotion.
         canCastleLeft (bool): Whether castling to left is available for this board or not. Defaults to True.
         canCastleRigth (bool): Whether castling to rigth is available for this board or not. Defaults to True.
-        check (bool): Whether the player whoose turn is next is checked or not. Defaults to False.
+        boardState (BoardState): The game state of the board. Defaults to BoardState.moveTurn.
         turn (PlayerColor): The player whoose turn it's the on going one. Defaults to PlayerColor.white.
         possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
         whitePieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color white.
         blackPieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color black.
+        whiteKing (piece): White king piece object reference.
+        blackKing (piece): Black king piece object reference.
     """
 
     def __init__(self, grid: List[List[Piece]], turn: PlayerColor = PlayerColor.white) -> None:
@@ -49,11 +51,10 @@ class Board():
         self.turn = turn
         self.possibleEnPassant = None
         
-        # Buffer Attributes
-        self.whitePieces = {}
-        self.blackPieces = {}
         self.whiteKing = None
         self.blackKing = None
+        self.whitePieces = {}
+        self.blackPieces = {}
         
         # Get all the color pieces in their correspondent lists
         for row in range(len(ROWS)):
@@ -204,6 +205,7 @@ class Board():
         opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
         
         for piece, posibleMovs in opponentPieces.items():
+            posibleMovs.clear()
             for movement in self.get_valid_movements(piece, True):
                 if piece.type != PieceType.pawn:
                     posibleMovs.append(movement)
@@ -223,6 +225,7 @@ class Board():
         playerPieces = self.whitePieces if turn == PlayerColor.white else self.blackPieces
         
         for piece, posibleMovs in playerPieces.items():
+            posibleMovs.clear()
             for movement in self.get_valid_movements(piece, True):
                 posibleMovs.append(movement)
 
@@ -340,27 +343,26 @@ class Board():
         Returns:
             bool: Whether the movement is valid or not.
         """
-        
+
         piece = self.__grid[originRow][originColumn]
-        
+
         # If you try to move an empty square
         if piece.type == PieceType.empty:
             return False
-        
+
         # If you try to move an opponent square
         if self.is_opponent(originRow, originColumn, self.turn):
             return False
-        
+
         # If the movement is an ilegal movement
         if not alreadyValidated and (destinationRow, destinationColumn) not in self.get_valid_movements(piece):
             return False
 
         # Save the past board conditions
-        pastWhiteMovs = self.whitePieces
-        pastBlackMovs = self.blackPieces
-        self.whitePieces = deepcopy(self.whitePieces)
-        self.blackPieces = deepcopy(self.blackPieces)
+        pastWhiteMovs = deepcopy(self.whitePieces)
+        pastBlackMovs = deepcopy(self.blackPieces)
         pastBoardState = BoardState[self.boardState.value]
+        
         eatenPiece = None
         if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
             eatenPiece = self.__grid[destinationRow][destinationColumn]
@@ -372,7 +374,7 @@ class Board():
 
         if eatenPiece != None:
             self.remove_piece(eatenPiece.row, eatenPiece.column)
-            
+
         # perform the movement
         self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
 
@@ -382,13 +384,16 @@ class Board():
         postMovBoardState = BoardState[self.boardState.value]
         
         # Discard movement
-        self.whitePieces = pastWhiteMovs
-        self.blackPieces = pastBlackMovs
         self.boardState = pastBoardState
         self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
         if eatenPiece != None:
             self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
         
+        for p, movs in self.whitePieces.items():
+            movs = pastWhiteMovs[p]
+        for p, movs in self.blackPieces.items():
+            movs = pastBlackMovs[p]
+
         # If player left in check is invalid
         if postMovBoardState == BoardState.check or postMovBoardState == BoardState.checkmate:
             return False

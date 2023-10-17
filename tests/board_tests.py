@@ -88,11 +88,12 @@ class BoardTests():
             
             cases = []
             board = Board.start_board()
+            #print(board.blackPieces)
             cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
-                         [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7)]))#1
+                         [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7)]))
             board = Board.start_board(turn=PlayerColor.black)
             cases.append((list(set(item for sublist in deepcopy(board.whitePieces).values() for item in sublist)),
-                         [(5,0),(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7)]))#2
+                         [(5,0),(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7)]))
             board = Board.start_board([
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
                 ['##', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
@@ -104,7 +105,7 @@ class BoardTests():
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
             ])
             cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
-                         [(1,0),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7)]))#3
+                         [(1,0),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7)]))
             board = Board.start_board([
                 ['bR', '##', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
                 ['##', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
@@ -116,7 +117,7 @@ class BoardTests():
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
             ])
             cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
-                         [(1,0),(0,1),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7),(5,3),(6,2),(6,0)]))#4
+                         [(1,0),(0,1),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7),(5,3),(6,2),(6,0)]))
             
             for i, case in enumerate(cases):
                 if len(case[0]) != len(case[1]):
@@ -217,6 +218,97 @@ class BoardTests():
             traceback.print_exc()
             return False
 
-#TODO UnitTest for CheckMate
+    @staticmethod
+    @Tests.register_test(TestType.board)    
+    def checkmating() -> bool:
+        """Test for validating the checkmate algorithm
 
-#TODO UnitTest for pawn
+        Returns:
+            bool: Succes of the test.
+        """
+
+        try:
+            # Format: (Board, Movements, Should be True?)
+            cases = [
+                (Board.start_board([
+                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
+                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ]),
+                 [], False
+                 ),
+                (Board.start_board([
+                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
+                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
+                ['##', 'wB', '##', '##', '##', '##', '##', '##'],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ]),
+                 [(5,1,4,0)], False
+                 ),
+                (Board.start_board([
+                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
+                ['bP', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'bP', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', 'wR', '##', '##', '##'],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ]),
+                 [(5,4,1,4)], False
+                 ),
+                (Board.start_board([
+                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
+                ['bP', 'bP', 'bP', '##', '##', 'bP', 'bP', 'bP'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'bP', 'wB', '##', '##', '##'],
+                ['##', '##', '##', '##', 'wQ', '##', '##', '##'],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ]),
+                 [(4,4,3,5)], False
+                 ),
+                (Board.start_board([
+                ['bR', 'bB', 'bK', 'bB', 'b@', 'bB', 'bK', 'bR'],
+                ['bP', '##', '##', '##', 'bP', 'bP', 'bP', 'bP'],
+                ['##', 'bP', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', '##', '##', '##', '##', '##'],
+                ['##', '##', '##', 'bP', 'wB', '##', '##', '##'],
+                ['##', '##', '##', '##', 'wQ', '##', '##', '##'],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ]),
+                 [(4,4,2,2)], True
+                 )
+            ]
+            
+            for i, case in enumerate(cases):
+                for movement in case[1]:
+                    if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
+                        color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
+                        break
+                    
+                    if (case[0].boardState == BoardState.checkmate) != case[2]:
+                        playerPieces = case[0].whitePieces if case[0].turn == PlayerColor.white else case[0].blackPieces
+                        print([(p.type, p.color, (p.row,p.column), movs) for p, movs in playerPieces.items()])
+                        color_print(F"Failed Case #{i} for checkmating in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
+                        return False
+                
+            color_print("Checkmating PASSED", PrintColor.green)
+            return True
+        except Exception as e:
+            color_print("Exception in Checkmating:", PrintColor.red)
+            print(e)
+            traceback.print_exc()
+            return False
+
