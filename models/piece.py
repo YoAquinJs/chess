@@ -126,6 +126,10 @@ class Piece():
                 (0,2) : MovementSpecialCase.castle
                 }
 
+    #! Development only function
+    def print_piece(self):
+        print(self.color, self.type, (self.row, self.column))
+
     def __str__(self):
         return f"{self.color.value}{self.type.value}"
     

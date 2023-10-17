@@ -88,7 +88,6 @@ class BoardTests():
             
             cases = []
             board = Board.start_board()
-            #print(board.blackPieces)
             cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
                          [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7)]))
             board = Board.start_board(turn=PlayerColor.black)
@@ -286,7 +285,7 @@ class BoardTests():
                 ['##', '##', '##', 'bP', 'wB', '##', '##', '##'],
                 ['##', '##', '##', '##', 'wQ', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
+                ['wR', 'wK', 'wB', 'wQ', 'w@', '##', 'wK', 'wR'] 
                 ]),
                  [(4,4,2,2)], True
                  )
