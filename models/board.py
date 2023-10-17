@@ -32,6 +32,7 @@ class Board():
         Args:
             __grid (List[List[Piece]]): Grid representing the chess board and the game pieces.
             turn (PlayerColor, optional): Current turn player. Defaults to PlayerColor.white.
+            afterMoveCheck (bool, optional): Whether to not determine if the current board is checkmate or stalemate. Defaults to false.
 
         Raises:
             ValueError: When there are no White kings on the board.
@@ -231,6 +232,9 @@ class Board():
 
     def set_game_state(self, afterMoveCheck: bool = False):
         """Evaluates if the player whoose turn is next is in check, and if it's checkmate or stalemate
+        
+        Args:
+            afterMoveCheck (bool, optional): Whether to not determine if the current board is checkmate or stalemate. Defaults to false.
         """
         
         playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
@@ -303,6 +307,41 @@ class Board():
             
         return i
 
+    def in_check_after_mov(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
+        """Determines if after this movement is executed the player is left in check or not
+
+        Args:
+            originRow (int): Origin row
+            originColumn (int): Origin column
+            destinationRow (int): Destination row
+            destinationColumn (int): Destination column
+
+        Returns:
+            bool: Whether the player is left in check or not
+        """
+        
+        piece = self.__grid[originRow][originColumn]
+        
+        eatenPiece = None
+        if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
+            eatenPiece = self.__grid[destinationRow][destinationColumn]
+
+        # If move was enPassant
+        enPassant = piece.type == PieceType.pawn and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
+        if enPassant:
+            eatenPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
+
+        if eatenPiece != None:
+            self.remove_piece(eatenPiece.row, eatenPiece.column)
+            
+        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
+        hipothetycalBoard = Board(deepcopy(self.__grid), self.turn, True)
+        self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
+        if eatenPiece != None:
+            self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
+
+        return hipothetycalBoard.boardState == BoardState.check or hipothetycalBoard.boardState == BoardState.checkmate
+
     def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> List[Union[int, int]]:
         """Return all the valid movements of a piece
 
@@ -338,63 +377,6 @@ class Board():
 
         return validMovements
     
-    def in_check_after_mov(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
-        """Determines if after this movement is executed the player is left in check or not
-
-        Args:
-            originRow (int): Origin row
-            originColumn (int): Origin column
-            destinationRow (int): Destination row
-            destinationColumn (int): Destination column
-
-        Returns:
-            bool: Whether the player is left in check or not
-        """
-        
-        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
-        hipothetycalBoard = Board(deepcopy(self.__grid), self.turn, True)
-        self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
-
-        return hipothetycalBoard.boardState == BoardState.check or hipothetycalBoard.boardState == BoardState.checkmate
-        #//# Save the past board conditions
-        #//pastWhiteMovs = deepcopy(self.whitePieces)
-        #//pastBlackMovs = deepcopy(self.blackPieces)
-        #//pastBoardState = BoardState[self.boardState.value]
-        #//
-        #//eatenPiece = None
-        #//if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
-        #//    eatenPiece = self.__grid[destinationRow][destinationColumn]
-        #//    
-        #//# If move was enPassant
-        #//enPassant = piece.type == PieceType.pawn and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
-        #//if enPassant:
-        #//    eatenPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
-        #//
-        #//if eatenPiece != None:
-        #//    self.remove_piece(eatenPiece.row, eatenPiece.column)
-        #//
-        #//# perform the movement
-        #//self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
-        #//
-        #//# Compute the board conditions with the movement performed
-        #//self.get_posible_turn_movements(opponent(self.turn))
-        #//self.set_game_state()
-        #//postMovBoardState = BoardState[self.boardState.value]
-        #//
-        #//# Discard movement
-        #//self.boardState = pastBoardState
-        #//self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
-        #//if eatenPiece != None:
-        #//    self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
-        #//
-        #//for p, movs in self.whitePieces.items():
-        #//    movs = list(pastWhiteMovs[p])
-        #//for p, movs in self.blackPieces.items():
-        #//    movs = list(pastBlackMovs[p])
-        #//
-        #//# If player left in check or checkmate
-        #//return postMovBoardState != BoardState.check and postMovBoardState != BoardState.checkmate
-
     def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int, alreadyValidated: bool = False) -> bool:
         """Determines whether the piece movement is valid or not
 
@@ -425,7 +407,6 @@ class Board():
 
         # If the movement leave you in check
         if self.in_check_after_mov(originRow, originColumn, destinationRow, destinationColumn):
-            print("Check after move")
             return False
         
         return True

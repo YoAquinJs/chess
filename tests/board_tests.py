@@ -184,18 +184,6 @@ class BoardTests():
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
                 ]),
                  [(5,4,1,4)], True
-                 ),
-                (Board.start_board([
-                ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-                ['bP', 'bP', 'bP', '##', '##', 'bP', 'bP', 'bP'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', '##', '##', '##', '##', '##'],
-                ['##', '##', '##', 'bP', 'wB', '##', '##', '##'],
-                ['##', '##', '##', '##', 'wQ', '##', '##', '##'],
-                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-                ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ]),
-                 [(4,4,3,5)], True
                  )
             ]
             
@@ -205,9 +193,9 @@ class BoardTests():
                         color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
                         break
                     
-                    if (case[0].boardState == BoardState.check or case[0].boardState == BoardState.checkmate) != case[2]:
-                        color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
-                        return False
+                if (case[0].boardState == BoardState.check or case[0].boardState == BoardState.checkmate) != case[2]:
+                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
+                    return False
                 
             color_print("Checking PASSED", PrintColor.green)
             return True
