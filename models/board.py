@@ -209,8 +209,6 @@ class Board():
                     posibleMovs.append(movement)
                 elif piece.column != movement[1]:
                     posibleMovs.append(movement)
-                    
-            #print(piece.type, piece.color, (piece.row,piece.column),posibleMovs)
 
     def get_posible_turn_movements(self, turn: PlayerColor = None):
         """Calculate the squares wich the turn pieces can move to
@@ -228,24 +226,15 @@ class Board():
             for movement in self.get_valid_movements(piece, True):
                 posibleMovs.append(movement)
 
-    #TODO checkmate not working
     def set_game_state(self):
         """Evaluates if the player whoose turn is next is in check, and if it's checkmate or stalemate
         """
         
         playerPieces = self.whitePieces if self.turn == PlayerColor.white else self.blackPieces
-        print(self.turn)
         anyValidMov = any(len(posibleMovs) > 0 for posibleMovs in playerPieces.values())
 
         playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
         inCheck = self.is_attacked(playerKing.row, playerKing.column, opponent(self.turn))
-        
-        #//for piece in playerPieces:
-        #//    for movement in self.get_valid_movements(piece):
-        #//        if self.is_valid_movement(piece.row, piece.column, movement[0], movement[1], True):
-        #//            # neither check nor stalemate 
-        #//            anyValidMov = True
-        #//            break
                 
         if not anyValidMov and inCheck:
             self.boardState = BoardState.checkmate
@@ -255,8 +244,6 @@ class Board():
             self.boardState = BoardState.stalemate
         else:
             self.boardState = BoardState.moveTurn
-            
-        print(self.boardState, "After setting it")
                         
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -369,8 +356,10 @@ class Board():
             return False
 
         # Save the past board conditions
-        pastWhiteMovs = deepcopy(self.whitePieces)
-        pastBlackMovs = deepcopy(self.blackPieces)
+        pastWhiteMovs = self.whitePieces
+        pastBlackMovs = self.blackPieces
+        self.whitePieces = deepcopy(self.whitePieces)
+        self.blackPieces = deepcopy(self.blackPieces)
         pastBoardState = BoardState[self.boardState.value]
         eatenPiece = None
         if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
@@ -400,7 +389,6 @@ class Board():
         if eatenPiece != None:
             self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
         
-        #print(self.boardState, 2)
         # If player left in check is invalid
         if postMovBoardState == BoardState.check or postMovBoardState == BoardState.checkmate:
             return False
