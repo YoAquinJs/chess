@@ -74,7 +74,7 @@ class GameResult(Enum):
     stalemate = 'stalemate'
     tie = 'tie'
 
-class BoardState(Enum):
+class BoardState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game"""
 
     moveTurn = 'moveTurn'

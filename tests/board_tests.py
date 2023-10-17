@@ -1,6 +1,7 @@
 """This module contain unit tests for the board class functionalities"""
 
 import traceback
+from copy import deepcopy
 
 from tests.tests import Tests
 from models.board import Board
@@ -84,13 +85,14 @@ class BoardTests():
         """
 
         try:
-            board = Board.start_board()
             
             cases = []
-            board.squares_under_attack(PlayerColor.black)
-            cases.append((board.attackedSquares, [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7)]))#1
-            board.squares_under_attack(PlayerColor.white)
-            cases.append((board.attackedSquares, [(5,0),(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7)]))#2
+            board = Board.start_board()
+            cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
+                         [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7)]))#1
+            board = Board.start_board(turn=PlayerColor.black)
+            cases.append((list(set(item for sublist in deepcopy(board.whitePieces).values() for item in sublist)),
+                         [(5,0),(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7)]))#2
             board = Board.start_board([
                 ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
                 ['##', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
@@ -101,8 +103,8 @@ class BoardTests():
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
             ])
-            board.squares_under_attack(PlayerColor.black)
-            cases.append((board.attackedSquares, [(1,0),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7)]))#3
+            cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
+                         [(1,0),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7)]))#3
             board = Board.start_board([
                 ['bR', '##', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
                 ['##', 'bP', 'bP', '##', 'bP', 'bP', 'bP', 'bP'],
@@ -113,8 +115,8 @@ class BoardTests():
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
             ])
-            board.squares_under_attack(PlayerColor.black)
-            cases.append((board.attackedSquares, [(1,0),(0,1),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7),(5,3),(6,2),(6,0)]))#4
+            cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
+                         [(1,0),(0,1),(2,1),(3,1),(2,2),(4,2),(1,3),(2,3),(2,4),(4,4),(2,5),(3,5),(2,6),(4,6),(2,7),(5,7),(5,3),(6,2),(6,0)]))#4
             
             for i, case in enumerate(cases):
                 if len(case[0]) != len(case[1]):
@@ -203,9 +205,9 @@ class BoardTests():
                         color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
                         break
                     
-                if (case[0].boardState == BoardState.check or case[0].boardState == BoardState.checkmate) != case[2]:
-                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
-                    return False
+                    if (case[0].boardState == BoardState.check or case[0].boardState == BoardState.checkmate) != case[2]:
+                        color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
+                        return False
                 
             color_print("Checking PASSED", PrintColor.green)
             return True

@@ -605,12 +605,14 @@ class PieceTests():
             ]
             
             for i, case in enumerate(cases):
+                #print(case[0].boardState,6)
                 performed = True
                 for movement in case[1]:
                     if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
                         performed = False
                         break
-                    
+                print(case[0].boardState,5)
+                
                 if performed != case[2]:
                     color_print(F"Failed Case #{i} for castling", PrintColor.red)
                     return False
