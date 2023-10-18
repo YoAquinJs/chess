@@ -1,8 +1,12 @@
+"""This module contain utilities that are available app wide"""
+
+# Import external libraries
 import json
 from datetime import datetime
 from typing import Union
 import pygame
 
+# Import internal module
 from core.consts import PrintColor, PlayerColor, SCREEN_SIZE
 
 def get_timestamp() -> str:

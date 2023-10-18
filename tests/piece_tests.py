@@ -1,13 +1,17 @@
 """This module contain unit tests for the board class functionality"""
 
+# Import external library 
 import traceback
 
+# Import Internal modules
 from tests.tests import Tests
 from chess_engine.board import Board
-from core.consts import PrintColor, PlayerColor, PieceType, TestType, BOARD_START, ROWS, COLUMNS
+from core.consts import PrintColor, PlayerColor, TestType, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
 
 class PieceTests():
+    """Test class containing Unit tests for the piece movement functionalities"""
+
     @staticmethod
     @Tests.register_test(TestType.piece)
     def pawn() -> bool:

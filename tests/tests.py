@@ -1,9 +1,11 @@
 """This module contains the generic test class"""
 
 from core.consts import TestType
-from typing import Dict, Union, List
+from typing import List
 
 class Tests:
+    """Class containing the logic for registering and running the Unit Tests"""
+    
     tests = {}
     breakIfFailedTest = True
 
@@ -12,6 +14,12 @@ class Tests:
     
     @classmethod
     def register_test(cls, type: TestType):
+        """Decorator for registering Unit tests and their type
+
+        Args:
+            type (TestType): Test type.
+        """
+        
         def decorator(func):
             cls.tests[type].append(func)
             return func
@@ -19,6 +27,11 @@ class Tests:
 
     @classmethod
     def execute_tests(cls, types: List[str]):
+        """Run tests method, running all if no type specified or running the specified tests
+
+        Args:
+            types (List[str]): _description_
+        """
         
         #Execute all test types
         if len(types) == 0:

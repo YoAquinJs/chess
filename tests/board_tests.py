@@ -1,14 +1,18 @@
 """This module contain unit tests for the board class functionalities"""
 
+# Import external libraries
 import traceback
 from copy import deepcopy
 
+# Import Internal modules
 from tests.tests import Tests
 from chess_engine.board import Board
 from core.consts import PrintColor, PlayerColor, PieceType, TestType, BoardState, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
 
 class BoardTests():
+    """Test class containing Unit tests for the board Class functionalities"""
+    
     @staticmethod
     @Tests.register_test(TestType.board)
     def board_start() -> bool:
@@ -38,7 +42,7 @@ class BoardTests():
     @staticmethod
     @Tests.register_test(TestType.board)
     def serialization() -> bool:
-        """Test for validating the correct board start values
+        """Test for validating the board serialization
 
         Returns:
             bool: Succes of the test.
@@ -85,7 +89,6 @@ class BoardTests():
         """
 
         try:
-            
             cases = []
             board = Board.start_board()
             cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
@@ -298,4 +301,3 @@ class BoardTests():
             print(e)
             traceback.print_exc()
             return False
-

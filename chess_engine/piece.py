@@ -1,5 +1,6 @@
 """This module contains the Piece model object and it's properties"""
 
+# Import Internal module
 from core.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
 
 class Piece():
@@ -10,9 +11,21 @@ class Piece():
         color (PlayerColor): The color of the piece
         row (int): The row of the piece
         column (int): The column of the piece
+        maxExtend (int): The max number of extendable movement posible.
+        posibleMovements (Dict[Union[int, int], MovementSpecialCase])
+        movingDirection (int): The movement direction of the piece (Pawn only, up or down the board depending in playercolor).
     """
 
     def __init__(self, type: PieceType, color: PlayerColor, row: int, column: int) -> None:
+        """Returns a font object
+
+        Args:
+            type (PieceType): Piece type.
+            color (PlayerColor): Piece color.
+            row (int): Piece row.
+            column (int): Piece column
+        """
+
         self.type = type
         self.color = color
         self.row = row
@@ -121,7 +134,6 @@ class Piece():
                 (1, -1) : None,
                 (1, 1) : None,
                 (-1, -1) : None,
-                
                 (0,-2) : MovementSpecialCase.castle,
                 (0,2) : MovementSpecialCase.castle
                 }
@@ -134,7 +146,7 @@ class Piece():
         return f"{self.color.value}{self.type.value}"
     
     def __hash__(self) -> int:
-        return (PLAYERCOLORINT[self.color]*1000)+(PIECETYPEINT[self.type]*100)+((self.row+1)*10)+((self.column+1)*1)
+        return id(self)#int((PLAYERCOLORINT[self.color]*1000)+(PIECETYPEINT[self.type]*100)+((self.row+1)*10)+((self.column+1)*1))
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()

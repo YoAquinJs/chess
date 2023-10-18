@@ -7,9 +7,9 @@ from enum import Enum, EnumMeta
 # Rendering Constants
 SCREEN_SIZE = 4
 
-# Serialization
-SPRITE = 'assets/sprites/'
-AUDIO = 'assets/audios/'
+# Serialization constants
+SPRITE = f"{getcwd()}/assets/sprites/"
+AUDIO = f"{getcwd()}/assets/audios/"
 SAVINGS = f"{getcwd()}/savings/"
 MAX_GAMES_SAVED = 5
 
@@ -52,7 +52,6 @@ class TestType(Enum, metaclass=ParseableEnum):
 
     board = 'board'
     piece = 'piece'
-    game = 'game'
 
 # Unique identifiers for players, always a single character
 class PlayerColor(Enum, metaclass=ParseableEnum):

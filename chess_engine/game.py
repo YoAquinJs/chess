@@ -1,13 +1,14 @@
 """This module contains the model class game for handling Gameplay functionalities"""
 
+# Import external libraries
 from os import listdir, path
 from json import dump, load
 from typing import List, Union
 
+# Import Internal modules
 from chess_engine.board import Board
-from core.consts import BoardState, GameScreen, GameResult, PlayerColor, SAVINGS, MAX_GAMES_SAVED
+from core.consts import BoardState, GameResult, PlayerColor, SAVINGS, MAX_GAMES_SAVED
 
-#TODO all
 class Game():
     """Class for handling game functionalities
 
@@ -15,8 +16,10 @@ class Game():
         gameResult (GameResult): Game result status.
         board (Board): Board of the game.
         moveHistory (List[Union(str, str, Union(int, int), optional): Move istory of the game. Defaults to [].
-        
+
     """
+    
+    fileEnd = '_game.json'
 
     def __init__(self, gameResult: GameResult, board: Board, moveHistory: List[Union[str, str, Union[int, int]]] = []):
         """Creates a Game object
@@ -24,7 +27,7 @@ class Game():
         Args:
             gameResult (GameResult): Game result status.
             board (Board): Board of the game.
-            moveHistory (List[Union, optional): Move istory of the game. Defaults to [].
+            moveHistory (List[str, str, Union[int, int]], optional): Move istory of the game. Defaults to [].
         """
         
         self.gameResult = gameResult
@@ -32,7 +35,6 @@ class Game():
         self.moveHistory = moveHistory
         
         self.board.getPromotionPiece = self.getPromotionPiece
-        self.gameState = self.board.boardState
         
     #TODO
     async def getPromotionPiece(self):
@@ -125,8 +127,8 @@ class Game():
             List[str]: List of saved games.
         """
         
-        filend = '_game.json'
-        return [f[:-len(filend)] for f in listdir(SAVINGS) if path.isfile(path.join(SAVINGS, f)) and f.endswith(filend)]
+        
+        return [f[:-len(Game.fileEnd)] for f in listdir(SAVINGS) if path.isfile(path.join(SAVINGS, f)) and f.endswith(Game.fileEnd)]
     
     @classmethod
     def new_game(cls) -> object:

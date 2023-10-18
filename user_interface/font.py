@@ -2,27 +2,48 @@
 
 import pygame, sys
 from pygame.locals import *
-from typing import Dict, Union, List
 
 from utils.utils import scale_image
     
-def clip(surf: pygame.surface,x: int,y: int, x_size: int, y_size: int):
-    handle_surf = surf.copy()
+def clip(surface: pygame.surface, x: int, y: int, x_size: int, y_size: int) -> pygame.image:
+    """Clips an image from a surface
+
+    Args:
+        surface (pygame.surface): Surface to clip from.
+        x (int): Position in X.
+        y (int): Position in Y.
+        x_size (int): Size in X.
+        y_size (int): Size in Y
+
+    Returns:
+        pygame.image: Image cliped
+    """
+    
+    handle_surf = surface.copy()
     clipR = pygame.Rect(x,y,x_size,y_size)
     handle_surf.set_clip(clipR)
-    image = surf.subsurface(handle_surf.get_clip())
+    image = surface.subsurface(handle_surf.get_clip())
     
     return image.copy()
 
 class Font():
+    """Font class for handling text rendering and importing Fonts
+    
+        Attributes:
+            spacing (int): Spacing between chars.
+            character_order (List[str]): List of the order of the chars in the imported font.
+            character_order (Dict[str, pygame.image]): Dictinary of char to it's corresponding image
+            space_width (int): Width of a char image.
+    """
+    
     def __init__(self, fontPath: str):
         """Returns a font object
 
         Args:
-            fontPath (str): Path to the font image to be used
+            fontPath (str): Path to the font image to be used.
         """
         
-        self.spacing = 1
+        self.spacing = 1 
         current_char_width = 0
         self.characters = {}
         character_count = 0
@@ -33,7 +54,7 @@ class Font():
             c = font_img.get_at((x, 0))
             if c[0] == 127:
                 char_img = clip(font_img, x - current_char_width, 0, current_char_width, font_img.get_height())
-                self.characters[self.character_order[character_count]] = char_img.copy()
+                self.characters[self.character_order[character_count]] = char_img
                 character_count += 1
                 current_char_width = 0
             else:
@@ -45,15 +66,15 @@ class Font():
         """From the font object renders the text specified
 
         Args:
-            surface (pygame.Surface): Screen.
+            surface (pygame.Surface): Surface in which to render.
             text (str): Text to be rendered
-            x (int): X screen position.
-            y (int): y screen position.
+            x (int): Position in X.
+            y (int): Position in Y.
             scale(int, optional): Scaling of the resulting text image, Defaults to 1.
         """
         
-        x_offset = 0
         # Render char by char to screen
+        x_offset = 0
         for char in text:
             if char != ' ':
                 surface.blit(scale_image(self.characters[char], scale), (x + x_offset, y))
