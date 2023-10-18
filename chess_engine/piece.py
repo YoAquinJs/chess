@@ -1,6 +1,6 @@
 """This module contains the Piece model object and it's properties"""
 
-from models.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
+from core.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
 
 class Piece():
     """Class for handling game screens, and game states

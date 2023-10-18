@@ -6,8 +6,8 @@ from typing import Dict, Union, List
 from asyncio import run
 
 from utils.utils import color_print, opponent
-from models.piece import Piece
-from models.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, COLUMNS, ROWS, BOARD_START, SAVINGS
+from chess_engine.piece import Piece
+from core.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, COLUMNS, ROWS, BOARD_START, SAVINGS
 
 class Board():
     """Class for handling game screens, and game states

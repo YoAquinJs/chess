@@ -1,6 +1,6 @@
 """This module contains the generic test class"""
 
-from models.consts import TestType
+from core.consts import TestType
 from typing import Dict, Union, List
 
 class Tests:

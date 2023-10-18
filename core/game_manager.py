@@ -1,5 +1,5 @@
-from models.consts import OnGameState, GameScreen, PlayerColor
-from models.board import Board
+from core.consts import OnGameState, GameScreen, PlayerColor
+from chess_engine.board import Board
 
 #TODO all
 class GameManager():

@@ -4,8 +4,8 @@ import traceback
 from copy import deepcopy
 
 from tests.tests import Tests
-from models.board import Board
-from models.consts import PrintColor, PlayerColor, PieceType, TestType, BoardState, BOARD_START, ROWS, COLUMNS
+from chess_engine.board import Board
+from core.consts import PrintColor, PlayerColor, PieceType, TestType, BoardState, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
 
 class BoardTests():

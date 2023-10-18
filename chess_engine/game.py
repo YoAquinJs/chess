@@ -5,7 +5,7 @@ from json import dumps, load
 from typing import List, Union
 
 from board import Board
-from consts import BoardState, GameScreen, GameResult, PlayerColor, SAVINGS
+from core.consts import BoardState, GameScreen, GameResult, PlayerColor, SAVINGS
 
 #TODO all
 class Game():
@@ -18,7 +18,7 @@ class Game():
         
     """
 
-    def __init__(self, gameResult: GameResult, board: Board, moveHistory: List[Union(int, int)] = []) -> None:
+    def __init__(self, gameResult: GameResult, board: Board, moveHistory: List[Union(int, int)] = []):
         """Creates a Game object
 
         Args:

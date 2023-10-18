@@ -4,6 +4,9 @@
 from os import getcwd, makedirs, path
 from enum import Enum, EnumMeta
 
+# Rendering Constants
+SCREEN_SIZE = 4
+
 # Paths
 SPRITE = 'assets/sprites/'
 AUDIO = 'assets/audios/'
