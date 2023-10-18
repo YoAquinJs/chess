@@ -29,6 +29,6 @@ class Button():
             self.pressed = False
             self.callback()
                 
-    def render(self, screen):
-        screen.blit(self.image, (self.rect.x, self.rect.y))
+    def render(self, surf: pygame.surface):
+        surf.blit(self.image, (self.rect.x, self.rect.y))
         

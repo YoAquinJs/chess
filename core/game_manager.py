@@ -19,10 +19,6 @@ class GameManager():
         self.currentPlayer: PlayerColor = None
         self.currentBoard: Board = None
         
-        
-    #* Game Functions
-    def quit_game(self):
-        pass
     
     def save_game(self):
         pass

@@ -7,10 +7,11 @@ from enum import Enum, EnumMeta
 # Rendering Constants
 SCREEN_SIZE = 4
 
-# Paths
+# Serialization
 SPRITE = 'assets/sprites/'
 AUDIO = 'assets/audios/'
 SAVINGS = f"{getcwd()}/savings/"
+MAX_GAMES_SAVED = 5
 
 if not path.exists(SAVINGS):
     makedirs(SAVINGS)
