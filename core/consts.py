@@ -69,7 +69,7 @@ PLAYERCOLORINT = {
 }
 
 # Unique identifiers for game states
-class GameResult(Enum):
+class GameResult(Enum, metaclass=ParseableEnum):
     """Enum for endding states in a chess game"""
 
     pending = 'pending'

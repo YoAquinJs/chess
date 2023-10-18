@@ -1,10 +1,10 @@
 """This module contains the model class game for handling Gameplay functionalities"""
 
 from os import listdir, path
-from json import dumps, load
+from json import dump, load
 from typing import List, Union
 
-from board import Board
+from chess_engine.board import Board
 from core.consts import BoardState, GameScreen, GameResult, PlayerColor, SAVINGS, MAX_GAMES_SAVED
 
 #TODO all
@@ -18,7 +18,7 @@ class Game():
         
     """
 
-    def __init__(self, gameResult: GameResult, board: Board, moveHistory: List[Union(str, str, Union(int, int))] = []):
+    def __init__(self, gameResult: GameResult, board: Board, moveHistory: List[Union[str, str, Union[int, int]]] = []):
         """Creates a Game object
 
         Args:
@@ -38,11 +38,14 @@ class Game():
     async def getPromotionPiece(self):
         pass
     
-    def user_move(self, movement: Union[int,int,int,int]):
+    def user_move(self, movement: Union[int,int,int,int]) -> bool:
         """Attempts a move and record it if it was succesfull
 
         Args:
             movement (Union[int,int,int,int]): Movement to be attempted
+            
+        Returns:
+            bool: Whether the movemernt was performed or not
         """
         
         if self.gameResult != GameResult.pending:
@@ -50,7 +53,7 @@ class Game():
         
         moved, moveInf = self.board.attempt_move(movement[0], movement[1], movement[2], movement[3])
         if not moved:
-            return #TODO provide feddback if invalid move
+            return False
         
         self.moveHistory.append((str(moveInf["piece"]), None if moveInf["eatPiece"] == None else str(moveInf["eatPiece"]), movement))
         
@@ -59,7 +62,7 @@ class Game():
         elif self.board.boardState == BoardState.stalemate:
             self.gameResult == GameResult.stalemate
         
-        #TODO provide feedback if valid move
+        return True
     
     def serialize(self, filename: str) -> str:
         """Serializes the game to a json file
@@ -76,12 +79,15 @@ class Game():
         
         try:
             with open(f"{SAVINGS}{filename}_game.json", "w") as file:
+                if not self.board.serialize(filename):
+                    raise Exception("Couldn't serialize board")
+                
                 data = {
-                    'gameResult' : self.gameResult,
-                    'moveHistory' : self.moveHistory,
+                    'gameResult' : self.gameResult.value,
+                    'moveHistory' : self.moveHistory
                     }
                 
-                file.write(dumps(data, indent=4))
+                dump(data, file)
             return "Succesfull"
         except Exception as e:
             print(e)
@@ -107,7 +113,7 @@ class Game():
                 raise Exception(f"Coulnd't deserialize board {filename}, therefore can't load Game\nFull Path: {SAVINGS}{filename}_board.json")
         
             # Parse the json data the Game object
-            game = cls(json_data["gameResult"], board, [(mov[0], mov[1], (mov[2][0],mov[2][1])) for mov in json_data['moveHistory']])
+            game = cls(GameResult[json_data["gameResult"]], board, [(mov[0], mov[1], (mov[2][0],mov[2][1])) for mov in json_data['moveHistory']])
 
         return game
 

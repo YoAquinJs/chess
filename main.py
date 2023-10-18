@@ -6,6 +6,7 @@ from core.consts import SCREEN_SIZE,  SPRITE
 from user_interface.button import Button
 from chess_engine.board import Board
 from utils.utils import scale_image
+from chess_engine.game import Game
 
 if __name__ == "__main__":
     # pygame setup
@@ -21,9 +22,9 @@ if __name__ == "__main__":
     
     # Main Screen Buttons
     playBttImg = scale_image(pygame.image.load(f"{SPRITE}play-btt.png"),2)
-    playButton = Button(playBttImg, screen.get_width()//2, screen.get_height()//3)
+    playButton = Button(playBttImg, "", screen.get_width()//2, screen.get_height()//3, None)
     quitBttImg = scale_image(pygame.image.load(f"{SPRITE}quit-btt.png"),2)
-    quitButton = Button(quitBttImg, screen.get_width()//2, 2*(screen.get_height()//3))
+    quitButton = Button(quitBttImg, "", screen.get_width()//2, 2*(screen.get_height()//3), None)
     
     run = True
     update = True
