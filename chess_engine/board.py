@@ -28,7 +28,7 @@ class Board():
         blackPieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color black.
     """
     
-    fileEnd = '_board.json'
+    fileEnd = '_b.json'
 
     def __init__(self, grid: List[List[Piece]], turn: PlayerColor = PlayerColor.white, afterMoveCheck: bool = False) -> None:
         """Creates a board object instance
@@ -471,13 +471,19 @@ class Board():
             # If pawn reached the last square it can move, promote it
             elif piece.row + piece.movingDirection == len(ROWS) or piece.row + piece.movingDirection == -1:
                 self.remove_piece(piece.row, piece.column)
+                
                 if self.getPromotionPiece == None:
                     raise Exception("getPromotionPiece function not yet defined for board")
+                
                 newPiece = run(self.getPromotionPiece())
-                self.add_piece(piece.row,piece.column, newPiece)
+                newPiece.row = piece.row
+                newPiece.column = piece.column
+                self.add_piece(newPiece.row,newPiece.column, newPiece)
+                
         elif piece.type == PieceType.king:
             self.canCastleLeft = False
             self.canCastleRigth = False
+            
             # If move was castle
             if abs(destinationColumn-originColumn) == 2:
                 direction = (destinationColumn-originColumn)//abs(destinationColumn-originColumn)
@@ -502,10 +508,13 @@ class Board():
 
     #! Development Only method
     def print_board(self):
+        for column in COLUMNS:
+            print(f" {column} ", end='')
+        print()
         for row in range(len(ROWS)):
             for column in range(len(COLUMNS)):
-                print(f"{self.__grid[row][column].color.value}{self.__grid[row][column].type.value} ", end='')
-            print()
+                print(f"{str(self.__grid[row][column])} ", end='')
+            print(ROWS[row])
 
     def serialize(self, filename: str) -> bool:
         """Serializes the board to a json file
@@ -518,7 +527,7 @@ class Board():
         """
         
         try:
-            with open(f"{SAVINGS}{filename}{Board.fileEnd}", "w") as file:
+            with open(f"{SAVINGS}board_{filename}{Board.fileEnd}", "w") as file:
                 data = {
                     'turn' : self.turn.value,
                     'canCastleLeft' : self.canCastleLeft,
@@ -562,7 +571,7 @@ class Board():
         """
         
         board = None
-        with open(f"{SAVINGS}{filename}{Board.fileEnd}", "r") as file:
+        with open(f"{SAVINGS}board_{filename}{Board.fileEnd}", "r") as file:
             json_data = load(file)
         
             board = cls.start_board(json_data["__grid"], PlayerColor[json_data['turn']])

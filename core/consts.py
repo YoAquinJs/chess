@@ -16,14 +16,27 @@ MAX_GAMES_SAVED = 5
 if not path.exists(SAVINGS):
     makedirs(SAVINGS)
     
+class InputType(Enum):
+    bool='bool'
+    int='int'
+    str='str'
+    
 class PrintColor(Enum):
     """Enum for console print colors"""
     
     red = '\033[31m'
     green = '\033[32m'
+    blue = '\033[96m'
     yellow = '\033[33m'
     reset = '\033[0m'
     
+class GameScreen(Enum):
+    """Enum for states in a chess game"""
+
+    mainMenu = 'move_turn'
+    settings = 'settings'
+    onGame = 'on_game'
+
 # Meta Enum class for parsing from string value to Enum
 class ParseableEnum(EnumMeta):
     def __getitem__(cls, item: str) -> object:
@@ -84,13 +97,6 @@ class BoardState(Enum, metaclass=ParseableEnum):
     check = 'check'
     checkmate = 'checkmate'
     stalemate = 'stalemate'
-
-class GameScreen(Enum):
-    """Enum for states in a chess game"""
-
-    mainMenu = 'move_turn'
-    settings = 'settings'
-    onGame = 'on_game'
 
 # Unique identifiers for pieces, always a single character, the format it's f"{PlayerColor}{PieceType}"
 class PieceType(Enum, metaclass=ParseableEnum):

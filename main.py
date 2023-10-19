@@ -6,13 +6,16 @@ from typing import Type, Union, Mapping, List
 import datetime
 
 # Import internal modules
+from core.game_manager import GameManager
 from core.consts import SCREEN_SIZE,  SPRITE
 from user_interface.button import Button
 from chess_engine.board import Board
 from utils.utils import scale_image
-from chess_engine.game import Game
 
 if __name__ == "__main__":
+    GameManager.init_game()
+    while True:
+        GameManager.update()
     #??# pygame setup
     #??pygame.init()
     #??screen = pygame.display.set_mode((1, 1))
