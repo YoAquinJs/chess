@@ -126,11 +126,12 @@ class GameManager():
             originColumn = COLUMNS.index(originColumn)
             destinationRow = ROWS.index(destinationRow)
             destinationColumn = COLUMNS.index(destinationColumn)
+
+            if not cls.currentGame.user_move((originRow,originColumn,destinationRow,destinationColumn)):
+                color_print("Invalid Movement", PrintColor.red)
         except:
             color_print("Invalid Movement", PrintColor.red)
 
-        if not cls.currentGame.user_move((originRow,originColumn,destinationRow,destinationColumn)):
-            color_print("Invalid Movement", PrintColor.red)
     
     @classmethod
     def render_board(cls):

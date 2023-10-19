@@ -252,6 +252,11 @@ class Board():
         if afterMoveCheck:
             self.boardState = BoardState.check if inCheck else BoardState.moveTurn
             return
+        
+        # If only kings left in board, mark stalemate
+        if len(self.whitePieces) == 1 and len(self.blackPieces == 1):
+            self.boardState = BoardState.stalemate
+            return
 
         # Validate if the player has any legal movement available, if not it's either stalemate or checkmate
         anyValidMov = False
