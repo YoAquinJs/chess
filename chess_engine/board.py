@@ -480,7 +480,7 @@ class Board():
                 if self.getPromotionPiece == None:
                     raise Exception("getPromotionPiece function not yet defined for board")
                 
-                newPiece = run(self.getPromotionPiece())
+                newPiece = run(self.getPromotionPiece(piece.color, piece.row + piece.movingDirection, piece.column))
                 newPiece.row = piece.row
                 newPiece.column = piece.column
                 self.add_piece(newPiece.row,newPiece.column, newPiece)

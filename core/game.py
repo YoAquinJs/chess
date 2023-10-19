@@ -48,7 +48,16 @@ class Game():
             Piece: Promotion Piece
         """
         
-        return Piece(PieceType[input("Enter the promotion piece: ")], color, row, column)
+        pieceType = None
+        while pieceType == None:
+            try:
+                pieceType = PieceType[input("Enter the promotion piece: ")]
+                if pieceType == PieceType.king:
+                    pieceType = None
+            except:
+                pass
+            
+        return Piece(pieceType, color, row, column)
     
     def user_move(self, movement: Union[int,int,int,int]) -> bool:
         """Attempts a move and record it if it was succesfull

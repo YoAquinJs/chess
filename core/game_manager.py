@@ -4,7 +4,7 @@
 from utils.utils import color_print
 from core.game import Game
 from chess_engine.board import Board
-from core.consts import GameScreen, InputType, PrintColor, PlayerColor, ROWS, COLUMNS
+from core.consts import GameScreen, InputType, PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
 
 #TODO all
 class GameManager():
@@ -68,6 +68,10 @@ class GameManager():
                 move = GameManager.user_input("Select game option (Exit(0)/Move(1)): ", InputType.bool)
 
                 if move:
+                    if cls.currentGame.gameResult != GameResult.pending:
+                        print("Game not pending")
+                        return
+                    
                     cls.call_movement()
                 else:
                     save = GameManager.user_input("Select game option (Exit(0)/Save(1)): ", InputType.bool)
@@ -130,7 +134,7 @@ class GameManager():
             if not cls.currentGame.user_move((originRow,originColumn,destinationRow,destinationColumn)):
                 color_print("Invalid Movement", PrintColor.red)
         except:
-            color_print("Invalid Movement", PrintColor.red)
+            color_print("Invalid Input", PrintColor.red)
 
     
     @classmethod
