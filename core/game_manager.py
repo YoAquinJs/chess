@@ -6,7 +6,6 @@ from core.game import Game
 from chess_engine.board import Board
 from core.consts import GameScreen, InputType, PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
 
-#TODO all
 class GameManager():
     """Class for handling game screens, and game states
 
