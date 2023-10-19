@@ -36,7 +36,6 @@ class Game():
         
         self.board.getPromotionPiece = self.getPromotionPiece
         
-    #TODO
     async def getPromotionPiece(self, color: PlayerColor, row: int, column: int) -> Piece:
         """Asks the user for the promotion piece
 

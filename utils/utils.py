@@ -2,21 +2,11 @@
 
 # Import external libraries
 import json
-from datetime import datetime
 from typing import Union
 import pygame
 
 # Import internal module
 from core.consts import PrintColor, PlayerColor, SCREEN_SIZE
-
-def get_timestamp() -> str:
-    """Retorna el tiempo y hora actual
-
-    Returns:
-        srt: String Del Tiempo Actual
-    """
-
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def color_print(text: str, color: PrintColor, end='\n'):
     """Prints to console with the color specified

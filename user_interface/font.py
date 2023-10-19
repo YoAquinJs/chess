@@ -1,6 +1,6 @@
 """This module contains the model class Font, for handling fonts and text rendering"""
 
-import pygame, sys
+import pygame
 from pygame.locals import *
 
 from utils.utils import scale_image
