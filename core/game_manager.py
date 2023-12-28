@@ -135,7 +135,6 @@ class GameManager():
         except:
             color_print("Invalid Input", PrintColor.red)
 
-    
     @classmethod
     def render_board(cls):
         if cls.currentGame is not None:

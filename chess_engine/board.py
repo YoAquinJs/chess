@@ -292,13 +292,13 @@ class Board():
         self.__grid[row2][column2].column = column1
         self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
 
-    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], maxIterations: int = 8) -> int:
+    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], maxIterations: int) -> int:
         """Given a piece and direction, returns the number of movements it can perform without colliding, before reaching a given limit
 
         Args:
             piece (Piece): Piece to move.
             direction (Union[int, int]): Direction of the extenable movement.
-            maxIterations(int, optional): Maximum distance from piece origin. Defaults to 8.
+            maxIterations(int, optional): Maximum distance from piece origin.
             
         Returns:
            Int: Maximun number of movements in that direction.
@@ -397,8 +397,14 @@ class Board():
                 # Verify castling is available, path is empty and not attacked, and king not in check
                 elif specialCase == MovementSpecialCase.castle and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
                     and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.empty\
+                    and self.__grid[piece.row][ piece.column + (direction[1])].type == PieceType.empty\
                     and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != BoardState.check:
-                    validMovements.append(movement)
+                    if direction[1] < 0:
+                        if self.canCastleLeft and self.__grid[piece.row][ piece.column + (direction[1]) - 1].type == PieceType.empty:
+                            validMovements.append(movement)
+                    else:
+                        if self.canCastleLeft:
+                            validMovements.append(movement)
                 # Not any special cases
                 elif specialCase == None:
                     validMovements.append(movement)
