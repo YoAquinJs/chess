@@ -1,20 +1,40 @@
 # Import external libraries
 from __future__ import annotations
 import pygame
+from abc import ABC, abstractmethod
 
-class GameObject:
+class GameObject(ABC):
 
-    def __init__(self, x: int, y: int, image: pygame.image) -> None:
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
-        self.children = []
+    #! Must be called each sub class initialization
+    def init_attributes(self) -> None:
+        self.children: list[GameObject] = []
+        self.renders = False
+        self._x = 0
+        self._y = 0
 
-    def add_child(self, obj: GameObject):
-        self.children.append(obj)
+    @property
+    def x(self):
+        return self._x
 
-    def update(self):
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+
+    def add_child(self, index: int, obj: GameObject) -> None:
+        self.children.insert(index, obj)
+
+    @abstractmethod
+    def update(self) -> None:
         pass
 
-    def render(self, surface: pygame.surface):
-        surface.blit(self.image, (self.rect.x, self.rect.y))
+    @abstractmethod
+    def render(self, surface: pygame.surface) -> None:
+        pass

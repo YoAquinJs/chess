@@ -31,10 +31,10 @@ class PrintColor(Enum):
     reset = '\033[0m'
 
 class GameScreen(Enum):
-    """Enum for states in a chess game"""
-
+    """Enum for game screens in the game"""
+    
     mainMenu = 'move_turn'
-    settings = 'settings'
+    loadGame = 'loadGame'
     onGame = 'on_game'
 
 # Meta Enum class for parsing from string value to Enum

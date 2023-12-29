@@ -15,7 +15,7 @@ def clip(surface: pygame.surface, x: int, y: int, x_size: int, y_size: int) -> p
         y (int): Position in Y.
         x_size (int): Size in X.
         y_size (int): Size in Y
-
+    
     Returns:
         pygame.image: Image cliped
     """
@@ -30,13 +30,13 @@ def clip(surface: pygame.surface, x: int, y: int, x_size: int, y_size: int) -> p
 class Font():
     """Font class for handling text rendering and importing Fonts
     
-        Attributes:
-            spacing (int): Spacing between chars.
-            character_order (List[str]): List of the order of the chars in the imported font.
-            character_order (Dict[str, pygame.image]): Dictinary of char to it's corresponding image
-            space_width (int): Width of a char image.
+    Attributes:
+        spacing (int): Spacing between chars.
+        character_order (List[str]): List of the order of the chars in the imported font.
+        character_order (Dict[str, pygame.image]): Dictinary of char to it's corresponding image
+        space_width (int): Width of a char image.
     """
-    
+
     def __init__(self, fontPath: str):
         """Returns a font object
 
