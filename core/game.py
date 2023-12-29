@@ -18,7 +18,7 @@ class Game():
         board (Board): Board of the game.
         moveHistory (List[Union(str, str, Union(int, int), optional): Move istory of the game. Defaults to [].
     """
-    
+
     fileEnd = '_g.json'
 
     def __init__(self, gameResult: GameResult, board: Board, moveHistory: List[Union[str, str, Union[int, int]]] = []):
@@ -35,7 +35,7 @@ class Game():
         self.moveHistory = moveHistory
         
         self.board.getPromotionPiece = self.getPromotionPiece
-        
+
     async def getPromotionPiece(self, color: PlayerColor, row: int, column: int) -> Piece:
         """Asks the user for the promotion piece
 
@@ -58,7 +58,7 @@ class Game():
                 pass
             
         return Piece(pieceType, color, row, column)
-    
+
     def user_move(self, movement: Union[int,int,int,int]) -> bool:
         """Attempts a move and record it if it was succesfull
 
@@ -84,7 +84,7 @@ class Game():
             self.gameResult == GameResult.stalemate
         
         return True
-    
+
     def serialize(self, filename: str) -> Union[bool, str]:
         """Serializes the game to a json file
 
@@ -162,7 +162,7 @@ class Game():
             return filenameList
         else:
             return [Game.deserialize(f) for f in filenameList]
-        
+
     @classmethod
     def new_game(cls) -> object:
         """Returns a Game object with all parameters to default

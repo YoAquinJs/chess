@@ -15,12 +15,12 @@ MAX_GAMES_SAVED = 5
 
 if not path.exists(SAVINGS):
     makedirs(SAVINGS)
-    
+
 class InputType(Enum):
     bool='bool'
     int='int'
     str='str'
-    
+
 class PrintColor(Enum):
     """Enum for console print colors"""
     
@@ -29,7 +29,7 @@ class PrintColor(Enum):
     blue = '\033[96m'
     yellow = '\033[33m'
     reset = '\033[0m'
-    
+
 class GameScreen(Enum):
     """Enum for states in a chess game"""
 
@@ -59,7 +59,7 @@ class ParseableEnum(EnumMeta):
             raise KeyError(f"No such value in {cls.__name__}: {item}")
         
         return match
-    
+
 class TestType(Enum, metaclass=ParseableEnum):
     """Enum for the multiple test type"""
 
@@ -109,7 +109,7 @@ class PieceType(Enum, metaclass=ParseableEnum):
     queen = 'Q'
     king = '@'
     empty = '#'
-    
+
 PIECETYPEINT = {
     PieceType.empty: 1,
     PieceType.pawn: 2,
@@ -119,7 +119,7 @@ PIECETYPEINT = {
     PieceType.queen: 6,
     PieceType.king: 7
 }
-    
+
 # It's assumed you can never move to a square with a piece of your own
 class MovementSpecialCase(Enum):
     """Enum for each type of piece"""
@@ -127,7 +127,7 @@ class MovementSpecialCase(Enum):
     castle = 'canCastle'
     isEmpty = 'isEmpty'
     doublePawnMove = 'doublePawnMove'
-    
+
 # Constants for board
 ROWS    = ['8','7','6','5','4','3','2','1']
 COLUMNS = ['a','b','c','d','e','f','g','h']

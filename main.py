@@ -41,7 +41,7 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
+        
         # Rendering
         screen.blit(background_img, (0,0))
         
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         if render:
             newGameButton.render(screen)
             loadGameButton.render(screen)
-
+        
         pygame.display.flip()
         #GameManager.update()
         clock.tick(60) # limits FPS to 60
