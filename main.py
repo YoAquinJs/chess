@@ -4,8 +4,8 @@
 import pygame
 
 # Import internal modules
-from core.consts import SPRITE
-from utils.utils import scale_image
+from core.consts import AssetType
+from utils.utils import scale_image, get_asset_path
 from user_interface.font import Font
 from core.game_manager import GameManager
 
@@ -16,11 +16,11 @@ def main():
     clock = pygame.time.Clock()
     
     # Get the background image and scale it
-    background_img = scale_image(pygame.image.load(f"{SPRITE}background.png"))
+    background_img = scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png")))
     
     screenSize = (background_img.get_width(),background_img.get_height())
-    screen = pygame.display.set_mode(screenSize,0,32)
-    font = Font("assets/sprites/font.png")
+    screen = pygame.display.set_mode(screenSize)
+    font = Font(get_asset_path(AssetType.sprite, "font.png"))
     
     GameManager.init_game(screen, font)
     while GameManager.running:

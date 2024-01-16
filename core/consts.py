@@ -8,18 +8,16 @@ from enum import Enum, EnumMeta
 SCREEN_SIZE = 4
 
 # Serialization constants
-SPRITE = f"{getcwd()}/assets/sprites/"
-AUDIO = f"{getcwd()}/assets/audios/"
-SAVINGS = f"{getcwd()}/savings/"
 MAX_GAMES_SAVED = 5
 
-if not path.exists(SAVINGS):
-    makedirs(SAVINGS)
+class AssetType(Enum):
+    """Enum for assets types containing corresponding paths"""
+    sprite=path.join(getcwd(),"assets","sprites")
+    audio=path.join(getcwd(),"assets","audios")
+    savings=path.join(getcwd(),"savings")
 
-class InputType(Enum):
-    bool='bool'
-    int='int'
-    str='str'
+if not path.exists(AssetType.savings.value):
+    makedirs(AssetType.savings.value)
 
 class PrintColor(Enum):
     """Enum for console print colors"""
