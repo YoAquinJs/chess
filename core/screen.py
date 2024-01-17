@@ -13,10 +13,10 @@ class Screen(ABC):
         self.init_objects()
 
     @abstractmethod
-    def init_objects(self):
+    def init_objects(self) -> None:
         pass
 
-    def register_obj(self, obj: GameObject):
+    def register_obj(self, obj: GameObject) -> None:
         if obj in self.gameObjects:
             raise Exception("Object already added to scene")
 
@@ -30,6 +30,4 @@ class Screen(ABC):
 
     def render(self) -> None:
         for obj in self.gameObjects:
-            if not obj.renders:
-                continue
             obj.render(self.renderScreen)

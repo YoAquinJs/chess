@@ -7,9 +7,9 @@ from json import dumps, load
 from typing import Union, List
 
 # Import Internal modules
-from utils.utils import color_print, opponent
+from utils.utils import color_print, opponent, get_asset_path
 from chess_engine.piece import Piece
-from core.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, COLUMNS, ROWS, BOARD_START, SAVINGS
+from core.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, AssetType, COLUMNS, ROWS, BOARD_START
 
 class Board():
     """Class for handling game screens, and game states
@@ -538,7 +538,7 @@ class Board():
         """
         
         try:
-            with open(f"{SAVINGS}board_{filename}{Board.fileEnd}", "w") as file:
+            with open(get_asset_path(AssetType.savings, f"board_{filename}{Board.fileEnd}"), "w") as file:
                 data = {
                     'turn' : self.turn.value,
                     'canCastleLeft' : self.canCastleLeft,
@@ -582,7 +582,7 @@ class Board():
         """
         
         board = None
-        with open(f"{SAVINGS}board_{filename}{Board.fileEnd}", "r") as file:
+        with open(get_asset_path(AssetType.savings, f"board_{filename}{Board.fileEnd}"), "r") as file:
             json_data = load(file)
         
             board = cls.start_board(json_data["__grid"], PlayerColor[json_data['turn']])

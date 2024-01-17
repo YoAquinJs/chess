@@ -8,7 +8,8 @@ from typing import List, Union
 # Import Internal modules
 from chess_engine.board import Board
 from chess_engine.piece import Piece
-from core.consts import BoardState, GameResult, PlayerColor, PieceType, SAVINGS, MAX_GAMES_SAVED, ROWS, COLUMNS
+from utils.utils import get_asset_path
+from core.consts import BoardState, GameResult, PlayerColor, PieceType, AssetType, MAX_GAMES_SAVED, ROWS, COLUMNS
 
 class Game():
     """Class for handling game functionalities
@@ -100,7 +101,7 @@ class Game():
             return False, "Max games saved reached"
         
         try:
-            with open(f"{SAVINGS}game_{filename}{Game.fileEnd}", "w") as file:
+            with open(get_asset_path(AssetType.savings, f"game_{filename}{Game.fileEnd}"), "w") as file:
                 if not self.board.serialize(filename):
                     raise Exception("Couldn't serialize board")
                 
@@ -134,12 +135,13 @@ class Game():
         """
         
         board = None
-        with open(f"{SAVINGS}game_{filename}{Game.fileEnd}", "r") as file:
+        with open(get_asset_path(AssetType.savings, f"game_{filename}{Game.fileEnd}"), "r") as file:
             json_data = load(file)
             
             board = Board.deserialize(filename)
             if board == None:
-                raise Exception(f"Coulnd't deserialize board {filename}, therefore can't load Game\nFull Path: {SAVINGS}{filename}_board.json")
+                boardPath = get_asset_path(AssetType.savings, f"board_{filename}{Board.fileEnd}")
+                raise Exception(f"Coulnd't deserialize board {filename}, therefore can't load Game\nFull Path: {boardPath}")
         
             # Parse the json data the Game object
             game = cls(GameResult[json_data["gameResult"]], board, [(mov[0], mov[1], (mov[2][0],mov[2][1],mov[2][2],mov[2][3])) for mov in json_data['moveHistory']])
@@ -157,7 +159,7 @@ class Game():
             List[str]: List of saved games.
         """
         
-        filenameList = [f[len("game_"):-len(Game.fileEnd)] for f in listdir(SAVINGS) if path.isfile(path.join(SAVINGS, f)) and f.endswith(Game.fileEnd)]
+        filenameList = [f[len("game_"):-len(Game.fileEnd)] for f in listdir(AssetType.savings.value) if path.isfile(get_asset_path(AssetType.savings.value, f)) and f.endswith(Game.fileEnd)]
         if not serialized:
             return filenameList
         else:

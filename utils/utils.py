@@ -8,7 +8,7 @@ from core.consts import AssetType
 # Import internal module
 from core.consts import PrintColor, PlayerColor, SCREEN_SIZE
 
-def color_print(text: str, color: PrintColor, end='\n'):
+def color_print(text: str, color: PrintColor, end='\n') -> None:
     """Prints to console with the color specified
 
     Args:

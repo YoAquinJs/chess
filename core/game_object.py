@@ -8,7 +8,6 @@ class GameObject(ABC):
     #! Must be called each sub class initialization
     def init_attributes(self) -> None:
         self.children: list[GameObject] = []
-        self.renders = False
         self._x = 0
         self._y = 0
 
@@ -36,5 +35,5 @@ class GameObject(ABC):
         pass
 
     @abstractmethod
-    def render(self, surface: pygame.surface) -> None:
+    def render(self, surface: pygame.Surface) -> None:
         pass
