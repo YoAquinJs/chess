@@ -15,11 +15,13 @@ def main():
     pygame.display.set_caption("CHESS")
     clock = pygame.time.Clock()
     
-    # Get the background image and scale it
-    background_img = scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png")))
-    
-    screenSize = (background_img.get_width(),background_img.get_height())
+    backgroundImg = scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png")))
+    screenSize = (backgroundImg.get_width(),backgroundImg.get_height())
     screen = pygame.display.set_mode(screenSize)
+
+    iconImg = pygame.image.load(get_asset_path(AssetType.sprite, "icon.png")).convert_alpha()
+    pygame.display.set_icon(iconImg)
+
     font = Font(get_asset_path(AssetType.sprite, "font.png"))
     
     GameManager.init_game(screen, font)
