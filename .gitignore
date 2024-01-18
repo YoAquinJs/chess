@@ -1,5 +1,6 @@
-t.py
+init_look.py
 savings
+.vscode
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
