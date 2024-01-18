@@ -4,15 +4,17 @@ from utils.utils import tint_image
 from core.game_object import GameObject
 
 class Sprite(GameObject):
-    def __init__(self, x: int, y: int, image: pygame.Surface, centered=False,
-                 color: tuple[int, int, int]=None, tint: tuple[int, int, int]=(255,255,255)):
+    def __init__(self, x: int, y: int, image: pygame.Surface, centered=False, pixelByPixel: bool=True, tint: tuple[int, int, int]=(255,255,255)):
         self.init_attributes()
         
-        if color is None:
-            color = image.get_at((0,0))
-        
         self._tint = (255,255,255)
-        self._color = color
+        self.pixelByPixel = pixelByPixel
+        if not self.pixelByPixel:
+            color = image.get_at((0,0))
+            self._color = (color.r, color.g, color.b)
+        else:
+            self.originalImg = image.copy()
+        
         self.image = image
         self.rect = image.get_rect(topleft=(x,y))
         self.centered = centered
@@ -30,8 +32,15 @@ class Sprite(GameObject):
         if self._tint == value:
             return
         self._tint = value
-        self.image.fill(self._color)
-        tint_image(self.image, self._tint)
+        
+        if not self.pixelByPixel:
+            self.image.fill(self._color)
+        else:
+            for x, y in zip(range(self.image.get_width()), range(self.image.get_height())):
+                pixelColor = self.originalImg.get_at((x,y))
+                self.image.set_at((x,y), pixelColor)
+
+        tint_image(self.image, self._tint, self.pixelByPixel)
 
     @GameObject.x.setter
     def x(self, value):

@@ -62,9 +62,9 @@ def tint_image(image: pygame.Surface, tint: tuple[int, int, int], pixelByPixel: 
         image.fill(newColor)
     else:
         for x, y in zip(range(image.get_width()), range(image.get_height())):
-            imageColor = image.get_at((x,y))
-            imageColor = (imageColor.r, imageColor.g, imageColor.b, imageColor.a)
-            newPixelColor = tuple(c*t for c, t in zip(imageColor, tint))
+            pixelColor = image.get_at((x,y))
+            pixelColor = (pixelColor.r, pixelColor.g, pixelColor.b, pixelColor.a)
+            newPixelColor = tuple(c*t for c, t in zip(pixelColor, tint))
             image.set_at((x,y), newPixelColor)
 
 def get_asset_path(type: AssetType, *subPaths: str) -> str:
