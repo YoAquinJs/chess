@@ -1,7 +1,7 @@
 """This module contains the Piece model object and it's properties"""
 
 # Import Internal module
-from core.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
+from game_logic.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
 
 class Piece():
     """Class for handling game screens, and game states

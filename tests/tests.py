@@ -1,6 +1,6 @@
 """This module contains the generic test class"""
 
-from core.consts import TestType
+from game_logic.consts import TestType
 from typing import List
 
 class Tests:

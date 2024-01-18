@@ -2,15 +2,15 @@ import pygame
 from typing import Type
 
 from utils.utils import scale_image, get_asset_path
-from core.consts import AssetType
-from core.screen import Screen
+from game_logic.consts import AssetType
+from game_logic.screen import Screen
 from screens.on_game import OnGameScreen
 from screens.load_game import LoadGameScreen
-from user_interface.text import Text
-from user_interface.label import Label
-from user_interface.button import Button
-from user_interface.sprite import Sprite
-from core.game_manager import GameManager
+from ui.text import Text
+from ui.components.label import Label
+from ui.components.button import Button
+from ui.components.sprite import Sprite
+from game_logic.game_manager import GameManager
 
 class MainMenuScreen(Screen):
 

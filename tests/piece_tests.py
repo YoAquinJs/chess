@@ -6,7 +6,7 @@ import traceback
 # Import Internal modules
 from tests.tests import Tests
 from chess_engine.board import Board
-from core.consts import PrintColor, PlayerColor, TestType, BOARD_START, ROWS, COLUMNS
+from game_logic.consts import PrintColor, PlayerColor, TestType, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
 
 class PieceTests():

@@ -1,7 +1,7 @@
 import pygame
 
 from utils.utils import tint_image
-from core.game_object import GameObject
+from game_logic.game_object import GameObject
 
 class Sprite(GameObject):
     def __init__(self, x: int, y: int, image: pygame.Surface, centered=False, pixelByPixel: bool=True, tint: tuple[int, int, int]=(255,255,255)):

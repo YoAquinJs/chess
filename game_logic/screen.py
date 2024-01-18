@@ -1,8 +1,8 @@
 import pygame
 from abc import ABC, abstractmethod
 
-from core.game_object import GameObject
-from user_interface.font import Font
+from game_logic.game_object import GameObject
+from ui.font import Font
 
 class Screen(ABC):
 

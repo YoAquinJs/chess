@@ -9,7 +9,7 @@ from typing import Union, List
 # Import Internal modules
 from utils.utils import color_print, opponent, get_asset_path
 from chess_engine.piece import Piece
-from core.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, AssetType, COLUMNS, ROWS, BOARD_START
+from game_logic.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, AssetType, COLUMNS, ROWS, BOARD_START
 
 class Board():
     """Class for handling game screens, and game states

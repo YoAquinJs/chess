@@ -4,11 +4,14 @@
 import pygame
 
 # Import internal modules
-from core.consts import AssetType
-from screens.main_menu import MainMenuScreen
 from utils.utils import scale_image, get_asset_path
-from user_interface.font import Font
-from core.game_manager import GameManager
+from ui.font import Font
+from game_logic.consts import AssetType
+from game_logic.game_manager import GameManager
+
+from screens.main_menu import MainMenuScreen
+from screens.load_game import LoadGameScreen
+from screens.on_game import OnGameScreen
 
 def pygame_setup() -> tuple[pygame.time.Clock, pygame.Surface]:
     pygame.init()

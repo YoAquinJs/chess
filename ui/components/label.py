@@ -1,8 +1,8 @@
 import pygame
 
 # Import internal module
-from core.game_object import GameObject
-from user_interface.font import Font, Text
+from game_logic.game_object import GameObject
+from ui.font import Font, Text
 
 class Label(GameObject):
     def __init__(self, x: int, y: int, text: Text, color: tuple[int, int, int], font: Font, centered=True) -> None:

@@ -5,10 +5,10 @@ from typing import Type
 
 # Import internal modules
 from chess_engine.board import Board
-from core.game import Game
-from core.screen import Screen;
-from core.consts import PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
-from user_interface.font import Font
+from game_logic.game import Game
+from game_logic.screen import Screen;
+from game_logic.consts import PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
+from ui.font import Font
 
 class GameManager():
     """Class for handling game screens, and game states

@@ -5,9 +5,9 @@ import pygame
 from collections.abc import Callable
 
 # Import internal module
-from core.game_object import GameObject
-from user_interface.sprite import Sprite
-from user_interface.label import Label
+from game_logic.game_object import GameObject
+from ui.components.sprite import Sprite
+from ui.components.label import Label
 
 class Button(GameObject):
 

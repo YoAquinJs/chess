@@ -9,7 +9,7 @@ from typing import List, Union
 from chess_engine.board import Board
 from chess_engine.piece import Piece
 from utils.utils import get_asset_path
-from core.consts import BoardState, GameResult, PlayerColor, PieceType, AssetType, MAX_GAMES_SAVED, ROWS, COLUMNS
+from game_logic.consts import BoardState, GameResult, PlayerColor, PieceType, AssetType, MAX_GAMES_SAVED, ROWS, COLUMNS
 
 class Game():
     """Class for handling game functionalities

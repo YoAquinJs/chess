@@ -1,13 +1,13 @@
 import pygame
 
 from utils.utils import scale_image, get_asset_path
-from core.screen import Screen
-from core.consts import AssetType
-from user_interface.font import Font
-from user_interface.label import Label
-from user_interface.button import Button
-from user_interface.sprite import Sprite
-from user_interface.text import Text
+from game_logic.screen import Screen
+from game_logic.consts import AssetType
+from ui.font import Font
+from ui.text import Text
+from ui.components.label import Label
+from ui.components.button import Button
+from ui.components.sprite import Sprite
 
 # New Background
 # Board objects

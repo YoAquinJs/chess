@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import *
 
 from utils.utils import scale_image
-from user_interface.text import Text
+from ui.text import Text
 
 def clip(surface: pygame.Surface, x: int, y: int, x_size: int, y_size: int) -> pygame.Surface:
     """Clips an image from a surface
