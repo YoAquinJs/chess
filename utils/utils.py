@@ -59,7 +59,7 @@ def tint_image(image: pygame.Surface, tint: tuple[int, int, int], pixelByPixel: 
         imageColor = image.get_at((0,0))
         imageColor = (imageColor.r, imageColor.g, imageColor.b, imageColor.a)
         newColor = tuple(c*t for c, t in zip(imageColor, tint))
-        image.fill(newColor)
+        image.fill(newColor, special_flags=pygame.BLEND_RGBA_MULT)
     else:
         for x, y in zip(range(image.get_width()), range(image.get_height())):
             pixelColor = image.get_at((x,y))

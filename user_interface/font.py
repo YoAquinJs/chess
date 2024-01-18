@@ -3,7 +3,7 @@
 import pygame
 from pygame.locals import *
 
-from utils.utils import scale_image, tint_image
+from utils.utils import scale_image
 from user_interface.text import Text
 
 def clip(surface: pygame.Surface, x: int, y: int, x_size: int, y_size: int) -> pygame.Surface:
@@ -74,7 +74,7 @@ class Font():
         for char in text.value:
             if char != ' ':
                 charImg = scale_image(self.characters[char].copy(), text.scale, False)
-                tint_image(charImg, color, pixelByPixel=True)
+                charImg.fill(color, special_flags=pygame.BLEND_RGBA_MULT)
                 
                 text.characterImages.append(charImg)
                 text.renderPositions.append((x_offset, 0))
@@ -84,7 +84,7 @@ class Font():
 
     def renderText(self, x: int, y: int, text: Text, screen: pygame.Surface, centered=True) -> None:
         if centered:
-            width = sum(charImg.get_width()+(self.spacing*text.scale) for charImg in text.characterImages)-(self.spacing*text.scale)
+            width = sum(charImg.get_width()+self.spacing*text.scale for charImg in text.characterImages)
             x -= width//2
             
             if any(char.isalpha() and char.isupper() for char in text.value):
