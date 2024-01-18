@@ -15,7 +15,7 @@ from user_interface.sprite import Sprite
 # Save game button
 # Delete game button
 
-class GameScreen(Screen):
+class OnGameScreen(Screen):
 
     def init_objects(self):
         # Background

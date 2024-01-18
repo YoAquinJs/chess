@@ -28,7 +28,7 @@ class PrintColor(Enum):
     yellow = '\033[33m'
     reset = '\033[0m'
 
-class GameScreen(Enum):
+class GameScreenType(Enum):
     """Enum for game screens in the game"""
     
     mainMenu = 'move_turn'
