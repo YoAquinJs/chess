@@ -28,13 +28,6 @@ class PrintColor(Enum):
     yellow = '\033[33m'
     reset = '\033[0m'
 
-class GameScreenType(Enum):
-    """Enum for game screens in the game"""
-    
-    mainMenu = 'move_turn'
-    loadGame = 'loadGame'
-    onGame = 'on_game'
-
 # Meta Enum class for parsing from string value to Enum
 class ParseableEnum(EnumMeta):
     def __getitem__(cls, item: str) -> object:

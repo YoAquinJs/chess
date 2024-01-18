@@ -5,6 +5,7 @@ import pygame
 
 # Import internal modules
 from core.consts import AssetType
+from screens.main_menu import MainMenuScreen
 from utils.utils import scale_image, get_asset_path
 from user_interface.font import Font
 from core.game_manager import GameManager
@@ -24,7 +25,7 @@ def main():
 
     font = Font(get_asset_path(AssetType.sprite, "font.png"))
     
-    GameManager.init_game(screen, font)
+    GameManager.init_game(screen, font, MainMenuScreen)
     while GameManager.running:
         # Run Events
         for event in pygame.event.get():
