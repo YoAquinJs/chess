@@ -46,7 +46,7 @@ def scale_image(image: pygame.Surface, scale: float = 1, scaleToScreen: bool = T
         scale *= SCREEN_SIZE
     return pygame.transform.scale(image, (image.get_width()*scale, image.get_height()*scale))
 
-def tint_image(image: pygame.Surface, tint: tuple[int, int, int]) -> None:
+def tint_image(image: pygame.Surface, tint: tuple[int, int, int], pixelByPixel: bool = False) -> None:
     """Tints the given image
     
     Args:
@@ -54,7 +54,18 @@ def tint_image(image: pygame.Surface, tint: tuple[int, int, int]) -> None:
         tint (tuple[int, int, int]): Tint color.
     """
     
-    image.fill(tint)
+    tint = tuple(t/255 for t in (tint+(255,)))
+    if not pixelByPixel:
+        imageColor = image.get_at((0,0))
+        imageColor = (imageColor.r, imageColor.g, imageColor.b, imageColor.a)
+        newColor = tuple(c*t for c, t in zip(imageColor, tint))
+        image.fill(newColor)
+    else:
+        for x, y in zip(range(image.get_width()), range(image.get_height())):
+            imageColor = image.get_at((x,y))
+            imageColor = (imageColor.r, imageColor.g, imageColor.b, imageColor.a)
+            newPixelColor = tuple(c*t for c, t in zip(imageColor, tint))
+            image.set_at((x,y), newPixelColor)
 
 def get_asset_path(type: AssetType, *subPaths: str) -> str:
     """Return the path of an asset based on the type and sub path
