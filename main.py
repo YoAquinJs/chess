@@ -10,11 +10,10 @@ from utils.utils import scale_image, get_asset_path
 from user_interface.font import Font
 from core.game_manager import GameManager
 
-def main():
-    # pygame setup
+def pygame_setup() -> tuple[pygame.time.Clock, pygame.Surface]:
     pygame.init()
-    pygame.display.set_caption("CHESS")
     clock = pygame.time.Clock()
+    pygame.display.set_caption("CHESS")
     
     backgroundImg = scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png")))
     screenSize = (backgroundImg.get_width(),backgroundImg.get_height())
@@ -22,12 +21,16 @@ def main():
 
     iconImg = pygame.image.load(get_asset_path(AssetType.sprite, "icon.png")).convert_alpha()
     pygame.display.set_icon(iconImg)
+    
+    return clock, screen
+
+def main():
+    clock, screen = pygame_setup()
 
     font = Font(get_asset_path(AssetType.sprite, "font.png"))
     
     GameManager.init_game(screen, font, MainMenuScreen)
     while GameManager.running:
-        # Run Events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 GameManager.quit()

@@ -1,12 +1,16 @@
 import pygame
+from typing import Type
 
 from utils.utils import scale_image, get_asset_path
-from core.screen import Screen
 from core.consts import AssetType
+from core.screen import Screen
+from screens.on_game import OnGameScreen
+from screens.load_game import LoadGameScreen
 from user_interface.text import Text
 from user_interface.label import Label
 from user_interface.button import Button
 from user_interface.sprite import Sprite
+from core.game_manager import GameManager
 
 class MainMenuScreen(Screen):
 
@@ -20,8 +24,8 @@ class MainMenuScreen(Screen):
         img = pygame.Surface((400,95))
         img.fill((255,0,0))
         newGameBttSprite = Sprite(0, 0, img, pixelByPixel=False, centered=True)
-        newGameBttLabel = Label(0, 0, Text("New Game", 1.2), (0,0,0), self.font)
-        newGameButton = Button(newGameBttX, newGameBttY, newGameBttSprite, newGameBttLabel, lambda: 42)
+        newGameBttLabel = Label(0, 0, Text("New Game", 1.2), (0,0,255), self.font)
+        newGameButton = Button(newGameBttX, newGameBttY, newGameBttSprite, newGameBttLabel, lambda: GameManager.load_screen(OnGameScreen))
         
         # Load Game Button
         loadGameBttX = self.renderScreen.get_width()//2
@@ -30,7 +34,7 @@ class MainMenuScreen(Screen):
         img.fill((255,0,0))
         loadGameSprite = Sprite(0, 0, img, pixelByPixel=False, centered=True)
         loadGameLabel = Label(0, 0, Text( "Load Game"), (0,0,0), self.font)
-        loadGameButton = Button(loadGameBttX, loadGameBttY, loadGameSprite, loadGameLabel, lambda: 42)
+        loadGameButton = Button(loadGameBttX, loadGameBttY, loadGameSprite, loadGameLabel, lambda: GameManager.load_screen(LoadGameScreen))
         
         # Hierarchy
         self.register_obj(backgroundSprite)
