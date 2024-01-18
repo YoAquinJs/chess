@@ -3,21 +3,26 @@
 import pygame
 from pygame.locals import *
 
-from utils.utils import scale_image
-from core.consts import SCREEN_SIZE
+from utils.utils import scale_image, tint_image
 
-def clip(surface: pygame.surface, x: int, y: int, x_size: int, y_size: int) -> pygame.image:
+class Text():
+    
+    def __init__(self) -> None:
+        self.characterImages: list[pygame.Surface] = []
+        self.renderPositions: list[tuple[int, int]] = []
+
+def clip(surface: pygame.Surface, x: int, y: int, x_size: int, y_size: int) -> pygame.Surface:
     """Clips an image from a surface
 
     Args:
-        surface (pygame.surface): Surface to clip from.
+        surface (pygame.Surface): Surface to clip from.
         x (int): Position in X.
         y (int): Position in Y.
         x_size (int): Size in X.
         y_size (int): Size in Y
     
     Returns:
-        pygame.image: Image cliped
+        pygame.Surface: Image cliped
     """
     
     handle_surf = surface.copy()
@@ -33,7 +38,7 @@ class Font():
     Attributes:
         spacing (int): Spacing between chars.
         character_order (List[str]): List of the order of the chars in the imported font.
-        character_order (Dict[str, pygame.image]): Dictinary of char to it's corresponding image
+        character_order (Dict[str, pygame.Surface]): Dictinary of char to it's corresponding image
         space_width (int): Width of a char image.
     """
 
@@ -44,8 +49,8 @@ class Font():
             fontPath (str): Path to the font image to be used.
         """
         
+        self.characters: dict[str, pygame.Surface] = {}
         current_char_width = 0
-        self.characters = {}
         character_count = 0
         self.character_order = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','.','-',',',':','+','\'','!','?','0','1','2','3','4','5','6','7','8','9','(',')','/','_','=','\\','[',']','*','"','<','>',';']
         
@@ -54,38 +59,40 @@ class Font():
             c = font_img.get_at((x, 0))
             if c[0] == 127:
                 char_img = clip(font_img, x - current_char_width, 0, current_char_width, font_img.get_height())
-                self.characters[self.character_order[character_count]] = char_img
+                self.characters[self.character_order[character_count]] = scale_image(char_img)
                 character_count += 1
                 current_char_width = 0
             else:
                 current_char_width += 1
                 
-        self.space_height = self.characters['A'].get_height()*SCREEN_SIZE
-        self.space_width = self.characters['A'].get_width()*SCREEN_SIZE
+        self.space_height = self.characters['A'].get_height()
+        self.space_width = self.characters['A'].get_width()
         self.spacing = self.space_width//2
 
-    def render(self, surface: pygame.Surface, text: str, x: int, y: int, scale: int=1, centered=True):
+    def generateText(self, text: str, color: tuple[int, int, int], scale: int=1) -> Text:
         """From the font object renders the text specified
-
-        Args:
-            surface (pygame.Surface): Surface in which to render.
-            text (str): Text to be rendered
-            x (int): Position in X.
-            y (int): Position in Y.
-            scale(int, optional): Scaling of the resulting text image, Defaults to 1.
-            centered(True, optional): Whether to center the text in the given coordinate or not, Defaults to True.
         """
         
+        x_offset = 0
+        textObj = Text()
+        for char in text:
+            if char != ' ':
+                charImg = scale_image(self.characters[char].copy(), scale, False)
+                tint_image(charImg, color, pixelByPixel=True)
+                
+                textObj.characterImages.append(charImg)
+                textObj.renderPositions.append((x_offset, 0))
+                x_offset += (self.characters[char].get_width() + self.spacing)*scale
+            else:
+                x_offset += (self.space_width + self.spacing)*scale/2
+
+        return textObj
+
+    def renderText(self, x: int, y: int, textObj: Text, screen: pygame.Surface, centered=True) -> None:
         if centered:
-            width = len(text)*(self.space_width + self.spacing)
+            width = len(textObj.characterImages)*(self.space_width + self.spacing)
             x -= width//2
             y -= self.space_height//2
         
-        # Render char by char to screen
-        x_offset = 0
-        for char in text:
-            if char != ' ':
-                surface.blit(scale_image(self.characters[char], scale), (x + x_offset, y))
-                x_offset += (self.characters[char].get_width()*SCREEN_SIZE + self.spacing)*scale
-            else:
-                x_offset += (self.space_width + self.spacing)*scale/2
+        for charImg, coord in zip(textObj.characterImages, textObj.renderPositions):
+            screen.blit(charImg, (x+coord[0], y+coord[1]))

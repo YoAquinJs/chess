@@ -8,8 +8,8 @@ class GameObject(ABC):
     #! Must be called each sub class initialization
     def init_attributes(self) -> None:
         self.children: list[GameObject] = []
-        self._x = 0
-        self._y = 0
+        self._x: int = 0
+        self._y: int = 0
 
     @property
     def x(self):
