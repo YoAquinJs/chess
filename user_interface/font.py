@@ -4,12 +4,7 @@ import pygame
 from pygame.locals import *
 
 from utils.utils import scale_image, tint_image
-
-class Text():
-    
-    def __init__(self) -> None:
-        self.characterImages: list[pygame.Surface] = []
-        self.renderPositions: list[tuple[int, int]] = []
+from user_interface.text import Text
 
 def clip(surface: pygame.Surface, x: int, y: int, x_size: int, y_size: int) -> pygame.Surface:
     """Clips an image from a surface
@@ -64,35 +59,39 @@ class Font():
                 current_char_width = 0
             else:
                 current_char_width += 1
-                
-        self.space_height = self.characters['A'].get_height()
+        
         self.space_width = self.characters['A'].get_width()
         self.spacing = self.space_width//2
 
-    def generateText(self, text: str, color: tuple[int, int, int], scale: int=1) -> Text:
+    def generateText(self, text: Text, color: tuple[int, int, int]) -> None:
         """From the font object renders the text specified
         """
         
+        if len(text.characterImages) != 0 or len(text.renderPositions) != 0:
+            raise ValueError("Passed text object had been already generated")
+
         x_offset = 0
-        textObj = Text()
-        for char in text:
+        for char in text.value:
             if char != ' ':
-                charImg = scale_image(self.characters[char].copy(), scale, False)
+                charImg = scale_image(self.characters[char].copy(), text.scale, False)
                 tint_image(charImg, color, pixelByPixel=True)
                 
-                textObj.characterImages.append(charImg)
-                textObj.renderPositions.append((x_offset, 0))
-                x_offset += (self.characters[char].get_width() + self.spacing)*scale
+                text.characterImages.append(charImg)
+                text.renderPositions.append((x_offset, 0))
+                x_offset += (self.spacing*text.scale) + charImg.get_width()
             else:
-                x_offset += (self.space_width + self.spacing)*scale/2
+                x_offset += (self.space_width + self.spacing)*text.scale/2
 
-        return textObj
-
-    def renderText(self, x: int, y: int, textObj: Text, screen: pygame.Surface, centered=True) -> None:
+    def renderText(self, x: int, y: int, text: Text, screen: pygame.Surface, centered=True) -> None:
         if centered:
-            width = len(textObj.characterImages)*(self.space_width + self.spacing)
+            width = sum(charImg.get_width()+(self.spacing*text.scale) for charImg in text.characterImages)-(self.spacing*text.scale)
             x -= width//2
-            y -= self.space_height//2
+            
+            if any(char.isalpha() and char.isupper() for char in text.value):
+                y -= self.characters["A"].get_height()*text.scale//2.66
+            else:
+                y -= self.characters["A"].get_height()*text.scale//2
         
-        for charImg, coord in zip(textObj.characterImages, textObj.renderPositions):
-            screen.blit(charImg, (x+coord[0], y+coord[1]))
+        for charImg, coord in zip(text.characterImages, text.renderPositions):
+            iX, iY = coord
+            screen.blit(charImg, (x+iX, y+iY))
