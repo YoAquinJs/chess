@@ -3,6 +3,7 @@
 # Import external libraries
 import pygame
 from collections.abc import Callable
+from typing import Optional
 
 # Import internal module
 from game_logic.game_object import GameObject
@@ -11,7 +12,7 @@ from ui.elements.label import Label
 
 class Button(GameObject):
 
-    def __init__(self, x: int, y: int, sprite: Sprite, label: Label, callback: Callable) -> None:
+    def __init__(self, x: int, y: int, sprite: Sprite, label: Optional[Label], callback: Callable) -> None:
         self.init_attributes()
         
         self._x = x
@@ -21,12 +22,13 @@ class Button(GameObject):
         
         sprite.x = self.x
         sprite.y = self.y
-        label.x = self.x
-        label.y = self.y
-        
         self.sprite = sprite
         self.add_child(0, sprite)
-        self.add_child(1, label)
+        
+        if label is not None:
+            label.x = self.x
+            label.y = self.y
+            self.add_child(1, label)
 
     @GameObject.x.setter
     def x(self, value):

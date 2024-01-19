@@ -42,22 +42,27 @@ class Sprite(GameObject):
 
         tint_image(self.image, self._tint, self.pixelByPixel)
 
-    @GameObject.x.setter
-    def x(self, value):
+    def xSetter(self, value: int) -> None:
         if value < 0:
             raise ValueError("GameObject's x coordinate must not be negative")
         
         self._x = value
         self.rect.x = self._x - (self.image.get_width()//2 if self.centered else 0)
-        #print(value, newRectX, self.image.get_rect())
 
-    @GameObject.y.setter
-    def y(self, value):
+    def ySetter(self, value: int) -> None:
         if value < 0:
             raise ValueError("GameObject's y coordinate must not be negative")
         
         self._y = value
         self.rect.y = self._y - (self.image.get_height()//2 if self.centered else 0)
+
+    @GameObject.x.setter
+    def x(self, value: int):
+        self.xSetter(value)
+
+    @GameObject.y.setter
+    def y(self, value: int):
+        self.ySetter(value)
 
     def update(self):
         pass
