@@ -3,7 +3,7 @@ from typing import Type
 
 from utils.utils import scale_image, get_asset_path
 from game_logic.consts import AssetType
-from game_logic.screen import Screen
+from game_logic.screen import Screen, ScreenBaseData
 from screens.on_game import OnGameScreen
 from screens.load_game import LoadGameScreen
 from ui.text import Text
@@ -14,7 +14,9 @@ from game_logic.game_manager import GameManager
 
 class MainMenuScreen(Screen):
 
-    def init_objects(self) -> None:
+    def __init__(self, baseData: ScreenBaseData) -> None:
+        super().__init__(baseData)
+        
         # Background
         backgroundSprite = Sprite(0, 0, scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png"))))
         

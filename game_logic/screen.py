@@ -1,20 +1,21 @@
 import pygame
-from abc import ABC, abstractmethod
+from abc import ABC
+from dataclasses import dataclass
 
 from game_logic.game_object import GameObject
 from ui.font import Font
 
+@dataclass
+class ScreenBaseData:
+    font: Font
+    renderScreen: pygame.Surface
+
 class Screen(ABC):
 
-    def __init__(self, renderScreen: pygame.Surface, font: Font) -> None:
-        self.renderScreen = renderScreen
-        self.font = font
+    def __init__(self, baseData: ScreenBaseData) -> None:
+        self.font = baseData.font
+        self.renderScreen = baseData.renderScreen
         self.gameObjects: list[GameObject] = []
-        self.init_objects()
-
-    @abstractmethod
-    def init_objects(self) -> None:
-        pass
 
     def register_obj(self, obj: GameObject) -> None:
         if obj in self.gameObjects:

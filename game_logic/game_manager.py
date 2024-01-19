@@ -6,7 +6,7 @@ from typing import Type
 # Import internal modules
 from chess_engine.board import Board
 from game_logic.game import Game
-from game_logic.screen import Screen;
+from game_logic.screen import Screen, ScreenBaseData
 from game_logic.consts import PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
 from ui.font import Font
 
@@ -31,8 +31,8 @@ class GameManager():
         """Initializes the game
         """
         
-        cls.renderScreen = renderScreen
         cls.font = font
+        cls.renderScreen = renderScreen
         cls.load_screen(intialScreen)
 
     @classmethod
@@ -50,8 +50,8 @@ class GameManager():
         cls.currentScreen.render()
 
     @classmethod
-    def load_screen(cls, screenType: Type[Screen]):
-        cls.currentScreen = screenType(cls.renderScreen, cls.font)
+    def load_screen(cls, screenType: Type[Screen], **kargs):
+        cls.currentScreen = screenType(ScreenBaseData(cls.font, cls.renderScreen), **kargs)
 
     @staticmethod
     def quit(cls):
