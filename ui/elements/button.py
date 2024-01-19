@@ -14,6 +14,7 @@ class Button(GameObject):
 
     def __init__(self, x: int, y: int, sprite: Sprite, label: Optional[Label], callback: Callable) -> None:
         self.init_attributes()
+        self.drag_children = True
         
         self._x = x
         self._y = y
@@ -29,20 +30,6 @@ class Button(GameObject):
             label.x = self.x
             label.y = self.y
             self.add_child(1, label)
-
-    @GameObject.x.setter
-    def x(self, value):
-        delta = value - self._x
-        super().x.__set__(self, value)
-        for child in self.children:
-            child.x += delta
-
-    @GameObject.y.setter
-    def y(self, value):
-        delta = value - self._y
-        super().y.__set__(self, value)
-        for child in self.children:
-            child.y += delta
 
     def update(self):
         """Update the button pressed status, and call the callback when pressed
