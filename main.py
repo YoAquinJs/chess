@@ -32,7 +32,7 @@ def main():
 
     font = Font(get_asset_path(AssetType.sprite, "font.png"))
     
-    GameManager.init_game(screen, font, MainMenuScene)
+    GameManager.init_game(screen, font, LoadGameScene)
     while GameManager.running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

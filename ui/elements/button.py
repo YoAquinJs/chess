@@ -31,7 +31,7 @@ class Button(GameObject):
             label.y = self.y
             self.add_child(1, label)
 
-    def update(self):
+    def update(self) -> None:
         """Update the button pressed status, and call the callback when pressed
         """
         

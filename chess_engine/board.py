@@ -4,7 +4,6 @@
 from asyncio import run
 from copy import deepcopy
 from json import dumps, load
-from typing import Union, List
 
 # Import Internal modules
 from utils.utils import color_print, opponent, get_asset_path
@@ -15,26 +14,26 @@ class Board():
     """Class for handling game screens, and game states
 
     Attributes:
-        __grid (List[List[Piece]]): Grid representing the board configuration, it's private
+        __grid (list[list[Piece]]): Grid representing the board configuration, it's private
         getPromotionPiece(function): Asynchronous function for getting the piece on promotion.
         canCastleLeft (bool): Whether castling to left is available for this board or not. Defaults to True.
         canCastleRigth (bool): Whether castling to rigth is available for this board or not. Defaults to True.
         boardState (BoardState): The game state of the board. Defaults to BoardState.moveTurn.
         turn (PlayerColor): The player whoose turn it's the on going one. Defaults to PlayerColor.white.
-        possibleEnPassant (Union[int, int]]): Coordinates of a possible en passant movement for the next turn.
+        possibleEnPassant (tuple[int, int]]): Coordinates of a possible en passant movement for the next turn.
         whiteKing (piece): White king piece object reference.
         blackKing (piece): Black king piece object reference.
-        whitePieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color white.
-        blackPieces (Dict[Piece,List[Union(int,int)]]): List of all pieces of color black.
+        whitePieces (Dict[Piece,list[tuple(int,int)]]): list of all pieces of color white.
+        blackPieces (Dict[Piece,list[tuple(int,int)]]): list of all pieces of color black.
     """
     
     fileEnd = '_b.json'
 
-    def __init__(self, grid: List[List[Piece]], turn: PlayerColor = PlayerColor.white, afterMoveCheck: bool = False) -> None:
+    def __init__(self, grid: list[list[Piece]], turn: PlayerColor = PlayerColor.white, afterMoveCheck: bool = False):
         """Creates a board object instance
 
         Args:
-            __grid (List[List[Piece]]): Grid representing the chess board and the game pieces.
+            __grid (list[list[Piece]]): Grid representing the chess board and the game pieces.
             turn (PlayerColor, optional): Current turn player. Defaults to PlayerColor.white.
             afterMoveCheck (bool, optional): Whether to not determine if the current board is checkmate or stalemate. Defaults to false.
 
@@ -148,7 +147,7 @@ class Board():
         opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
         return any((row,column) in attackedSquares for attackedSquares in opponentPieces.values())
 
-    def empty_square(self, row: int, column: int):
+    def empty_square(self, row: int, column: int) -> None:
         """Empty the specified square
 
         Args:
@@ -205,7 +204,7 @@ class Board():
         
         return True
 
-    def squares_under_attack(self, opponent: PlayerColor):
+    def squares_under_attack(self, opponent: PlayerColor) -> None:
         """Calculate the squares under attack by the opponent pieces
 
         Args:
@@ -222,7 +221,7 @@ class Board():
                 elif piece.column != movement[1]: # If the movement is different to pawn frontal move, add it
                     posibleMovs.append(movement)
 
-    def get_posible_turn_movements(self, turn: PlayerColor = None):
+    def get_posible_turn_movements(self, turn: PlayerColor = None) -> None:
         """Calculate the squares which the turn pieces can move to
 
         Args:
@@ -238,7 +237,7 @@ class Board():
             posibleMovs.clear()
             posibleMovs += self.get_valid_movements(piece)
 
-    def set_game_state(self, afterMoveCheck: bool = False):
+    def set_game_state(self, afterMoveCheck: bool = False) -> None:
         """Evaluates if the board state of the player whoose turn is next
         
         Args:
@@ -292,12 +291,12 @@ class Board():
         self.__grid[row2][column2].column = column1
         self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
 
-    def get_max_extendable_movements(self, piece: Piece, direction: Union[int, int], maxIterations: int) -> int:
+    def get_max_extendable_movements(self, piece: Piece, direction: tuple[int, int], maxIterations: int) -> int:
         """Given a piece and direction, returns the number of movements it can perform without colliding, before reaching a given limit
 
         Args:
             piece (Piece): Piece to move.
-            direction (Union[int, int]): Direction of the extenable movement.
+            direction (tuple[int, int]): Direction of the extenable movement.
             maxIterations(int, optional): Maximum distance from piece origin.
             
         Returns:
@@ -363,7 +362,7 @@ class Board():
 
         return hipothetycalBoard.boardState == BoardState.check or hipothetycalBoard.boardState == BoardState.checkmate
 
-    def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> List[Union[int, int]]:
+    def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> list[tuple[int, int]]:
         """Return all the valid movements of a piece
 
         Args:
@@ -371,7 +370,7 @@ class Board():
             countPawnAttacks (bool, optional): Determine whether to count the possible pawn attacks (used for the attacked squares calculation). Defaults to False.
 
         Returns:
-            List[Union[int, int]]: List of the valid movements
+            list[tuple[int, int]]: list of the valid movements
         """
         
         validMovements = []
@@ -446,7 +445,7 @@ class Board():
         
         return True
 
-    def attempt_move(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> Union[bool, dict]:
+    def attempt_move(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> tuple[bool, dict]:
         """Attempts to move a piece from it's origin, to a destination.
 
         Args:
@@ -518,7 +517,7 @@ class Board():
         }
 
     #! Development Only method
-    def print_board(self):
+    def print_board(self) -> None:
         for column in COLUMNS:
             print(f" {column} ", end='')
         print()
@@ -592,11 +591,11 @@ class Board():
         return board
 
     @classmethod
-    def start_board(cls, textGrid: List[List[str]] = BOARD_START, turn: PlayerColor = PlayerColor.white) -> object:
+    def start_board(cls, textGrid: list[list[str]] = BOARD_START, turn: PlayerColor = PlayerColor.white) -> object:
         """Creates a Board object instance, from a string grid, and transforms it to a Piece Object grid
 
         Args:
-            textGrid (List[List[str]], optional): The text grid to transform. Defaults to BOARD_START.
+            textGrid (list[list[str]], optional): The text grid to transform. Defaults to BOARD_START.
             turn (PlayerColor, optional): Current turn player. Defaults to PlayerColor.white.
 
         Returns:

@@ -15,35 +15,35 @@ class Label(GameObject):
         self.centered = centered
         
         self._text = text
-        self.font.generateText(self._text, self.color)
+        self.font.generate_text(self._text, self.color)
 
     @property
     def text(self) -> str:
         return self._text.value
 
     @text.setter
-    def text(self, value: str):
+    def text(self, value: str) -> None:
         if self._text.value == value:
             return
         self._text = Text(value, self._text.scale)
-        self.font.generateText(self._text, self.color)
+        self.font.generate_text(self._text, self.color)
 
     @property
     def scale(self) -> float:
         return self._text.scale
 
     @scale.setter
-    def scale(self, value: float):
+    def scale(self, value: float) -> None:
         if self._text.scale == value:
             return
         self._text = Text(self._text.value, value)
-        self.font.generateText(self._text, self.color)
+        self.font.generate_text(self._text, self.color)
 
-    def update(self):
+    def update(self) -> None:
         pass
 
     def render(self, surface: pygame.Surface) -> None:
-        self.font.renderText(self._x, self._y, self._text, surface, self.centered)
+        self.font.render_text(self._x, self._y, self._text, surface, self.centered)
 
     def __str__(self) -> str:
         return self._text.value

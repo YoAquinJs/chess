@@ -27,7 +27,7 @@ class GameManager():
     loadedGame: int = -1
 
     @classmethod
-    def init_game(cls, renderScreen: pygame.Surface, font: Font, intialScene: Type[Scene]):
+    def init_game(cls, renderScreen: pygame.Surface, font: Font, intialScene: Type[Scene]) -> None:
         """Initializes the game
         """
         
@@ -36,23 +36,23 @@ class GameManager():
         cls.load_screen(intialScene)
 
     @classmethod
-    def update(cls):
+    def update(cls) -> None:
         """Runs the logic of the game based on the loaded screen
         """
         
         cls.currentScene.update()
 
     @classmethod
-    def render(cls):
+    def render(cls) -> None:
         """Runs the rendering of the game based on the loaded screen
         """
         
         cls.currentScene.render()
 
     @classmethod
-    def load_screen(cls, sceneType: Type[Scene], **kargs):
+    def load_screen(cls, sceneType: Type[Scene], **kargs) -> None:
         cls.currentScene = sceneType(SceneBaseData(cls.font, cls.screen), **kargs)
 
     @staticmethod
-    def quit(cls):
+    def quit(cls) -> None:
         cls.running = False

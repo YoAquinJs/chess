@@ -139,18 +139,14 @@ class Piece():
                 }
 
     #! Development only function
-    def print_piece(self):
+    def print_piece(self) -> None:
         print(self.color, self.type, (self.row, self.column))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.color.value}{self.type.value}"
     
     def __hash__(self) -> int:
         return id(self)#int((PLAYERCOLORINT[self.color]*1000)+(PIECETYPEINT[self.type]*100)+((self.row+1)*10)+((self.column+1)*1))
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.__hash__() == other.__hash__()
-    #//@classmethod
-    #//def empty(cls) -> object:
-    #//    return cls(PieceType.empty, None, str(), str())
-    

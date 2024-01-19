@@ -116,7 +116,7 @@ class Game():
             print(e)
             return False, "Failed"    
 
-    def print_history(self):
+    def print_history(self) -> None:
         """Print the move history of this game
         """
         

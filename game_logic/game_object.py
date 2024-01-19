@@ -20,7 +20,7 @@ class GameObject(ABC):
         return self._x
 
     @x.setter
-    def x(self, value: int):
+    def x(self, value: int) -> None:
         if self.drag_children:
             delta = value - self._x
             for child in self.children:
@@ -32,7 +32,7 @@ class GameObject(ABC):
         return self._y
 
     @y.setter
-    def y(self, value: int):
+    def y(self, value: int) -> None:
         if self.drag_children:
             delta = value - self._y
             for child in self.children:
