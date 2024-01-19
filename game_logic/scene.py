@@ -6,15 +6,15 @@ from game_logic.game_object import GameObject
 from ui.font import Font
 
 @dataclass
-class ScreenBaseData:
+class SceneBaseData:
     font: Font
-    renderScreen: pygame.Surface
+    screen: pygame.Surface
 
-class Screen(ABC):
+class Scene(ABC):
 
-    def __init__(self, baseData: ScreenBaseData) -> None:
+    def __init__(self, baseData: SceneBaseData) -> None:
         self.font = baseData.font
-        self.renderScreen = baseData.renderScreen
+        self.screen = baseData.screen
         self.gameObjects: list[GameObject] = []
 
     def register_obj(self, obj: GameObject) -> None:
@@ -31,4 +31,4 @@ class Screen(ABC):
 
     def render(self) -> None:
         for obj in self.gameObjects:
-            obj.render(self.renderScreen)
+            obj.render(self.screen)

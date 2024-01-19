@@ -11,7 +11,7 @@ class LabeledSprite(Sprite):
         
         if label is None or label.value == "":
             raise ValueError("Label is not defined or empty")
-        
+
         label.x = x
         label.y = y
         self.label = label

@@ -6,7 +6,7 @@ from typing import Type
 # Import internal modules
 from chess_engine.board import Board
 from game_logic.game import Game
-from game_logic.screen import Screen, ScreenBaseData
+from game_logic.scene import Scene, SceneBaseData
 from game_logic.consts import PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
 from ui.font import Font
 
@@ -18,40 +18,40 @@ class GameManager():
         currentGame (Game): Current game.
     """
 
-    renderScreen: pygame.Surface = None
+    screen: pygame.Surface = None
     font: Font = None
     running = True
 
-    currentScreen: Screen = None
+    currentScene: Scene = None
     currentGame: Game = None
     loadedGame: int = -1
 
     @classmethod
-    def init_game(cls, renderScreen: pygame.Surface, font: Font, intialScreen: Type[Screen]):
+    def init_game(cls, renderScreen: pygame.Surface, font: Font, intialScene: Type[Scene]):
         """Initializes the game
         """
         
         cls.font = font
-        cls.renderScreen = renderScreen
-        cls.load_screen(intialScreen)
+        cls.screen = renderScreen
+        cls.load_screen(intialScene)
 
     @classmethod
     def update(cls):
         """Runs the logic of the game based on the loaded screen
         """
         
-        cls.currentScreen.update()
+        cls.currentScene.update()
 
     @classmethod
     def render(cls):
         """Runs the rendering of the game based on the loaded screen
         """
         
-        cls.currentScreen.render()
+        cls.currentScene.render()
 
     @classmethod
-    def load_screen(cls, screenType: Type[Screen], **kargs):
-        cls.currentScreen = screenType(ScreenBaseData(cls.font, cls.renderScreen), **kargs)
+    def load_screen(cls, sceneType: Type[Scene], **kargs):
+        cls.currentScene = sceneType(SceneBaseData(cls.font, cls.screen), **kargs)
 
     @staticmethod
     def quit(cls):

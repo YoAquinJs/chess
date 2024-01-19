@@ -9,9 +9,9 @@ from ui.font import Font
 from game_logic.consts import AssetType
 from game_logic.game_manager import GameManager
 
-from screens.main_menu import MainMenuScreen
-from screens.load_game import LoadGameScreen
-from screens.on_game import OnGameScreen
+from scenes.main_menu import MainMenuScene
+from scenes.load_game import LoadGameScene
+from scenes.on_game import OnGameScene
 
 def pygame_setup() -> tuple[pygame.time.Clock, pygame.Surface]:
     pygame.init()
@@ -32,7 +32,7 @@ def main():
 
     font = Font(get_asset_path(AssetType.sprite, "font.png"))
     
-    GameManager.init_game(screen, font, MainMenuScreen)
+    GameManager.init_game(screen, font, MainMenuScene)
     while GameManager.running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
