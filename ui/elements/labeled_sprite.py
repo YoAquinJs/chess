@@ -9,7 +9,7 @@ class LabeledSprite(Sprite):
     def __init__(self, x: int, y: int, label: Label, image: Surface, centered=False, pixelByPixel: bool = True, tint: tuple[int, int, int] = (255,255,255)):
         super().__init__(x, y, image, centered, pixelByPixel, tint)
         
-        if label is None or label.value == "":
+        if label is None or label.text == "":
             raise ValueError("Label is not defined or empty")
 
         label.x = x
@@ -30,3 +30,11 @@ class LabeledSprite(Sprite):
         for child in self.children:
             child.y += delta
         super().ySetter(value)
+
+    @property
+    def text(self) -> str:
+        return self.label.text
+
+    @text.setter
+    def text(self, value: str):
+        self.label.text = value
