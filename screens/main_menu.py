@@ -7,9 +7,9 @@ from game_logic.screen import Screen
 from screens.on_game import OnGameScreen
 from screens.load_game import LoadGameScreen
 from ui.text import Text
-from ui.components.label import Label
-from ui.components.button import Button
-from ui.components.sprite import Sprite
+from ui.elements.label import Label
+from ui.elements.button import Button
+from ui.elements.sprite import Sprite
 from game_logic.game_manager import GameManager
 
 class MainMenuScreen(Screen):

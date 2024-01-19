@@ -5,9 +5,9 @@ from game_logic.screen import Screen
 from game_logic.consts import AssetType
 from ui.font import Font
 from ui.text import Text
-from ui.components.label import Label
-from ui.components.button import Button
-from ui.components.sprite import Sprite
+from ui.elements.label import Label
+from ui.elements.button import Button
+from ui.elements.sprite import Sprite
 
 # New Background
 # Board objects

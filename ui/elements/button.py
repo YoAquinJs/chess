@@ -6,8 +6,8 @@ from collections.abc import Callable
 
 # Import internal module
 from game_logic.game_object import GameObject
-from ui.components.sprite import Sprite
-from ui.components.label import Label
+from ui.elements.sprite import Sprite
+from ui.elements.label import Label
 
 class Button(GameObject):
 
