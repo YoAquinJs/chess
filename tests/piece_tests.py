@@ -3,17 +3,19 @@
 # Import external library 
 import traceback
 
+from chess_engine.board import Board
+from game_logic.consts import (BOARD_START, COLUMNS, ROWS, PlayerColor,
+                               PrintColor, TestType)
 # Import Internal modules
 from tests.tests import Tests
-from chess_engine.board import Board
-from game_logic.consts import PrintColor, PlayerColor, TestType, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
+
 
 class PieceTests():
     """Test class containing Unit tests for the piece movement functionalities"""
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def pawn() -> bool:
         """Test for validating the moving algorithm for the pawn
 
@@ -33,7 +35,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,0,2,0)], True
                  ),
                 (Board.start_board([# Case where pawn moves to a side without eating
@@ -45,7 +47,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,0,2,1)], False
                  ),
                 (Board.start_board([# Case where pawn moves to a side eating
@@ -57,7 +59,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,0,2,1)], True
                  ),
                 (Board.start_board([# Case where pawn moves to a side eating when check locked
@@ -69,7 +71,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,4,2,5)], False
                  ),
                 (Board.start_board([# Case where pawn moves to the opposite direction
@@ -81,7 +83,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(5,3,4,3)], False
                  )
             ]
@@ -94,19 +96,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Pawn Movement", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Pawn Movement", PrintColor.RED)
                     return False
                 
-            color_print("Pawn Movement PASSED", PrintColor.green)
+            color_print("Pawn Movement PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Pawn Movement:", PrintColor.red)
+            color_print("Exception in Pawn Movement:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def bishop() -> bool:
         """Test for validating the moving algorithm for the bishop
 
@@ -126,7 +128,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,2,2,4)], True
                  ),
                 (Board.start_board([# case where bishop jumps piece
@@ -138,7 +140,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,2,2,4)], False
                  ),
                 (Board.start_board([# Case where bishop moves when check locked
@@ -150,7 +152,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,4,3,6)], False
                  ),
                 (Board.start_board([# Case where bishop moves like rook
@@ -162,7 +164,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,2,5,2)], False
                  )
             ]
@@ -175,19 +177,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Bishop Movement", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Bishop Movement", PrintColor.RED)
                     return False
                 
-            color_print("Bishop Movement PASSED", PrintColor.green)
+            color_print("Bishop Movement PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Bishop Movement:", PrintColor.red)
+            color_print("Exception in Bishop Movement:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def knigth() -> bool:
         """Test for validating the moving algorithm for the knigth
 
@@ -207,7 +209,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,1,2,0)], True
                  ),
                 (Board.start_board([# Case where knigth moves like rook
@@ -219,7 +221,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,1,2,1)], False
                  ),
                 (Board.start_board([# case where knigth is check locked
@@ -231,7 +233,7 @@ class PieceTests():
                 ['##', '##', '##', '##', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,4,3,3)], False
                  )
             ]
@@ -244,19 +246,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Knigth Movement", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Knigth Movement", PrintColor.RED)
                     return False
                 
-            color_print("Knigth Movement PASSED", PrintColor.green)
+            color_print("Knigth Movement PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Knigth Movement:", PrintColor.red)
+            color_print("Exception in Knigth Movement:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def rook() -> bool:
         """Test for validating the moving algorithm for the rook
 
@@ -276,7 +278,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,0,6,0)], True
                  ),
                 (Board.start_board([# Case where rook moves like bishop
@@ -288,7 +290,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,0,1,1)], False
                  ),
                 (Board.start_board([# case where rook is check locked
@@ -300,7 +302,7 @@ class PieceTests():
                 ['##', '##', '##', '##', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,4,1,3)], False
                  ),
                  (Board.start_board([# case where rook jumps a pawn
@@ -312,7 +314,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,4,1,2)], False
                  )
             ]
@@ -325,19 +327,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Rook Movement", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Rook Movement", PrintColor.RED)
                     return False
                 
-            color_print("Rook Movement PASSED", PrintColor.green)
+            color_print("Rook Movement PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Rook Movement:", PrintColor.red)
+            color_print("Exception in Rook Movement:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def queen() -> bool:
         """Test for validating the moving algorithm for the queen
 
@@ -357,7 +359,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,3,3,3)], True
                  ),
                 (Board.start_board([# Ideal case
@@ -369,7 +371,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(3,4,6,7)], True
                  ),
                 (Board.start_board([# Case where the queen is check locked
@@ -381,7 +383,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', 'wR', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,4,2,5)], False
                  ),
                 (Board.start_board([# case where queen jumps another piece
@@ -393,7 +395,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,3,2,5)], False
                  ),
                 (Board.start_board([# case where queen moves like knigth
@@ -405,7 +407,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,3,2,4)], False
                  )
             ]
@@ -418,19 +420,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Queen Movement", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Queen Movement", PrintColor.RED)
                     return False
                 
-            color_print("Queen Movement PASSED", PrintColor.green)
+            color_print("Queen Movement PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Queen Movement:", PrintColor.red)
+            color_print("Exception in Queen Movement:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def king() -> bool:
         """Test for validating the moving algorithm for the king
 
@@ -450,7 +452,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,1,3)], True
                  ),
                 (Board.start_board([# Ideal case
@@ -462,7 +464,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(2,3,2,4)], True
                  ),
                 (Board.start_board([# Case where the square is attacked
@@ -474,7 +476,7 @@ class PieceTests():
                 ['##', '##', '##', 'wR', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,1,3)], False
                  ),
                 (Board.start_board([# case where after eating the eated piece could hack if not managed properly
@@ -498,7 +500,7 @@ class PieceTests():
                 ['##', '##', '##', 'wR', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,1,3)], False
                  )
             ]
@@ -511,19 +513,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for King Movement", PrintColor.red)
+                    color_print(F"Failed Case #{i} for King Movement", PrintColor.RED)
                     return False
                 
-            color_print("King Movement PASSED", PrintColor.green)
+            color_print("King Movement PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in King Movement:", PrintColor.red)
+            color_print("Exception in King Movement:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def castling() -> bool:
         """Test for validating the algorithm for determining if castling is possible
 
@@ -543,7 +545,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], True
                  ),
                 (Board.start_board([# Case where piece in middle of king and tower
@@ -555,7 +557,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# Case where final square is not empty
@@ -567,7 +569,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# Case where piece in middle of king and tower
@@ -579,7 +581,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case with attacked square in king's path
@@ -591,7 +593,7 @@ class PieceTests():
                 ['##', '##', '##', 'wQ', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case with attacked square where king castles
@@ -603,7 +605,7 @@ class PieceTests():
                 ['##', '##', 'wQ', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case with king checked
@@ -615,7 +617,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,2)], False
                  ),
                 (Board.start_board([# case where king moves
@@ -627,7 +629,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,4,0,3),(0,3,0,4)], False
                  ),
                 (Board.start_board([ # case where tower moves
@@ -639,7 +641,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', '##', 'w@', 'wB', 'wK', 'wR']
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(0,0,0,1),(6,0,5,0),(0,1,0,0),(6,1,5,1),(0,4,0,2)], False
                  ),
             ]
@@ -652,19 +654,19 @@ class PieceTests():
                         break
                 
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for castling", PrintColor.red)
+                    color_print(F"Failed Case #{i} for castling", PrintColor.RED)
                     return False
                 
-            color_print("Castling PASSED", PrintColor.green)
+            color_print("Castling PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Castling:", PrintColor.red)
+            color_print("Exception in Castling:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def enpassant() -> bool:
         """Test for validating the enpassant algorithm
 
@@ -708,7 +710,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(4,3,6,2)], False
                  )
             ]
@@ -721,19 +723,19 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Enpassant", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Enpassant", PrintColor.RED)
                     return False
                 
-            color_print("Enpassant PASSED", PrintColor.green)
+            color_print("Enpassant PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Enpassant:", PrintColor.red)
+            color_print("Exception in Enpassant:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.piece)
+    @Tests.register_test(TestType.PIECE)
     def double_pawn_move() -> bool:
         """Test for validating the algorithm forthe double pawn move
 
@@ -753,7 +755,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,0,3,0)], True
                  ),
                 (Board.start_board([# Case where pawn had already moved
@@ -765,7 +767,7 @@ class PieceTests():
                 ['##', '##', '##', 'bP', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(2,0,4,0)], False
                  ),
                 (Board.start_board([# case where pawn moves, and then tries to double move
@@ -777,7 +779,7 @@ class PieceTests():
                 ['##', '##', '##', '##', '##', '##', '##', '##'],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'] 
-                ], PlayerColor.black),
+                ], PlayerColor.BLACK),
                  [(1,0,2,0),(6,0,5,0),(2,0,4,0)], False
                  )
             ]
@@ -790,13 +792,13 @@ class PieceTests():
                         break
                     
                 if performed != case[2]:
-                    color_print(F"Failed Case #{i} for Double pawn move", PrintColor.red)
+                    color_print(F"Failed Case #{i} for Double pawn move", PrintColor.RED)
                     return False
                 
-            color_print("Double pawn move PASSED", PrintColor.green)
+            color_print("Double pawn move PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Double pawn move:", PrintColor.red)
+            color_print("Exception in Double pawn move:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False

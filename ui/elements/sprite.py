@@ -1,53 +1,66 @@
+"""TODO"""
+
+from dataclasses import dataclass
+
 import pygame
 
-from utils.utils import tint_image
 from game_logic.game_object import GameObject
+from utils.utils import tint_image
+
+
+@dataclass
+class SpriteInitData():
+    """TODO
+    """
+    image: pygame.Surface
+    centered: bool = False
+    pixel_tint: bool = True
+    tint: tuple[int, int, int]=(255,255,255)
 
 class Sprite(GameObject):
-    def __init__(self, x: int, y: int, image: pygame.Surface, centered=False, pixelByPixel: bool=True, tint: tuple[int, int, int]=(255,255,255)):
-        self.init_attributes()
-        
+    """TODO
+    """
+
+    def __init__(self, x: int, y: int, init_data: SpriteInitData):
+        super().__init__()
+
         self._tint = (255,255,255)
-        self.pixelByPixel = pixelByPixel
-        if not self.pixelByPixel:
-            color = image.get_at((0,0))
-            self._color = (color.r, color.g, color.b)
-        else:
-            self.originalImg = image.copy()
-        
-        self.image = image
-        self.rect = image.get_rect(topleft=(x,y))
-        self.centered = centered
-        
+        self.pixel_tint = init_data.pixel_tint
+        self.original_img = init_data.image.copy()
+
+        self.image = init_data.image
+        self.rect = init_data.image.get_rect(topleft=(x,y))
+        self.centered = init_data.centered
+
         self.x = x
         self.y = y
-        self.tint = tint
+        self.tint = init_data.tint
 
     @property
-    def tint(self):
+    def tint(self) -> tuple[int, int, int]:
+        """Tint property
+        """
         return self._tint
 
     @tint.setter
-    def tint(self, value):
+    def tint(self, value: tuple[int, int, int]):
         if self._tint == value:
             return
         self._tint = value
-        
-        if not self.pixelByPixel:
-            self.image.fill(self._color)
-        else:
-            for x, y in zip(range(self.image.get_width()), range(self.image.get_height())):
-                pixelColor = self.originalImg.get_at((x,y))
-                self.image.set_at((x,y), pixelColor)
+        # Reset image color
+        self.image = self.original_img.copy()
+        tint_image(self.image, self._tint, self.pixel_tint)
 
-        tint_image(self.image, self._tint, self.pixelByPixel)
-
-    def xSetter(self, value: int) -> None:
-        super(Sprite, Sprite).x.__set__(self, value)
+    def x_setter(self, value: int) -> None:
+        """X property setter
+        """
+        super(__class__, type(self)).x.fset(self, value) # type: ignore
         self.rect.x = self._x - (self.image.get_width()//2 if self.centered else 0)
 
-    def ySetter(self, value: int) -> None:
-        super(Sprite, Sprite).y.__set__(self, value)
+    def y_setter(self, value: int) -> None:
+        """Y propery setter
+        """
+        super(__class__, type(self)).y.fset(self, value) # type: ignore
         self.rect.y = self._y - (self.image.get_height()//2 if self.centered else 0)
 
     @property
@@ -56,7 +69,7 @@ class Sprite(GameObject):
 
     @x.setter
     def x(self, value: int):
-        self.xSetter(value)
+        self.x_setter(value)
 
     @property
     def y(self) -> int:
@@ -64,7 +77,7 @@ class Sprite(GameObject):
 
     @y.setter
     def y(self, value: int):
-        self.ySetter(value)
+        self.y_setter(value)
 
     def update(self):
         pass

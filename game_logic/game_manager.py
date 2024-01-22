@@ -1,58 +1,54 @@
-"""This module handles the core user interface mechanics througth the GameManager Static class"""
+"""TODO"""
+
+from typing import Any, Type
 
 import pygame
-from typing import Type
 
 # Import internal modules
-from chess_engine.board import Board
 from game_logic.game import Game
 from game_logic.scene import Scene, SceneBaseData
-from game_logic.consts import PrintColor, PlayerColor, GameResult, ROWS, COLUMNS
 from ui.font import Font
 
+
 class GameManager():
-    """Class for handling game screens, and game states
-
-    Attributes:
-        currentScreen (Screen): Screen being rendered in the game.
-        currentGame (Game): Current game.
+    """TODO
     """
-
-    screen: pygame.Surface = None
-    font: Font = None
+    screen: pygame.Surface
+    font: Font
     running = True
 
-    currentScene: Scene = None
-    currentGame: Game = None
+    currentScene: Scene
+    currentGame: Game
     loadedGame: int = -1
 
     @classmethod
-    def init_game(cls, renderScreen: pygame.Surface, font: Font, intialScene: Type[Scene]) -> None:
+    def init_game(cls, screen: pygame.Surface, font: Font, intial_scene: Type[Scene]) -> None:
         """Initializes the game
         """
-        
         cls.font = font
-        cls.screen = renderScreen
-        cls.load_screen(intialScene)
+        cls.screen = screen
+        cls.load_screen(intial_scene)
 
     @classmethod
     def update(cls) -> None:
         """Runs the logic of the game based on the loaded screen
         """
-        
         cls.currentScene.update()
 
     @classmethod
     def render(cls) -> None:
         """Runs the rendering of the game based on the loaded screen
         """
-        
         cls.currentScene.render()
 
     @classmethod
-    def load_screen(cls, sceneType: Type[Scene], **kargs) -> None:
-        cls.currentScene = sceneType(SceneBaseData(cls.font, cls.screen), **kargs)
+    def load_screen(cls, scene_type: Type[Scene], **kargs: Any) -> None:
+        """Loads the specified scene
+        """
+        cls.currentScene = scene_type(SceneBaseData(cls.font, cls.screen), **kargs)
 
-    @staticmethod
+    @classmethod
     def quit(cls) -> None:
+        """Get's out of the game loop
+        """
         cls.running = False

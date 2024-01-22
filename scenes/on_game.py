@@ -1,13 +1,11 @@
+"""On game scene"""
+
 import pygame
 
-from utils.utils import scale_image, get_asset_path
-from game_logic.scene import Scene, SceneBaseData
 from game_logic.consts import AssetType
-from ui.font import Font
-from ui.text import Text
-from ui.elements.label import Label
-from ui.elements.button import Button
-from ui.elements.sprite import Sprite
+from game_logic.scene import Scene, SceneBaseData
+from ui.elements.sprite import Sprite, SpriteInitData
+from utils.utils import get_asset_path, scale_img
 
 # New Background
 # Board objects
@@ -18,15 +16,14 @@ from ui.elements.sprite import Sprite
 # Delete game button
 
 class OnGameScene(Scene):
-
+    """TODO
+    """
     def __init__(self, baseData: SceneBaseData) -> None:
         super().__init__(baseData)
-        
+
         # Background
-        backgroundImg = Sprite(0, 0, scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png"))))
-        
-        labelTest = Label(0, 0, Text("On Game", 3), (255,0,0), self.font, centered=False)
-        
+        img = scale_img(pygame.image.load(get_asset_path(AssetType.SPRITE, "background.png")))
+        background_img = Sprite(0, 0, SpriteInitData(img))
+
         # Hierarchy
-        self.register_obj(backgroundImg)
-        self.register_obj(labelTest)
+        self.register_obj(background_img)

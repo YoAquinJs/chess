@@ -1,12 +1,16 @@
-# Import external libraries
+"""TODO"""
+
 from __future__ import annotations
-import pygame
+
 from abc import ABC, abstractmethod
 
-class GameObject(ABC):
+import pygame
 
-    #! Must be called each sub class initialization
-    def init_attributes(self) -> None:
+
+class GameObject(ABC):
+    """TODO
+    """
+    def __init__(self) -> None:
         self.children: list[GameObject] = []
         if not hasattr(self, '_x'):
             self._x: int = 0
@@ -17,35 +21,47 @@ class GameObject(ABC):
 
     @property
     def x(self) -> int:
+        """X position property
+        """
         return self._x
 
     @x.setter
     def x(self, value: int) -> None:
         if self.drag_children:
-            delta = value - self._x
-            for child in self.children:
-                child.x += delta
+            self._drag_children(False, value)
         self._x = value
 
     @property
     def y(self) -> int:
+        """Y postion property
+        """
         return self._y
 
     @y.setter
     def y(self, value: int) -> None:
         if self.drag_children:
-            delta = value - self._y
-            for child in self.children:
-                child.y += delta
+            self._drag_children(False, value)
         self._y = value
 
+    def _drag_children(self, x_or_y: bool, value: int) -> None:
+        delta = value - (self.x if x_or_y else self.y)
+        for child in self.children:
+            if x_or_y:
+                child.x += delta
+            else:
+                child.y += delta
+
     def add_child(self, index: int, obj: GameObject) -> None:
+        """Adds a children GameObject
+        """
         self.children.insert(index, obj)
 
     @abstractmethod
     def update(self) -> None:
-        pass
+        """Update
+        """
 
     @abstractmethod
     def render(self, surface: pygame.Surface) -> None:
-        pass
+        """Render
+        """

@@ -1,7 +1,10 @@
 """This module contains the Piece model object and it's properties"""
 
 # Import Internal module
-from game_logic.consts import PieceType, PlayerColor, MovementSpecialCase, BLACK_MOV_DIR, WHITE_MOV_DIR, PLAYERCOLORINT, PIECETYPEINT
+from game_logic.consts import (BLACK_MOV_DIR, PIECE_TYPE_INT, PLAYER_COLOR_INT,
+                               WHITE_MOV_DIR, MovementSpecialCase, PieceType,
+                               PlayerColor)
+
 
 class Piece():
     """Class for handling game screens, and game states
@@ -33,10 +36,10 @@ class Piece():
         
         self.maxExtend = 8 # Meaning the piece can move without a limit
         self.posibleMovements = None
-        self.movingDirection = WHITE_MOV_DIR if self.color == PlayerColor.white else BLACK_MOV_DIR
+        self.movingDirection = WHITE_MOV_DIR if self.color == PlayerColor.WHITE else BLACK_MOV_DIR
         
         # Direction (column direction, (x movement), row direction (y movement))
-        if self.type == PieceType.pawn:
+        if self.type == PieceType.PAWN:
             """
             _ _ # _ _
             _ # # # _
@@ -46,12 +49,12 @@ class Piece():
             """
             self.maxExtend = 1
             self.posibleMovements = {
-                (1 * self.movingDirection,0) : MovementSpecialCase.isEmpty,
+                (1 * self.movingDirection,0) : MovementSpecialCase.IS_EMPTY,
                 (1 * self.movingDirection,-1) : None,
                 (1 * self.movingDirection,1) : None,
-                (2 * self.movingDirection,0) : MovementSpecialCase.doublePawnMove
+                (2 * self.movingDirection,0) : MovementSpecialCase.DOUBLE_PAWN_MOVE
                 }
-        elif self.type == PieceType.bishop:
+        elif self.type == PieceType.BISHOP:
             """
             # _ _ _ #
             _ # _ # _
@@ -65,7 +68,7 @@ class Piece():
                 (1, -1) : None,
                 (-1, -1) : None,
                 }
-        elif self.type == PieceType.knigth:
+        elif self.type == PieceType.KNIGTH:
             """
             _ # _ # _
             # _ _ _ #
@@ -84,7 +87,7 @@ class Piece():
                 (-2, 1) : None,
                 (-1, 2) : None,
                 }
-        elif self.type == PieceType.rook:
+        elif self.type == PieceType.ROOK:
             """
             _ _ # _ _
             _ _ # _ _
@@ -98,7 +101,7 @@ class Piece():
                 (0, 1) : None,
                 (0, -1) : None,
                 }
-        elif self.type == PieceType.queen:
+        elif self.type == PieceType.QUEEN:
             """
             # _ # _ #
             _ # # # _
@@ -116,7 +119,7 @@ class Piece():
                 (0, 1) : None,
                 (0, -1) : None,
                 }
-        elif self.type == PieceType.king:
+        elif self.type == PieceType.KING:
             """
             _ _ _ _ _
             _ # # # _
@@ -134,8 +137,8 @@ class Piece():
                 (1, -1) : None,
                 (1, 1) : None,
                 (-1, -1) : None,
-                (0,-2) : MovementSpecialCase.castle,
-                (0,2) : MovementSpecialCase.castle
+                (0,-2) : MovementSpecialCase.CASTLE,
+                (0,2) : MovementSpecialCase.CASTLE
                 }
 
     #! Development only function

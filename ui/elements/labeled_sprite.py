@@ -1,17 +1,19 @@
-from pygame import Surface
+"""TODO"""
 
-from game_logic.game_object import GameObject
 from ui.elements.label import Label
-from ui.elements.sprite import Sprite
+from ui.elements.sprite import Sprite, SpriteInitData
+
 
 class LabeledSprite(Sprite):
+    """TODO
+    """
 
-    def __init__(self, x: int, y: int, label: Label, image: Surface, centered=False, pixelByPixel: bool = True, tint: tuple[int, int, int] = (255,255,255)):
-        super().__init__(x, y, image, centered, pixelByPixel, tint)
+    def __init__(self, x: int, y: int, label: Label, init_data: SpriteInitData):
+        super().__init__(x, y, init_data)
         self.drag_children = True
-        
-        if label is None or label.text == "":
-            raise ValueError("Label is not defined or empty")
+
+        if label.text == "":
+            raise ValueError("Label is empty")
 
         label.x = x
         label.y = y
@@ -21,6 +23,8 @@ class LabeledSprite(Sprite):
 
     @property
     def text(self) -> str:
+        """Text property
+        """
         return self.label.text
 
     @text.setter

@@ -1,44 +1,50 @@
-import pygame
-from typing import Type
+"""Main menu scene"""
 
-from utils.utils import scale_image, get_asset_path
+import pygame
+
 from game_logic.consts import AssetType
-from game_logic.scene import Scene, SceneBaseData
-from scenes.on_game import OnGameScene
-from scenes.load_game import LoadGameScene
-from ui.text import Text
-from ui.elements.label import Label
-from ui.elements.button import Button
-from ui.elements.sprite import Sprite
 from game_logic.game_manager import GameManager
+from game_logic.scene import Scene, SceneBaseData
+from scenes.load_game import LoadGameScene
+from scenes.on_game import OnGameScene
+from ui.elements.button import Button, ButtonInitData
+from ui.elements.label import Label, LabelInitData
+from ui.elements.sprite import Sprite, SpriteInitData
+from ui.text import Text
+from utils.utils import get_asset_path, scale_img
+
 
 class MainMenuScene(Scene):
-
+    """TODO
+    """
     def __init__(self, baseData: SceneBaseData) -> None:
         super().__init__(baseData)
-        
+
         # Background
-        backgroundSprite = Sprite(0, 0, scale_image(pygame.image.load(get_asset_path(AssetType.sprite, "background.png"))))
-        
+        img = scale_img(pygame.image.load(get_asset_path(AssetType.SPRITE, "background.png")))
+        background_img = Sprite(0, 0, SpriteInitData(img))
+
         # New Game Button
-        newGameBttX = self.screen.get_width()//2
-        newGameBttY = self.screen.get_height()//3
+        x = self.screen.get_width()//2
+        y = self.screen.get_height()//3
         img = pygame.Surface((400,95))
         img.fill((255,0,0))
-        newGameBttSprite = Sprite(0, 0, img, pixelByPixel=False, centered=True)
-        newGameBttLabel = Label(0, 0, Text("New Game", 1.2), (0,0,255), self.font)
-        newGameButton = Button(newGameBttX, newGameBttY, newGameBttSprite, newGameBttLabel, lambda: GameManager.load_screen(OnGameScene))
-        
+        sprite = Sprite(0, 0, SpriteInitData(img, pixel_tint=False, centered=True))
+        label = Label(0, 0, LabelInitData(Text("New Game", 1.2), (0,0,255), self.font))
+        init_data = ButtonInitData(sprite, label, lambda: GameManager.load_screen(OnGameScene))
+        new_game_btt = Button(x, y, init_data)
+
         # Load Game Button
-        loadGameBttX = self.screen.get_width()//2
-        loadGameBttY = 1.5*(self.screen.get_height()//3)
+        x = self.screen.get_width()//2
+        y = int(1.5*(self.screen.get_height()//3))
         img = pygame.Surface((400,80))
         img.fill((255,0,0))
-        loadGameSprite = Sprite(0, 0, img, pixelByPixel=False, centered=True)
-        loadGameLabel = Label(0, 0, Text( "Load Game"), (0,0,0), self.font)
-        loadGameButton = Button(loadGameBttX, loadGameBttY, loadGameSprite, loadGameLabel, lambda: GameManager.load_screen(LoadGameScene))
-        
+        sprite = Sprite(0, 0, SpriteInitData(img, pixel_tint=False, centered=True))
+        label = Label(0, 0, LabelInitData(Text("Load Game"), (0,0,0), self.font))
+        init_data = ButtonInitData(sprite, label, lambda: GameManager.load_screen(LoadGameScene))
+        load_game_btt = Button(x, y, init_data)
+
         # Hierarchy
-        self.register_obj(backgroundSprite)
-        self.register_obj(newGameButton)
-        self.register_obj(loadGameButton)
+        self.register_obj(background_img)
+        self.register_obj(new_game_btt)
+        self.register_obj(load_game_btt)

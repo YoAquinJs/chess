@@ -1,24 +1,43 @@
+"""TODO"""
+
+from dataclasses import dataclass
+
 import pygame
 
 # Import internal module
 from game_logic.game_object import GameObject
 from ui.font import Font, Text
 
+
+@dataclass
+class LabelInitData():
+    """TODO
+    """
+    text: Text
+    color: tuple[int, int, int]
+    font: Font
+    centered=True
+
 class Label(GameObject):
-    def __init__(self, x: int, y: int, text: Text, color: tuple[int, int, int], font: Font, centered=True) -> None:
-        self.init_attributes()
-        
+    """TODO
+    """
+
+    def __init__(self, x: int, y: int, init_data: LabelInitData) -> None:
+        super().__init__()
+
         self._x = x
         self._y = y
-        self.color = color
-        self.font = font
-        self.centered = centered
-        
-        self._text = text
+        self.color = init_data.color
+        self.font = init_data.font
+        self.centered = init_data.centered
+
+        self._text = init_data.text
         self.font.generate_text(self._text, self.color)
 
     @property
     def text(self) -> str:
+        """Text property
+        """
         return self._text.value
 
     @text.setter
@@ -30,6 +49,8 @@ class Label(GameObject):
 
     @property
     def scale(self) -> float:
+        """Scale property
+        """
         return self._text.scale
 
     @scale.setter
@@ -43,7 +64,10 @@ class Label(GameObject):
         pass
 
     def render(self, surface: pygame.Surface) -> None:
-        self.font.render_text(self._x, self._y, self._text, surface, self.centered)
+        rx, ty = self.x, self.y
+        if self.centered:
+            rx, ty = self.font.center_text_coords(rx, ty, self._text)
+        self.font.render_text(rx, ty, self._text, surface)
 
     def __str__(self) -> str:
         return self._text.value

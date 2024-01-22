@@ -5,10 +5,13 @@ from asyncio import run
 from copy import deepcopy
 from json import dumps, load
 
-# Import Internal modules
-from utils.utils import color_print, opponent, get_asset_path
 from chess_engine.piece import Piece
-from game_logic.consts import PieceType, PlayerColor, MovementSpecialCase, PrintColor, BoardState, AssetType, COLUMNS, ROWS, BOARD_START
+from game_logic.consts import (BOARD_START, COLUMNS, ROWS, AssetType,
+                               BoardState, MovementSpecialCase, PieceType,
+                               PlayerColor, PrintColor)
+# Import Internal modules
+from utils.utils import color_print, get_asset_path, opponent
+
 
 class Board():
     """Class for handling game screens, and game states
@@ -29,7 +32,7 @@ class Board():
     
     fileEnd = '_b.json'
 
-    def __init__(self, grid: list[list[Piece]], turn: PlayerColor = PlayerColor.white, afterMoveCheck: bool = False):
+    def __init__(self, grid: list[list[Piece]], turn: PlayerColor = PlayerColor.WHITE, afterMoveCheck: bool = False):
         """Creates a board object instance
 
         Args:
@@ -51,7 +54,7 @@ class Board():
         self.canCastleLeft = True
         self.canCastleRigth = True
         
-        self.boardState = BoardState.moveTurn
+        self.boardState = BoardState.MVOE_TURN
         self.turn = turn
         self.possibleEnPassant = None
         
@@ -65,8 +68,8 @@ class Board():
             for column in range(len(COLUMNS)):
                 piece = self.__grid[row][column]
                 
-                if piece.type == PieceType.king:
-                    if piece.color == PlayerColor.white:
+                if piece.type == PieceType.KING:
+                    if piece.color == PlayerColor.WHITE:
                         if self.whiteKing != None:
                             raise ValueError("There are multiple white kings in this board")
                         self.whiteKing = piece
@@ -75,8 +78,8 @@ class Board():
                             raise ValueError("There are multiple black kings in this board")
                         self.blackKing = piece
                 
-                if piece.type != PieceType.empty:
-                    if piece.color == PlayerColor.white:
+                if piece.type != PieceType.EMPTY:
+                    if piece.color == PlayerColor.WHITE:
                         self.whitePieces[piece] = []
                     else:
                         self.blackPieces[piece] = []
@@ -144,7 +147,7 @@ class Board():
             bool: Whether the square is attacked or not
         """
         
-        opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
+        opponentPieces = self.whitePieces if opponent == PlayerColor.WHITE else self.blackPieces
         return any((row,column) in attackedSquares for attackedSquares in opponentPieces.values())
 
     def empty_square(self, row: int, column: int) -> None:
@@ -155,7 +158,7 @@ class Board():
             column (int): Column of the square.
         """
         
-        self.__grid[row][column] = Piece(PieceType.empty, PlayerColor.empty, row, column)
+        self.__grid[row][column] = Piece(PieceType.EMPTY, PlayerColor.EMPTY, row, column)
 
     def add_piece(self, row: int, column: int, piece: Piece) -> bool:
         """Adds a piece to the board if the square is empty
@@ -169,11 +172,11 @@ class Board():
             bool: Whether the piece was added or not
         """
         
-        if self.__grid[row][column].type != PieceType.empty:
-            color_print(f"The piece {piece.color}{piece.type} is trying to be added in {(row,column)}, where piece {self.__grid[row][column].type}{self.__grid[row][column].type} is", PrintColor.yellow)
+        if self.__grid[row][column].type != PieceType.EMPTY:
+            color_print(f"The piece {piece.color}{piece.type} is trying to be added in {(row,column)}, where piece {self.__grid[row][column].type}{self.__grid[row][column].type} is", PrintColor.YELLOW)
             return False
         
-        if piece.color == PlayerColor.white:
+        if piece.color == PlayerColor.WHITE:
             self.whitePieces[piece] = []
         else:
             self.blackPieces[piece] = []
@@ -192,11 +195,11 @@ class Board():
             bool: Whether the piece was removed or not
         """
         
-        if self.__grid[row][column].type == PieceType.empty:
-            color_print(f"An empty square {(row,column)} is trying be removed", PrintColor.yellow)
+        if self.__grid[row][column].type == PieceType.EMPTY:
+            color_print(f"An empty square {(row,column)} is trying be removed", PrintColor.YELLOW)
             return False
         
-        if self.__grid[row][column].color == PlayerColor.white:
+        if self.__grid[row][column].color == PlayerColor.WHITE:
             self.whitePieces.pop(self.__grid[row][column], None)
         else:
             self.blackPieces.pop(self.__grid[row][column], None)
@@ -211,12 +214,12 @@ class Board():
             opponent (PlayerColor): Opponent color.
         """
 
-        opponentPieces = self.whitePieces if opponent == PlayerColor.white else self.blackPieces
+        opponentPieces = self.whitePieces if opponent == PlayerColor.WHITE else self.blackPieces
         
         for piece, posibleMovs in opponentPieces.items():
             posibleMovs.clear()
             for movement in self.get_valid_movements(piece, True):
-                if piece.type != PieceType.pawn:
+                if piece.type != PieceType.PAWN:
                     posibleMovs.append(movement)
                 elif piece.column != movement[1]: # If the movement is different to pawn frontal move, add it
                     posibleMovs.append(movement)
@@ -231,7 +234,7 @@ class Board():
         if turn == None:
             turn = self.turn
         
-        playerPieces = self.whitePieces if turn == PlayerColor.white else self.blackPieces
+        playerPieces = self.whitePieces if turn == PlayerColor.WHITE else self.blackPieces
         
         for piece, posibleMovs in playerPieces.items():
             posibleMovs.clear()
@@ -244,22 +247,22 @@ class Board():
             afterMoveCheck (bool, optional): Whether to not determine if the current board is checkmate or stalemate, used for avoiding infinite recursion loops. Defaults to false.
         """
         
-        playerKing = self.whiteKing if self.turn == PlayerColor.white else self.blackKing
+        playerKing = self.whiteKing if self.turn == PlayerColor.WHITE else self.blackKing
         inCheck = self.is_attacked(playerKing.row, playerKing.column, opponent(self.turn))
         
         # Check whether to continuo with stalemate or checkmate validation
         if afterMoveCheck:
-            self.boardState = BoardState.check if inCheck else BoardState.moveTurn
+            self.boardState = BoardState.CHECK if inCheck else BoardState.MVOE_TURN
             return
         
         # If only kings left in board, mark stalemate
         if len(self.whitePieces) == 1 and len(self.blackPieces == 1):
-            self.boardState = BoardState.stalemate
+            self.boardState = BoardState.STALEMATE
             return
 
         # Validate if the player has any legal movement available, if not it's either stalemate or checkmate
         anyValidMov = False
-        playerPieces = self.whitePieces if self.turn == PlayerColor.white else self.blackPieces
+        playerPieces = self.whitePieces if self.turn == PlayerColor.WHITE else self.blackPieces
         for piece, posibleMovs in playerPieces.items():
             if any((not self.in_check_after_mov(piece.row, piece.column, mov[0], mov[1])) for mov in posibleMovs):
                 anyValidMov = True
@@ -267,13 +270,13 @@ class Board():
                 
         # Set board state
         if not anyValidMov and inCheck:
-            self.boardState = BoardState.checkmate
+            self.boardState = BoardState.CHECKMATE
         elif inCheck:
-            self.boardState = BoardState.check
+            self.boardState = BoardState.CHECK
         elif not anyValidMov:
-            self.boardState = BoardState.stalemate
+            self.boardState = BoardState.STALEMATE
         else:
-            self.boardState = BoardState.moveTurn
+            self.boardState = BoardState.MVOE_TURN
                         
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -340,11 +343,11 @@ class Board():
         
         # Get the eaten piece to remove it for calculations, and add it after the calculations are performed
         eatenPiece = None
-        if self.__grid[destinationRow][destinationColumn].type != PieceType.empty:
+        if self.__grid[destinationRow][destinationColumn].type != PieceType.EMPTY:
             eatenPiece = self.__grid[destinationRow][destinationColumn]
 
         # If move was enPassant
-        enPassant = piece.type == PieceType.pawn and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
+        enPassant = piece.type == PieceType.PAWN and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
         if enPassant:
             eatenPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
 
@@ -360,7 +363,7 @@ class Board():
         if eatenPiece != None:
             self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
 
-        return hipothetycalBoard.boardState == BoardState.check or hipothetycalBoard.boardState == BoardState.checkmate
+        return hipothetycalBoard.boardState == BoardState.CHECK or hipothetycalBoard.boardState == BoardState.CHECKMATE
 
     def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> list[tuple[int, int]]:
         """Return all the valid movements of a piece
@@ -381,25 +384,25 @@ class Board():
                 movement = (piece.row + (direction[0]*i), piece.column + (direction[1]*i))
                 
                 # Check for pawn special cases
-                if piece.type == PieceType.pawn:
+                if piece.type == PieceType.PAWN:
                     # Verify pawn in it's initial row, and that it's path is empty, for double pawn move
-                    if specialCase == MovementSpecialCase.doublePawnMove and\
-                        ((piece.row == 1 and piece.color == PlayerColor.black) or (piece.row == 6 and piece.color == PlayerColor.white))\
-                        and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.empty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
+                    if specialCase == MovementSpecialCase.DOUBLE_PAWN_MOVE and\
+                        ((piece.row == 1 and piece.color == PlayerColor.BLACK) or (piece.row == 6 and piece.color == PlayerColor.WHITE))\
+                        and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that pawn's path is empty in normal movement
-                    elif specialCase == MovementSpecialCase.isEmpty and self.__grid[movement[0]][movement[1]].type == PieceType.empty:
+                    elif specialCase == MovementSpecialCase.IS_EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that the attacking square is either an enemy, enpassant or countPawnAttacks set to true
                     elif specialCase == None and (countPawnAttacks or self.is_opponent(movement[0], movement[1], piece.color) or movement == self.possibleEnPassant):
                         validMovements.append(movement)
                 # Verify castling is available, path is empty and not attacked, and king not in check
-                elif specialCase == MovementSpecialCase.castle and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
-                    and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.empty\
-                    and self.__grid[piece.row][ piece.column + (direction[1])].type == PieceType.empty\
-                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != BoardState.check:
+                elif specialCase == MovementSpecialCase.CASTLE and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
+                    and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.EMPTY\
+                    and self.__grid[piece.row][ piece.column + (direction[1])].type == PieceType.EMPTY\
+                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != BoardState.CHECK:
                     if direction[1] < 0:
-                        if self.canCastleLeft and self.__grid[piece.row][ piece.column + (direction[1]) - 1].type == PieceType.empty:
+                        if self.canCastleLeft and self.__grid[piece.row][ piece.column + (direction[1]) - 1].type == PieceType.EMPTY:
                             validMovements.append(movement)
                     else:
                         if self.canCastleLeft:
@@ -426,7 +429,7 @@ class Board():
         piece = self.__grid[originRow][originColumn]
 
         # If you try to move an empty square
-        if piece.type == PieceType.empty:
+        if piece.type == PieceType.EMPTY:
             return False
 
         # If you try to move an opponent square
@@ -435,8 +438,8 @@ class Board():
 
         # If the movement is an ilegal movement
         movement = (destinationRow, destinationColumn)
-        playerPieces = self.whitePieces if self.turn == PlayerColor.white else self.blackPieces
-        if (movement not in self.get_valid_movements(piece)) if piece.type == PieceType.king else (movement not in playerPieces[piece]):
+        playerPieces = self.whitePieces if self.turn == PlayerColor.WHITE else self.blackPieces
+        if (movement not in self.get_valid_movements(piece)) if piece.type == PieceType.KING else (movement not in playerPieces[piece]):
             return False
 
         # If the movement leave you in check
@@ -471,7 +474,7 @@ class Board():
             
         # Check for pawn special cases
         possibleEnPassant = None
-        if piece.type == PieceType.pawn:
+        if piece.type == PieceType.PAWN:
             # If move was enPassant
             if self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn:
                 eatPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
@@ -490,7 +493,7 @@ class Board():
                 newPiece.column = piece.column
                 self.add_piece(newPiece.row,newPiece.column, newPiece)
                 
-        elif piece.type == PieceType.king:
+        elif piece.type == PieceType.KING:
             self.canCastleLeft = False
             self.canCastleRigth = False
             
@@ -502,7 +505,7 @@ class Board():
         self.possibleEnPassant = possibleEnPassant
         
         # Eat opponent piece if it's eat move
-        if eatPiece.type != PieceType.empty:
+        if eatPiece.type != PieceType.EMPTY:
             self.empty_square(eatPiece.row, eatPiece.column)
 
         # Pass turn and calculate new board conditions for next player
@@ -513,7 +516,7 @@ class Board():
 
         return True, {
             'piece': piece,
-            'eatPiece': eatPiece if eatPiece.type !=PieceType.empty else None
+            'eatPiece': eatPiece if eatPiece.type !=PieceType.EMPTY else None
         }
 
     #! Development Only method
@@ -537,7 +540,7 @@ class Board():
         """
         
         try:
-            with open(get_asset_path(AssetType.savings, f"board_{filename}{Board.fileEnd}"), "w") as file:
+            with open(get_asset_path(AssetType.SAVINGS, f"board_{filename}{Board.fileEnd}"), "w") as file:
                 data = {
                     'turn' : self.turn.value,
                     'canCastleLeft' : self.canCastleLeft,
@@ -581,7 +584,7 @@ class Board():
         """
         
         board = None
-        with open(get_asset_path(AssetType.savings, f"board_{filename}{Board.fileEnd}"), "r") as file:
+        with open(get_asset_path(AssetType.SAVINGS, f"board_{filename}{Board.fileEnd}"), "r") as file:
             json_data = load(file)
         
             board = cls.start_board(json_data["__grid"], PlayerColor[json_data['turn']])
@@ -591,7 +594,7 @@ class Board():
         return board
 
     @classmethod
-    def start_board(cls, textGrid: list[list[str]] = BOARD_START, turn: PlayerColor = PlayerColor.white) -> object:
+    def start_board(cls, textGrid: list[list[str]] = BOARD_START, turn: PlayerColor = PlayerColor.WHITE) -> object:
         """Creates a Board object instance, from a string grid, and transforms it to a Piece Object grid
 
         Args:

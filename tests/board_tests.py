@@ -4,17 +4,19 @@
 import traceback
 from copy import deepcopy
 
+from chess_engine.board import Board
+from game_logic.consts import (BOARD_START, COLUMNS, ROWS, BoardState,
+                               PieceType, PlayerColor, PrintColor, TestType)
 # Import Internal modules
 from tests.tests import Tests
-from chess_engine.board import Board
-from game_logic.consts import PrintColor, PlayerColor, PieceType, TestType, BoardState, BOARD_START, ROWS, COLUMNS
 from utils.utils import color_print
+
 
 class BoardTests():
     """Test class containing Unit tests for the board Class functionalities"""
     
     @staticmethod
-    @Tests.register_test(TestType.board)
+    @Tests.register_test(TestType.BOARD)
     def board_start() -> bool:
         """Test for validating the correct board start values
 
@@ -28,19 +30,19 @@ class BoardTests():
             for r in range(len(ROWS)):
                 for c in range(len(COLUMNS)):
                     if str(board.square(r,c)) != BOARD_START[r][c]:
-                        color_print(f"The start board generated is not acurrate in square ({r},{c})", PrintColor.red)
+                        color_print(f"The start board generated is not acurrate in square ({r},{c})", PrintColor.RED)
                         return False
                 
-            color_print("Board Start PASSED", PrintColor.green)
+            color_print("Board Start PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in start board:", PrintColor.red)
+            color_print("Exception in start board:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.board)
+    @Tests.register_test(TestType.BOARD)
     def serialization() -> bool:
         """Test for validating the board serialization
 
@@ -52,7 +54,7 @@ class BoardTests():
             canCastleLeft = False
             canCastleRigth = True
             possibleEnPassant = (0,1)
-            turn = PlayerColor.black
+            turn = PlayerColor.BLACK
             
             board = Board.start_board()
             board.canCastleLeft = canCastleLeft
@@ -62,25 +64,25 @@ class BoardTests():
             board.swap_pieces(1,0,2,0)
             
             if not board.serialize("data"):
-                color_print("Board serialization failed", PrintColor.red)
+                color_print("Board serialization failed", PrintColor.RED)
                 return False
             
             deserializedBoard = Board.deserialize("data")
             if deserializedBoard.canCastleLeft != canCastleLeft or board.canCastleRigth != canCastleRigth or deserializedBoard.possibleEnPassant != possibleEnPassant or\
-                deserializedBoard.turn != turn or deserializedBoard.square(2,0).type != PieceType.pawn:
-                    color_print("Board deserialization failed", PrintColor.red)
+                deserializedBoard.turn != turn or deserializedBoard.square(2,0).type != PieceType.PAWN:
+                    color_print("Board deserialization failed", PrintColor.RED)
                     return False
             
-            color_print("Board Serialization PASSED", PrintColor.green)
+            color_print("Board Serialization PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in board serialization/deserialization:", PrintColor.red)
+            color_print("Exception in board serialization/deserialization:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.board)
+    @Tests.register_test(TestType.BOARD)
     def attacked_squares() -> bool:
         """Test for validating the calculation of the attacked squares
 
@@ -93,7 +95,7 @@ class BoardTests():
             board = Board.start_board()
             cases.append((list(set(item for sublist in deepcopy(board.blackPieces).values() for item in sublist)),
                          [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7)]))
-            board = Board.start_board(turn=PlayerColor.black)
+            board = Board.start_board(turn=PlayerColor.BLACK)
             cases.append((list(set(item for sublist in deepcopy(board.whitePieces).values() for item in sublist)),
                          [(5,0),(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7)]))
             board = Board.start_board([
@@ -123,25 +125,25 @@ class BoardTests():
             
             for i, case in enumerate(cases):
                 if len(case[0]) != len(case[1]):
-                    color_print(F"Number of attacked squares wrong, Case #{i}", PrintColor.red)
+                    color_print(F"Number of attacked squares wrong, Case #{i}", PrintColor.RED)
                     print(f"Ideal: {case[1]}\nActual: {case[0]}")
                     return False
             
                 for square in case[1]:
                     if square not in case[0]:
-                        color_print(F"Missmatch in attacked squares: {square}, Case #{i}", PrintColor.red)
+                        color_print(F"Missmatch in attacked squares: {square}, Case #{i}", PrintColor.RED)
                         return False
                 
-            color_print("Board attacked squares calculation PASSED", PrintColor.green)
+            color_print("Board attacked squares calculation PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in board attacked squares calculation:", PrintColor.red)
+            color_print("Exception in board attacked squares calculation:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.board)    
+    @Tests.register_test(TestType.BOARD)    
     def checking() -> bool:
         """Test for validating the checking algorithm
 
@@ -193,23 +195,23 @@ class BoardTests():
             for i, case in enumerate(cases):
                 for movement in case[1]:
                     if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
-                        color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
+                        color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.YELLOW)
                         break
                     
-                if (case[0].boardState == BoardState.check or case[0].boardState == BoardState.checkmate) != case[2]:
-                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
+                if (case[0].boardState == BoardState.CHECK or case[0].boardState == BoardState.CHECKMATE) != case[2]:
+                    color_print(F"Failed Case #{i} for Checking in turn {case[0].turn}, {case[0].boardState}", PrintColor.RED)
                     return False
                 
-            color_print("Checking PASSED", PrintColor.green)
+            color_print("Checking PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Checking:", PrintColor.red)
+            color_print("Exception in Checking:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False
 
     @staticmethod
-    @Tests.register_test(TestType.board)    
+    @Tests.register_test(TestType.BOARD)    
     def checkmating() -> bool:
         """Test for validating the checkmate algorithm
 
@@ -285,19 +287,19 @@ class BoardTests():
             for i, case in enumerate(cases):
                 for movement in case[1]:
                     if not case[0].attempt_move(movement[0],movement[1],movement[2],movement[3])[0]:
-                        color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.yellow)
+                        color_print(f"Movement not performed {movement}, in Case #{i}", PrintColor.YELLOW)
                         break
                     
-                    if (case[0].boardState == BoardState.checkmate) != case[2]:
-                        playerPieces = case[0].whitePieces if case[0].turn == PlayerColor.white else case[0].blackPieces
+                    if (case[0].boardState == BoardState.CHECKMATE) != case[2]:
+                        playerPieces = case[0].whitePieces if case[0].turn == PlayerColor.WHITE else case[0].blackPieces
                         print([(p.type, p.color, (p.row,p.column), movs) for p, movs in playerPieces.items()])
-                        color_print(F"Failed Case #{i} for checkmating in turn {case[0].turn}, {case[0].boardState}", PrintColor.red)
+                        color_print(F"Failed Case #{i} for checkmating in turn {case[0].turn}, {case[0].boardState}", PrintColor.RED)
                         return False
                 
-            color_print("Checkmating PASSED", PrintColor.green)
+            color_print("Checkmating PASSED", PrintColor.GREEN)
             return True
         except Exception as e:
-            color_print("Exception in Checkmating:", PrintColor.red)
+            color_print("Exception in Checkmating:", PrintColor.RED)
             print(e)
             traceback.print_exc()
             return False

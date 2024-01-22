@@ -1,15 +1,17 @@
 """This module contains the model class game for handling Gameplay functionalities"""
 
 # Import external libraries
-from os import listdir, path
 from json import dump, load
+from os import listdir, path
 from typing import List, Union
 
 # Import Internal modules
 from chess_engine.board import Board
 from chess_engine.piece import Piece
+from game_logic.consts import (COLUMNS, MAX_GAMES_SAVED, ROWS, AssetType,
+                               BoardState, GameResult, PieceType, PlayerColor)
 from utils.utils import get_asset_path
-from game_logic.consts import BoardState, GameResult, PlayerColor, PieceType, AssetType, MAX_GAMES_SAVED, ROWS, COLUMNS
+
 
 class Game():
     """Class for handling game functionalities
@@ -53,7 +55,7 @@ class Game():
         while pieceType == None:
             try:
                 pieceType = PieceType[input("Enter the promotion piece: ")]
-                if pieceType == PieceType.king:
+                if pieceType == PieceType.KING:
                     pieceType = None
             except:
                 pass
@@ -70,7 +72,7 @@ class Game():
             bool: Whether the movemernt was performed or not
         """
         
-        if self.gameResult != GameResult.pending:
+        if self.gameResult != GameResult.PENDING:
             return
         
         moved, moveInf = self.board.attempt_move(movement[0], movement[1], movement[2], movement[3])
@@ -79,10 +81,10 @@ class Game():
         
         self.moveHistory.append((str(moveInf["piece"]), None if moveInf["eatPiece"] == None else str(moveInf["eatPiece"]), movement))
         
-        if self.board.boardState == BoardState.checkmate:
-            self.gameResult = GameResult.whiteWin if self.board.turn == PlayerColor.black else GameResult.blackWin  
-        elif self.board.boardState == BoardState.stalemate:
-            self.gameResult == GameResult.stalemate
+        if self.board.boardState == BoardState.CHECKMATE:
+            self.gameResult = GameResult.WHITE_WIN if self.board.turn == PlayerColor.BLACK else GameResult.BLACK_WIN  
+        elif self.board.boardState == BoardState.STALEMATE:
+            self.gameResult == GameResult.STALEMATE
         
         return True
 
@@ -101,7 +103,7 @@ class Game():
             return False, "Max games saved reached"
         
         try:
-            with open(get_asset_path(AssetType.savings, f"game_{filename}{Game.fileEnd}"), "w") as file:
+            with open(get_asset_path(AssetType.SAVINGS, f"game_{filename}{Game.fileEnd}"), "w") as file:
                 if not self.board.serialize(filename):
                     raise Exception("Couldn't serialize board")
                 
@@ -135,12 +137,12 @@ class Game():
         """
         
         board = None
-        with open(get_asset_path(AssetType.savings, f"game_{filename}{Game.fileEnd}"), "r") as file:
+        with open(get_asset_path(AssetType.SAVINGS, f"game_{filename}{Game.fileEnd}"), "r") as file:
             json_data = load(file)
             
             board = Board.deserialize(filename)
             if board == None:
-                boardPath = get_asset_path(AssetType.savings, f"board_{filename}{Board.fileEnd}")
+                boardPath = get_asset_path(AssetType.SAVINGS, f"board_{filename}{Board.fileEnd}")
                 raise Exception(f"Coulnd't deserialize board {filename}, therefore can't load Game\nFull Path: {boardPath}")
         
             # Parse the json data the Game object
@@ -159,7 +161,7 @@ class Game():
             List[str]: List of saved games.
         """
         
-        filenameList = [f[len("game_"):-len(Game.fileEnd)] for f in listdir(AssetType.savings.value) if path.isfile(get_asset_path(AssetType.savings.value, f)) and f.endswith(Game.fileEnd)]
+        filenameList = [f[len("game_"):-len(Game.fileEnd)] for f in listdir(AssetType.SAVINGS.value) if path.isfile(get_asset_path(AssetType.SAVINGS.value, f)) and f.endswith(Game.fileEnd)]
         if not serialized:
             return filenameList
         else:
@@ -174,4 +176,4 @@ class Game():
         """
         
         board = Board.start_board()
-        return cls(GameResult.pending, board,)
+        return cls(GameResult.PENDING, board,)
