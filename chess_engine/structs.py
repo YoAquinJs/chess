@@ -13,3 +13,14 @@ class Coord(NamedTuple):
 
     row: int
     column: int
+
+class Dir(NamedTuple):
+    """Represents a direction
+
+    Attributes:
+        x (int): X.
+        y (int): Y.
+    """
+
+    x: int
+    y: int
