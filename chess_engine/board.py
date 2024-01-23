@@ -4,10 +4,11 @@
 from asyncio import run
 from copy import deepcopy
 from json import dumps, load
+from typing import Optional
 
 from chess_engine.piece import Piece
 from game_logic.consts import (BOARD_START, COLUMNS, ROWS, AssetType,
-                               BoardState, MovementSpecialCase, PieceType,
+                               BoardState, MovSpecialCase, PieceType,
                                PlayerColor, PrintColor)
 # Import Internal modules
 from utils.utils import color_print, get_asset_path, opponent
@@ -48,7 +49,7 @@ class Board():
         """
         
         self.__grid = grid
-        self.getPromotionPiece = None
+        self.get_promotion_piece = None
         
         # Default board params
         self.canCastleLeft = True
@@ -349,7 +350,7 @@ class Board():
         # If move was enPassant
         enPassant = piece.type == PieceType.PAWN and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
         if enPassant:
-            eatenPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
+            eatenPiece = self.__grid[destinationRow-piece.moving_dir][destinationColumn]
 
         if eatenPiece != None:
             self.remove_piece(eatenPiece.row, eatenPiece.column)
@@ -361,7 +362,7 @@ class Board():
         
         # Add the eaten piece if there's one
         if eatenPiece != None:
-            self.add_piece(destinationRow if not enPassant else destinationRow-piece.movingDirection, destinationColumn, eatenPiece)
+            self.add_piece(destinationRow if not enPassant else destinationRow-piece.moving_dir, destinationColumn, eatenPiece)
 
         return hipothetycalBoard.boardState == BoardState.CHECK or hipothetycalBoard.boardState == BoardState.CHECKMATE
 
@@ -379,25 +380,25 @@ class Board():
         validMovements = []
 
         # Iterate trougth the posible movement os each piece
-        for direction, specialCase in piece.posibleMovements.items():
-            for i in range(1,self.get_max_extendable_movements(piece, direction, piece.maxExtend)+1):
+        for direction, specialCase in piece.posible_movs.items():
+            for i in range(1,self.get_max_extendable_movements(piece, direction, piece.max_extend)+1):
                 movement = (piece.row + (direction[0]*i), piece.column + (direction[1]*i))
                 
                 # Check for pawn special cases
                 if piece.type == PieceType.PAWN:
                     # Verify pawn in it's initial row, and that it's path is empty, for double pawn move
-                    if specialCase == MovementSpecialCase.DOUBLE_PAWN_MOVE and\
+                    if specialCase == MovSpecialCase.DOUBLE_PAWN_MOVE and\
                         ((piece.row == 1 and piece.color == PlayerColor.BLACK) or (piece.row == 6 and piece.color == PlayerColor.WHITE))\
                         and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that pawn's path is empty in normal movement
-                    elif specialCase == MovementSpecialCase.IS_EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
+                    elif specialCase == MovSpecialCase.IS_EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that the attacking square is either an enemy, enpassant or countPawnAttacks set to true
                     elif specialCase == None and (countPawnAttacks or self.is_opponent(movement[0], movement[1], piece.color) or movement == self.possibleEnPassant):
                         validMovements.append(movement)
                 # Verify castling is available, path is empty and not attacked, and king not in check
-                elif specialCase == MovementSpecialCase.CASTLE and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
+                elif specialCase == MovSpecialCase.CASTLE and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
                     and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.EMPTY\
                     and self.__grid[piece.row][ piece.column + (direction[1])].type == PieceType.EMPTY\
                     and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != BoardState.CHECK:
@@ -448,65 +449,55 @@ class Board():
         
         return True
 
-    def attempt_move(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> tuple[bool, dict]:
-        """Attempts to move a piece from it's origin, to a destination.
-
-        Args:
-            originRow (int): Origin row.
-            originColumn (int): Origin column.
-            destinationRow (int): Destination row.
-            destinationColumn (int): Destination column.
-
-        Returns:
-            bool: Whether the movement was performed or not.
-            dict: Dictionary containing info on the performed move, or None if no move was performed.
+    def attempt_move(self, origin_row: int, origin_column: int, destination_row: int, destination_column: int) -> tuple[bool, Optional[dict[str, Optional[Piece]]]]:
+        """TODO
         """
-        
+
         # Validat this movement
-        if not self.is_valid_movement(originRow, originColumn,destinationRow, destinationColumn):
+        if not self.is_valid_movement(origin_row,origin_column,destination_row,destination_column):
             return False, None
-        
-        eatPiece = self.__grid[destinationRow][destinationColumn]
+
+        eat_piece = self.__grid[destination_row][destination_column]
 
         # Perform movement
-        piece = self.__grid[originRow][originColumn]
-        self.swap_pieces(originRow,originColumn,destinationRow,destinationColumn)        
-            
+        piece = self.__grid[origin_row][origin_column]
+        self.swap_pieces(origin_row,origin_column,destination_row,destination_column)        
+
         # Check for pawn special cases
-        possibleEnPassant = None
+        possible_en_passant = None
         if piece.type == PieceType.PAWN:
             # If move was enPassant
-            if self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn:
-                eatPiece = self.__grid[destinationRow-piece.movingDirection][destinationColumn]
+            if self.possibleEnPassant != None and self.possibleEnPassant[0] == destination_row and self.possibleEnPassant[1] == destination_column:
+                eat_piece = self.__grid[destination_row-piece.moving_dir][destination_column]
             # If pawn performed doublemove, save it for en passant
-            elif abs(destinationRow-originRow) == 2:
-                possibleEnPassant = (destinationRow - piece.movingDirection, destinationColumn)
+            elif abs(destination_row-origin_row) == 2:
+                possible_en_passant = (destination_row - piece.moving_dir, destination_column)
             # If pawn reached the last square it can move, promote it
-            elif piece.row + piece.movingDirection == len(ROWS) or piece.row + piece.movingDirection == -1:
+            elif piece.row + piece.moving_dir == len(ROWS) or piece.row + piece.moving_dir == -1:
                 self.remove_piece(piece.row, piece.column)
-                
-                if self.getPromotionPiece == None:
-                    raise Exception("getPromotionPiece function not yet defined for board")
-                
-                newPiece = run(self.getPromotionPiece(piece.color, piece.row + piece.movingDirection, piece.column))
-                newPiece.row = piece.row
-                newPiece.column = piece.column
-                self.add_piece(newPiece.row,newPiece.column, newPiece)
-                
+
+                if self.get_promotion_piece is None:
+                    raise NotImplementedError("getPromotionPiece function not yet defined for board")
+
+                new_piece = run(self.get_promotion_piece(piece.color, piece.row + piece.moving_dir, piece.column))
+                new_piece.row = piece.row
+                new_piece.column = piece.column
+                self.add_piece(new_piece.row,new_piece.column, new_piece)
+
         elif piece.type == PieceType.KING:
             self.canCastleLeft = False
             self.canCastleRigth = False
-            
+
             # If move was castle
-            if abs(destinationColumn-originColumn) == 2:
-                direction = (destinationColumn-originColumn)//abs(destinationColumn-originColumn)
-                self.swap_pieces(originRow, 0 if direction == -1 else 7, originRow, destinationColumn - direction)
-        
-        self.possibleEnPassant = possibleEnPassant
-        
+            if abs(destination_column-origin_column) == 2:
+                direction = (destination_column-origin_column)//abs(destination_column-origin_column)
+                self.swap_pieces(origin_row, 0 if direction == -1 else 7, origin_row, destination_column - direction)
+
+        self.possibleEnPassant = possible_en_passant
+
         # Eat opponent piece if it's eat move
-        if eatPiece.type != PieceType.EMPTY:
-            self.empty_square(eatPiece.row, eatPiece.column)
+        if eat_piece.type != PieceType.EMPTY:
+            self.empty_square(eat_piece.row, eat_piece.column)
 
         # Pass turn and calculate new board conditions for next player
         self.turn = opponent(self.turn)
@@ -516,7 +507,7 @@ class Board():
 
         return True, {
             'piece': piece,
-            'eatPiece': eatPiece if eatPiece.type !=PieceType.EMPTY else None
+            'eatPiece': eat_piece if eat_piece.type !=PieceType.EMPTY else None
         }
 
     #! Development Only method

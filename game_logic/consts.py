@@ -120,7 +120,7 @@ PIECE_TYPE_INT = {
     PieceType.KING: 7
 }
 
-class MovementSpecialCase(Enum):
+class MovSpecialCase(Enum):
     """Enum for each type of piece
     """
     CASTLE = auto()
