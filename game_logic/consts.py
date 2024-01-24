@@ -1,11 +1,11 @@
 """This module contains constants for all subsystems of the app"""
 
-from __future__ import annotations
-
 #! This module shouldn't import from any other app module
-from enum import Enum, EnumMeta, auto
+from __future__ import annotations
+from enum import Enum, auto
 from os import getcwd, makedirs, path
-from typing import cast
+
+from utils.parseable_enum import ParseableEnum
 
 # Rendering Constants
 SCREEN_SIZE = 4
@@ -41,25 +41,6 @@ class PrintColor(Enum):
     YELLOW = '\033[33m'
     RESET = '\033[0m'
 
-# Meta Enum class for parsing from string value to Enum
-class ParseableEnum(EnumMeta):
-    """Makes a string parseable to the specified enum type
-    """
-    def __getitem__(cls, item: str) -> ParseableEnum:
-        """This method parse from a string to the Enum object
-
-        Args:
-            item (str): The string to be parsed
-
-        Returns:
-            ParseableEnum: This enum
-        """
-        if item not in cls.__members__.keys():
-            raise KeyError(f"No such value in {cls.__name__}: {item}")
-
-        found = cls.__members__.get(item)
-        return cast(ParseableEnum, found)
-
 class TestType(Enum, metaclass=ParseableEnum):
     """Enum for the multiple test type"""
 
@@ -72,12 +53,10 @@ class PlayerColor(Enum, metaclass=ParseableEnum):
     """
     WHITE = 'w'
     BLACK = 'b'
-    EMPTY = '#'
 
 PLAYER_COLOR_INT = {
-    PlayerColor.EMPTY: 1,
-    PlayerColor.WHITE: 2,
-    PlayerColor.BLACK: 3
+    PlayerColor.WHITE: 1,
+    PlayerColor.BLACK: 2
 }
 
 # Unique identifiers for game states
@@ -108,21 +87,20 @@ class PieceType(Enum, metaclass=ParseableEnum):
     ROOK = 'R'
     QUEEN = 'Q'
     KING = '@'
-    EMPTY = '#'
 
 PIECE_TYPE_INT = {
-    PieceType.EMPTY: 1,
-    PieceType.PAWN: 2,
-    PieceType.BISHOP: 3,
-    PieceType.KNIGTH: 4,
-    PieceType.ROOK: 5,
-    PieceType.QUEEN: 6,
-    PieceType.KING: 7
+    PieceType.PAWN: 1,
+    PieceType.BISHOP: 2,
+    PieceType.KNIGTH: 3,
+    PieceType.ROOK: 4,
+    PieceType.QUEEN: 5,
+    PieceType.KING: 6
 }
 
 class MovSpecialCase(Enum):
     """Enum for each type of piece
     """
+    NONE = auto()
     CASTLE = auto()
     DOUBLE_PAWN_MOVE = auto()
     IS_EMPTY = auto()
