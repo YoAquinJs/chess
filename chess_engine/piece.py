@@ -2,94 +2,142 @@
 
 from __future__ import annotations
 
-from game_logic.consts import MovSpecialCase, PieceType, PlayerColor, BLACK_MOV_DIR, WHITE_MOV_DIR
+from dataclasses import dataclass, field
+from typing import Optional, cast
 
+from chess_engine.structs import Coord, Dir
+from game_logic.consts import (BLACK_MOV_DIR, WHITE_MOV_DIR, MovSpecialCase,
+                               PieceType, PlayerColor)
+from utils.exceptions import EnumParseError
 
-#TODO refactor for readability
+PIECE_STR_LENGTH = 2
+
+@dataclass
 class Piece():
     """TODO
     """
+    type: PieceType
+    color: PlayerColor
+    row: int
+    column: int
+    moving_dir: int = field(init=False)
+    extendable_mov: bool = field(init=False)
+    movements: dict[Dir, MovSpecialCase]= field(init=False)
 
-    def __init__(self, piece_type: PieceType, color: PlayerColor, row: int, column: int) -> None:
-        self.type = piece_type
-        self.color = color
-        self.row = row
-        self.column = column
-
-        self.max_extend = 8 # Meaning the piece can move without a limit
-        self.posible_movs = None
+    def __post_init__(self) -> None:
         self.moving_dir = WHITE_MOV_DIR if self.color == PlayerColor.WHITE else BLACK_MOV_DIR
-
-        # Direction (column direction, (x movement), row direction (y movement))
-        if self.type == PieceType.PAWN:
-            self.max_extend = 1
-            self.posible_movs = {
-                (1 * self.moving_dir,0) : MovSpecialCase.IS_EMPTY,
-                (1 * self.moving_dir,-1) : None,
-                (1 * self.moving_dir,1) : None,
-                (2 * self.moving_dir,0) : MovSpecialCase.DOUBLE_PAWN_MOVE
-                }
-        elif self.type == PieceType.BISHOP:
-            self.posible_movs = {
-                (1, 1) : None,
-                (-1, 1) : None,
-                (1, -1) : None,
-                (-1, -1) : None,
-                }
-        elif self.type == PieceType.KNIGTH:
-            self.max_extend = 1
-            self.posible_movs = {
-                (1, 2) : None,
-                (2, 1) : None,
-                (2, -1) : None,
-                (1, -2) : None,
-                (-1, -2) : None,
-                (-2, -1) : None,
-                (-2, 1) : None,
-                (-1, 2) : None,
-                }
-        elif self.type == PieceType.ROOK:
-            self.posible_movs = {
-                (1, 0) : None,
-                (-1, 0) : None,
-                (0, 1) : None,
-                (0, -1) : None,
-                }
-        elif self.type == PieceType.QUEEN:
-            self.posible_movs = {
-                (1, 1) : None,
-                (-1, 1) : None,
-                (1, -1) : None,
-                (-1, -1) : None,
-                (1, 0) : None,
-                (-1, 0) : None,
-                (0, 1) : None,
-                (0, -1) : None,
-                }
-        elif self.type == PieceType.KING:
-            self.max_extend = 1
-            self.posible_movs = {
-                (1, 0) : None,
-                (-1, 0) : None,
-                (0, 1) : None,
-                (0, -1) : None,
-                (-1, 1) : None,
-                (1, -1) : None,
-                (1, 1) : None,
-                (-1, -1) : None,
-                (0,-2) : MovSpecialCase.CASTLE,
-                (0,2) : MovSpecialCase.CASTLE
-                }
-
-    #! Development only function
-#    def print_piece(self) -> None:
-#        print(self.color, self.type, (self.row, self.column))
+        if self.moving_dir not in (1, -1):
+            raise ValueError("The movement direction of the piece can only be 1 or -1")
+        self.extendable_mov = Piece.get_extenability(self.type)
+        self.movements = Piece.get_type_movements(self.type, self.moving_dir)
 
     def __str__(self) -> str:
-        return f"{self.color.value}{self.type.value}"
+        piece_str = f"{self.color.value}{self.type.value}"
+        if len(piece_str) != PIECE_STR_LENGTH:
+            raise ValueError(f"String format of piece must have {PIECE_STR_LENGTH} characters")
+        return piece_str
 
     def __hash__(self) -> int:
         return id(self)
 
     def __eq__(self, other: object) -> bool:
         return self.__hash__() == other.__hash__()
+
+    @staticmethod
+    def get_extenability(piece_type: PieceType) -> bool:
+        """Get whether the piece has or not extendable movement
+
+        Args:
+            piece_type (PieceType): Type to determine from
+
+        Returns:
+            bool: Extendable
+        """
+        match piece_type:
+            case PieceType.PAWN | PieceType.KING:
+                return False
+            case _:
+                return True
+
+    @staticmethod
+    def get_type_movements(piece_type: PieceType, mov_dir: int=0) -> dict[Dir, MovSpecialCase]:
+        """Provides the corresponding movements to the piece type
+
+        Args:
+            piece_type (PieceType): Type to determine from
+            mov_dir (int, optional): Piece movement direction depending on color. Defaults to 0.
+
+        Returns:
+            dict[Dir, Optional[MovSpecialCase]]: Movements
+        """
+        match piece_type:
+            case PieceType.PAWN:
+                return {
+                Dir(1 * mov_dir,0)  : MovSpecialCase.IS_EMPTY,
+                Dir(1 * mov_dir,-1) : MovSpecialCase.NONE,
+                Dir(1 * mov_dir,1)  : MovSpecialCase.NONE,
+                Dir(2 * mov_dir,0)  : MovSpecialCase.DOUBLE_PAWN_MOVE
+                }
+            case PieceType.BISHOP:
+                return {
+                Dir(1,1)   : MovSpecialCase.NONE,
+                Dir(-1,1)  : MovSpecialCase.NONE,
+                Dir(1,-1)  : MovSpecialCase.NONE,
+                Dir(-1,-1) : MovSpecialCase.NONE,
+                }
+            case PieceType.KNIGTH:
+                return {
+                Dir(1, 2)  : MovSpecialCase.NONE,
+                Dir(2, 1)  : MovSpecialCase.NONE,
+                Dir(2, -1) : MovSpecialCase.NONE,
+                Dir(1, -2) : MovSpecialCase.NONE,
+                Dir(-1,-2) : MovSpecialCase.NONE,
+                Dir(-2,-1) : MovSpecialCase.NONE,
+                Dir(-2,1)  : MovSpecialCase.NONE,
+                Dir(-1,2)  : MovSpecialCase.NONE,
+                }
+            case PieceType.ROOK:
+                return {
+                Dir(1,0)   : MovSpecialCase.NONE,
+                Dir(-1,0)  : MovSpecialCase.NONE,
+                Dir(0,1)   : MovSpecialCase.NONE,
+                Dir(0,-1)  : MovSpecialCase.NONE,
+                }
+            case PieceType.QUEEN:
+                return {
+                Dir(1,1)   : MovSpecialCase.NONE,
+                Dir(-1,1)  : MovSpecialCase.NONE,
+                Dir(1, -1) : MovSpecialCase.NONE,
+                Dir(-1,-1) : MovSpecialCase.NONE,
+                Dir(1,0)   : MovSpecialCase.NONE,
+                Dir(-1,0)  : MovSpecialCase.NONE,
+                Dir(0,1)   : MovSpecialCase.NONE,
+                Dir(0,-1)  : MovSpecialCase.NONE,
+                }
+            case PieceType.KING:
+                return {
+                Dir(1,0)   : MovSpecialCase.NONE,
+                Dir(-1,0)  : MovSpecialCase.NONE,
+                Dir(0,1)   : MovSpecialCase.NONE,
+                Dir(0,-1)  : MovSpecialCase.NONE,
+                Dir(-1, 1) : MovSpecialCase.NONE,
+                Dir(1,-1)  : MovSpecialCase.NONE,
+                Dir(1,1)   : MovSpecialCase.NONE,
+                Dir(-1,-1) : MovSpecialCase.NONE,
+                Dir(0,-2)  : MovSpecialCase.CASTLE,
+                Dir(0,2)   : MovSpecialCase.CASTLE
+                }
+
+    @staticmethod
+    def parse_from_str(piece_str: str, coord: Coord) -> Optional[Piece]:
+        """TODO
+        """
+        if len(piece_str) != PIECE_STR_LENGTH:
+            raise ValueError(f"The parsed string must contain {PIECE_STR_LENGTH} characters")
+
+        try:
+            color = cast(PlayerColor, PlayerColor[piece_str[0]])
+            piece_type = cast(PieceType, PieceType[piece_str[1]])
+            return Piece(piece_type, color, coord.row, coord.column)
+        except EnumParseError:
+            return None
