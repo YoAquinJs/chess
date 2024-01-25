@@ -15,6 +15,6 @@ class Serializable(ABC):
 
     @abstractmethod
     @classmethod
-    def get_from_deserialize(cls, attrs: dict[str, Any]) -> Serializable:
+    def get_from_deserialize(cls, attrs: dict[str, Any], **kargs: Any) -> Serializable:
         """TODO
         """
