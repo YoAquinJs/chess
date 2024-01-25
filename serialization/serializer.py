@@ -1,5 +1,7 @@
 """TODO"""
+#TODO build a ConsistantDataPath to serialize to
 
+from dataclasses import dataclass, field
 from os import path, listdir
 from enum import Enum, auto
 from typing import Any, Callable, Generic, Optional, TypeVar
@@ -28,19 +30,20 @@ class DeserializeResult(Enum):
     MISSING_ATTRS = auto()
 
 Ser = TypeVar("Ser", bound=Serializable)
+@dataclass
 class Serializer(Generic[Ser]):
     """TODO
     """
 
-    def __init__(self, file_format: FileFormat, constructor: Callable[[dict[str, Any]], Ser],
-                 max_saves_count: int=0) -> None:
-        if not file_format.is_valid_format(FILE_EXTENSION):
+    format: FileFormat
+    constructor: Callable[[dict[str, Any]], Ser]
+    max_saves_count: int = 0
+    has_max_saves: bool = field(init=False)
+    def __post_init__(self) -> None:
+        if not self.format.is_valid_format(FILE_EXTENSION):
             raise ValueError("Invalid file format provided")
+        self.has_max_saves = self.max_saves_count > 0
 
-        self.format = file_format
-        self.constructor = constructor
-        self.has_max_saves = max_saves_count > 0
-        self.max_saves_count = max_saves_count
 
     def count_saves(self, *directories: str, asset_type: AssetType=AssetType.SAVINGS) -> int:
         """Return the count of saves in the specified directory
@@ -117,5 +120,3 @@ class Serializer(Generic[Ser]):
         if isinstance(obj, DeserializeResult):
             return None, obj
         return obj, DeserializeResult.SUCCESFULL
-
-#TODO build a ConsistantDataPath to serialize to
