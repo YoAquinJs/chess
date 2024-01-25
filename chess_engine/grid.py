@@ -1,7 +1,6 @@
 """This module contains the grid class for handling the boards piece grid"""
 
 from __future__ import annotations
-
 from typing import Any, Optional
 
 from chess_engine.piece import Piece, PIECE_STR_LENGTH
@@ -77,7 +76,7 @@ class Grid(Serializable):
         }
 
     @classmethod
-    def get_from_deserialize(cls, attrs: dict[str, Any]) -> Grid:
+    def get_from_deserialize(cls, attrs: dict[str, Any], **kargs: Any) -> Grid:
         """TODO
         """
         return Grid.from_str_grid(attrs["grid"])

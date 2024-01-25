@@ -4,14 +4,15 @@ from os import path, listdir
 from enum import Enum, auto
 from typing import Any, Callable, Generic, Optional, TypeVar
 from json import dumps, load
+from serialization.file_format import FileFormat
 from serialization.serializable import Serializable
 from game_logic.consts import AssetType
 from utils.utils import get_asset_path
 
 ENCODING = "utf-8"
 JSON_INDENT = 4
-
-class SerializeResultStatus(Enum):
+FILE_EXTENSION = "json"
+class SerializeResult(Enum):
     """TODO
     """
     SUCCESFULL = auto()
@@ -19,7 +20,7 @@ class SerializeResultStatus(Enum):
     NOT_FOUND = auto()
     INCORRECT_OBJ_TYPE=auto()
 
-class DeserializeResultStatus(Enum):
+class DeserializeResult(Enum):
     """TODO
     """
     SUCCESFULL = auto()
@@ -31,16 +32,15 @@ class Serializer(Generic[Ser]):
     """TODO
     """
 
-    def __init__(self, file_end: str, file_prefix: str, asset_type: AssetType,
+    def __init__(self, file_format: FileFormat, constructor: Callable[[dict[str, Any]], Ser],
                  max_saves_count: int=0) -> None:
-        if not file_end.endswith(".json"):
-            raise ValueError("File end must be .json")
-        self.file_end = file_end
-        self.file_prefix = file_prefix
-        self.asset_type = asset_type
+        if not file_format.is_valid_format(FILE_EXTENSION):
+            raise ValueError("Invalid file format provided")
+
+        self.format = file_format
+        self.constructor = constructor
         self.has_max_saves = max_saves_count > 0
         self.max_saves_count = max_saves_count
-
 
     def count_saves(self, *directories: str, asset_type: AssetType=AssetType.SAVINGS) -> int:
         """Return the count of saves in the specified directory
@@ -51,17 +51,15 @@ class Serializer(Generic[Ser]):
         Returns:
             int: Count
         """
-        directory_path = get_asset_path(asset_type, *directories)
-        is_file: Callable[[str], bool] = lambda f: path.isfile(path.join(directory_path, f))
-        is_save: Callable[[str], bool] = lambda f: f.startswith(self.file_prefix) and f.endswith(self.file_end)
-        file_names = [f for f in listdir(directory_path) if is_file(f)]
-        saved_files = [f for f in file_names if is_save(f)]
-        return len(saved_files)
+        dir_path = get_asset_path(asset_type, *directories)
+        prefix, file_end = self.format.file_prefix, self.format.file_end
+        files = filter(lambda f: path.isfile(path.join(dir_path, f)), listdir(dir_path))
+        saves = filter(lambda f: f.startswith(prefix) and f.endswith(file_end), files)
+        return len(list(saves))
 
-    def serialize(self, obj: Ser, filename: str, *directories: str) -> SerializeResultStatus:
+    def serialize(self, obj: Ser, filename: str, *directories: str) -> SerializeResult:
         """TODO
         """
-
         # Format Json for fixing visualization
         def format_json(json: str) -> str:
             removed = 0
@@ -81,40 +79,43 @@ class Serializer(Generic[Ser]):
             return json
 
         # Validate Maximum Saves Reached
-        directory_path = get_asset_path(self.asset_type, *directories)
+        dir_path = get_asset_path(self.format.asset_type, *directories)
         if self.has_max_saves:
-            saves_count = self.count_saves(*directories, asset_type=self.asset_type)
+            saves_count = self.count_saves(*directories, asset_type=self.format.asset_type)
             if saves_count >= self.max_saves_count:
-                return SerializeResultStatus.MAX_SAVES_REACHED
+                return SerializeResult.MAX_SAVES_REACHED
         try:
-            file_path = path.join(directory_path, f"{self.file_prefix}{filename}{self.file_end}")
+            file_fullname = f"{self.format.file_prefix}{filename}{self.format.file_end}"
+            file_path = path.join(dir_path, file_fullname)
             with open(file_path, "w", encoding=ENCODING) as file:
                 json_dict = obj.get_serialization_attrs()
                 json_string = format_json(dumps(json_dict, indent=JSON_INDENT))
                 file.write(json_string)
-                return SerializeResultStatus.SUCCESFULL
+                return SerializeResult.SUCCESFULL
 
         except FileNotFoundError:
-            return SerializeResultStatus.NOT_FOUND
+            return SerializeResult.NOT_FOUND
 
-    def deserialize(self, contructor: Callable[[dict[str, Any]], Ser], filename: str,
-                    *directories: str)-> tuple[Optional[Ser], DeserializeResultStatus]:
+    def _try_deserialize(self, file_path: str, **kargs: Any) -> Ser | DeserializeResult:
+        try:
+            with open(file_path, "r", encoding=ENCODING) as file:
+                json = load(file)
+            return self.constructor(json, **kargs)
+        except KeyError:
+            return DeserializeResult.MISSING_ATTRS
+        except FileNotFoundError:
+            return DeserializeResult.NOT_FOUND
+
+    def deserialize(self, filename: str, *directories: str,
+                    **kargs: Any) -> tuple[Optional[Ser], DeserializeResult]:
         """TODO
         """
-        try:
-            file_fullname = f"{self.file_prefix}{filename}{self.file_end}"
-            file_path = get_asset_path(self.asset_type, *[*directories, file_fullname])
-            with open(file_path, "r", encoding=ENCODING) as file:
-                json_dict = load(file)
+        file_fullname = f"{self.format.file_prefix}{filename}{self.format.file_end}"
+        file_path = get_asset_path(self.format.asset_type, *[*directories, file_fullname])
+        obj = self._try_deserialize(file_path, **kargs)
 
-                try:
-                    obj = contructor(json_dict)
-                except KeyError:
-                    return None, DeserializeResultStatus.MISSING_ATTRS
-
-                return obj, DeserializeResultStatus.SUCCESFULL
-
-        except FileNotFoundError:
-            return None, DeserializeResultStatus.NOT_FOUND
+        if isinstance(obj, DeserializeResult):
+            return None, obj
+        return obj, DeserializeResult.SUCCESFULL
 
 #TODO build a ConsistantDataPath to serialize to
