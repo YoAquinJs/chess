@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 
-from chess_engine.piece import Piece
+from chess_engine.piece import Piece, PIECE_STR_LENGTH
 from chess_engine.structs import Coord
 from game_logic.consts import COLUMNS, ROWS
+from serialization.serializable import Serializable
 
-
-class Grid():
+class Grid(Serializable):
     """TODO
     """
 
@@ -64,6 +64,23 @@ class Grid():
                     print(c, end='')
                 piece = self.get_at(Coord(ri-1, ci))
                 print(f"{'##' if piece is None else str(piece)} ", end='')
+
+    def get_serialization_attrs(self) -> dict[str, Any]:
+        text_grid: list[list[str]] = []
+        for r, row in enumerate(self.__grid):
+            text_grid.append([])
+            for piece in row:
+                piece_str = " "*PIECE_STR_LENGTH if piece is None else str(piece)
+                text_grid[r].append(piece_str)
+        return {
+            "grid": text_grid
+        }
+
+    @classmethod
+    def get_from_deserialize(cls, attrs: dict[str, Any]) -> Grid:
+        """TODO
+        """
+        return Grid.from_str_grid(attrs["grid"])
 
     @staticmethod
     def from_str_grid(text_grid: list[list[str]]) -> Grid:
