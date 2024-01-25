@@ -4,7 +4,7 @@ from os import path, listdir
 from enum import Enum, auto
 from typing import Any, Callable, Generic, Optional, TypeVar
 from json import dumps, load
-from game_logic.serializable import Serializable
+from serialization.serializable import Serializable
 from game_logic.consts import AssetType
 from utils.utils import get_asset_path
 
@@ -117,5 +117,4 @@ class Serializer(Generic[Ser]):
         except FileNotFoundError:
             return None, DeserializeResultStatus.NOT_FOUND
 
-#TODO serializable interface and abstraction for code repetition
 #TODO build a ConsistantDataPath to serialize to
