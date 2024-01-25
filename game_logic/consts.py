@@ -2,6 +2,7 @@
 
 #! This module shouldn't import from any other app module
 from __future__ import annotations
+
 from enum import Enum, auto
 from os import getcwd, makedirs, path
 
@@ -120,5 +121,4 @@ BOARD_START = [
     ['##', '##', '##', '##', '##', '##', '##', '##'], # 3
     ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'], # 2
     ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']  # 1
-#     a     b     c     d      e     f     g     h
-]
+]#    a     b     c     d      e     f     g     h

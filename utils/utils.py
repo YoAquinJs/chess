@@ -51,7 +51,7 @@ def tint_image(image: pygame.Surface, tint: tuple[int, int, int], pixel_tint: bo
     Args:
         image (pygame.Surface): Image
         tint (tuple[int, int, int]): Tint
-        pixel_tint (bool, optional): Whether the tint should be applied pixel by pixel or by fill. Defaults to False.
+        pixel_tint (bool, optional): Whether to tint pixel by pixel or by fill. Defaults to False.
     """
     percentage_tint = tuple(t/255 for t in tint+(255,))
     if not pixel_tint:
@@ -66,7 +66,7 @@ def tint_image(image: pygame.Surface, tint: tuple[int, int, int], pixel_tint: bo
             new_pixel_color = tuple(floor(c*t) for c, t in zip(pixel_color, percentage_tint))
             image.set_at((x,y), new_pixel_color)
 
-def get_asset_path(asset_type: AssetType, *subPaths: str) -> str:
+def get_asset_path(asset_type: AssetType, *sub_paths: str) -> str:
     """Return the path of an asset based on the type and sub path
 
     Args:
@@ -75,4 +75,4 @@ def get_asset_path(asset_type: AssetType, *subPaths: str) -> str:
     Returns:
         str: Built path.
     """
-    return path.join(asset_type.value, *subPaths)
+    return path.join(asset_type.value, *sub_paths)
