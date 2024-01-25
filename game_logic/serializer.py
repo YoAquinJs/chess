@@ -24,6 +24,7 @@ class DeserializeResultStatus(Enum):
     """
     SUCCESFULL = auto()
     NOT_FOUND = auto()
+    MISSING_ATTRS = auto()
 
 Ser = TypeVar("Ser", bound=Serializable)
 class Serializer(Generic[Ser]):
@@ -105,7 +106,12 @@ class Serializer(Generic[Ser]):
             file_path = get_asset_path(self.asset_type, *[*directories, file_fullname])
             with open(file_path, "r", encoding=ENCODING) as file:
                 json_dict = load(file)
-                obj = contructor(json_dict)
+
+                try:
+                    obj = contructor(json_dict)
+                except KeyError:
+                    return None, DeserializeResultStatus.MISSING_ATTRS
+
                 return obj, DeserializeResultStatus.SUCCESFULL
 
         except FileNotFoundError:
