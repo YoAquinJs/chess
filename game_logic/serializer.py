@@ -30,7 +30,8 @@ class Serializer(Generic[Ser]):
     """TODO
     """
 
-    def __init__(self, file_end: str, file_prefix: str, asset_type: AssetType, max_saves_count: int=0) -> None:
+    def __init__(self, file_end: str, file_prefix: str, asset_type: AssetType,
+                 max_saves_count: int=0) -> None:
         if not file_end.endswith(".json"):
             raise ValueError("File end must be .json")
         self.file_end = file_end
