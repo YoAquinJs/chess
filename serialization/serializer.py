@@ -44,7 +44,6 @@ class Serializer(Generic[Ser]):
             raise ValueError("Invalid file format provided")
         self.has_max_saves = self.max_saves_count > 0
 
-
     def count_saves(self, *directories: str, asset_type: AssetType=AssetType.SAVINGS) -> int:
         """Return the count of saves in the specified directory
 
