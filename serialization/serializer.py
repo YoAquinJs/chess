@@ -39,7 +39,7 @@ class Serializer(Generic[Ser]):
     """Serializer for Serializable Objects, requires a Serializable Type for it's Ser Generic type
 
     Attributes:
-        format (FileFormat): _description_
+        format (FileFormat): File format
         constructor (Callable[[dict[str, Any]], Ser]): The Serializable Object constructor
         max_saves_count (int): The maximum amount of saves if any
         has_max_saves (bool): Whether the serializable has or not a limit in savings
@@ -65,9 +65,8 @@ class Serializer(Generic[Ser]):
         Returns:
             list[str]: File names of saves in directory
         """
-        prefix, file_end = self.format.file_prefix, self.format.file_end
         files = filter(lambda f: path.isfile(path.join(dir_path, f)), listdir(dir_path))
-        saves = filter(lambda f: f.startswith(prefix) and f.endswith(file_end), files)
+        saves = filter(self.format.is_of_format, files)
         return list(saves)
 
     def _validate_max_saves(self, dir_path: str) -> bool:
@@ -111,7 +110,7 @@ class Serializer(Generic[Ser]):
             return SerializeResult.MAX_SAVES_REACHED
 
         try:
-            file_fullname = f"{self.format.file_prefix}{filename}{self.format.file_end}"
+            file_fullname = self.format.get_fullname(filename)
             file_path = path.join(dir_path, file_fullname)
             with open(file_path, "w", encoding=ENCODING) as file:
                 json_dict = obj.get_serialization_attrs()
@@ -144,7 +143,7 @@ class Serializer(Generic[Ser]):
         Returns:
             tuple[Optional[Ser], DeserializeResult]: Loaded object if valid and result status
         """
-        file_fullname = f"{self.format.file_prefix}{filename}{self.format.file_end}"
+        file_fullname = self.format.get_fullname(filename)
         file_path = get_asset_path(self.format.asset_type, *[*directories, file_fullname])
         obj = self._try_deserialize(file_path, **kwargs)
 
