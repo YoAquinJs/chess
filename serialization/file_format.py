@@ -20,16 +20,34 @@ class FileFormat():
     asset_type: AssetType
 
     def is_valid_format(self, extension: str) -> bool:
-        """TODO
+        """Whether the format matches the extension
+
+        Args:
+            extension (str): Extension
+
+        Returns:
+            bool: Whether is valid
         """
         return self.file_end.endswith(extension)
 
     def is_of_format(self, file: str) -> bool:
-        """TODO
+        """If the file is of this format
+
+        Args:
+            file (str): Full filename
+
+        Returns:
+            bool: Whether is of this format
         """
         return file.startswith(self.file_prefix) and file.endswith(self.file_end)
 
     def get_fullname(self, filename: str) -> str:
-        """TODO
+        """Compute the fullnmae of a filename
+
+        Args:
+            filename (str): Filename
+
+        Returns:
+            str: Fullname
         """
         return f"{self.file_prefix}{filename}{self.file_end}"
