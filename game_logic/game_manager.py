@@ -6,7 +6,7 @@ import pygame
 
 # Import internal modules
 from chess_engine.chess_game import ChessGame
-from game_logic.scene import Scene, SceneBaseData
+from ui.scene import Scene, SceneBaseData
 from ui.font import Font
 
 

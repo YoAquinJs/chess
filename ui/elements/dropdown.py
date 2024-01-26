@@ -1,7 +1,7 @@
 import pygame
 
 from typing import Union
-from game_logic.game_object import GameObject
+from ui.game_object import GameObject
 from ui.elements.button import Button
 from ui.elements.label import Label
 from ui.elements.labeled_sprite import LabeledSprite

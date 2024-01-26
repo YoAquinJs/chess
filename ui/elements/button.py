@@ -6,7 +6,7 @@ from typing import Optional
 
 import pygame
 
-from game_logic.game_object import GameObject
+from ui.game_object import GameObject
 from ui.elements.label import Label
 from ui.elements.sprite import Sprite
 

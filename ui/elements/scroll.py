@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import pygame
 
-from game_logic.game_object import GameObject
+from ui.game_object import GameObject
 from ui.elements.sprite import Sprite
 
 @dataclass

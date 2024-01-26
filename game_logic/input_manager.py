@@ -1,0 +1,4 @@
+"""TODO"""
+
+class InputManager():
+    pass

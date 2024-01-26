@@ -8,9 +8,8 @@ from copy import deepcopy
 from typing import Any, Optional
 
 from chess_engine.piece import Piece
-from game_logic.consts import (COLUMNS, ROWS, BoardState,
-                               MovSpecialCase, PieceType, PlayerColor,
-                               PrintColor)
+from game_logic.consts import (COLUMNS, ROWS, BoardState, MovSpecialCase,
+                               PieceType, PlayerColor, PrintColor)
 from serialization.serializable import Serializable
 # Import Internal modules
 from utils.utils import color_print, opponent
@@ -19,8 +18,6 @@ from utils.utils import color_print, opponent
 class ChessValidator(Serializable):
     """TODO
     """
-
-    fileEnd = '_b.json'
 
     def __init__(self, grid: list[list[Piece]], turn: PlayerColor = PlayerColor.WHITE, afterMoveCheck: bool = False):
         self.__grid = grid
@@ -69,19 +66,6 @@ class ChessValidator(Serializable):
         self.squares_under_attack(opponent(self.turn))
         self.get_posible_turn_movements()
         self.set_game_state(afterMoveCheck)
-
-    def square(self, row: int, column: int) -> Piece:
-        """Returns the piece in the specified square
-
-        Args:
-            row (int): Specified row
-            column (int): Specified column
-
-        Returns:
-            Piece: Piece in the square
-        """
-        
-        return self.__grid[row][column]
 
     def is_opponent(self, row: int, column: int, playerColor: PlayerColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not
@@ -485,7 +469,7 @@ class ChessValidator(Serializable):
             'eatPiece': eat_piece if eat_piece.type !=PieceType.EMPTY else None
         }
 
-    def get_serialization_attrs(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         return {
             'turn' : self.turn.value,
             'canCastleLeft' : self.canCastleLeft,
@@ -494,7 +478,7 @@ class ChessValidator(Serializable):
         }
 
     @classmethod
-    def get_from_deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> ChessValidator:
+    def deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> ChessValidator:
         """TODO
         """
         board = ChessValidator(kwargs["grid"], attrs["turn"])

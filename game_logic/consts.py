@@ -52,15 +52,6 @@ PLAYER_COLOR_INT = {
 }
 
 # Unique identifiers for game states
-class GameResult(Enum, metaclass=ParseableEnum):
-    """Enum for endding states in a chess game
-    """
-    PENDING = auto()
-    WHITE_WIN = auto()
-    BLACK_WIN = auto()
-    STALEMATE = auto()
-    TIE = auto()
-
 class BoardState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game
     """

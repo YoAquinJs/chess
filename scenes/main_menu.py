@@ -4,12 +4,12 @@ import pygame
 
 from game_logic.consts import AssetType
 from game_logic.game_manager import GameManager
-from game_logic.scene import Scene, SceneBaseData
 from scenes.load_game import LoadGameScene
 from scenes.on_game import OnGameScene
 from ui.elements.button import Button, ButtonInitData
 from ui.elements.label import Label, LabelInitData
 from ui.elements.sprite import Sprite, SpriteInitData
+from ui.scene import Scene, SceneBaseData
 from ui.text import Text
 from utils.utils import get_asset_path, scale_img
 

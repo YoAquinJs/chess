@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import pygame
 
-from game_logic.game_object import GameObject
+from ui.game_object import GameObject
 from ui.font import Font
 
 
