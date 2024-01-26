@@ -12,6 +12,7 @@ from utils.exceptions import EnumParseError
 
 PIECE_STR_LENGTH = 2
 
+
 @dataclass
 class Piece():
     """TODO

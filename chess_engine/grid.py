@@ -76,7 +76,7 @@ class Grid(Serializable):
         }
 
     @classmethod
-    def get_from_deserialize(cls, attrs: dict[str, Any], **kargs: Any) -> Grid:
+    def get_from_deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> Grid:
         """TODO
         """
         return Grid.from_str_grid(attrs["grid"])

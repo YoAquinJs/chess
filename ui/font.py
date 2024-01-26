@@ -4,9 +4,17 @@ from math import floor
 
 import pygame
 
-from game_logic.consts import CHAR_SEPARATOR, CHARACTER_ORDER
 from ui.text import Text
 from utils.utils import scale_img
+
+CHAR_SEPARATOR = 127
+CHARACTER_ORDER = \
+['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X',
+ 'Y','Z',
+ 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x',
+ 'y','z',
+ '.','-',',',':','+','\'','!','?','0','1','2','3','4','5','6','7','8','9','(',')','/','_','=','\\',
+ '[',']','*','"','<','>',';']
 
 
 def clip(surface: pygame.Surface, x: int, y: int, x_size: int, y_size: int) -> pygame.Surface:

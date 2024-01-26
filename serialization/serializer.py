@@ -99,23 +99,23 @@ class Serializer(Generic[Ser]):
         except FileNotFoundError:
             return SerializeResult.NOT_FOUND
 
-    def _try_deserialize(self, file_path: str, **kargs: Any) -> Ser | DeserializeResult:
+    def _try_deserialize(self, file_path: str, **kwargs: Any) -> Ser | DeserializeResult:
         try:
             with open(file_path, "r", encoding=ENCODING) as file:
                 json = load(file)
-            return self.constructor(json, **kargs)
+            return self.constructor(json, **kwargs)
         except KeyError:
             return DeserializeResult.MISSING_ATTRS
         except FileNotFoundError:
             return DeserializeResult.NOT_FOUND
 
     def deserialize(self, filename: str, *directories: str,
-                    **kargs: Any) -> tuple[Optional[Ser], DeserializeResult]:
+                    **kwargs: Any) -> tuple[Optional[Ser], DeserializeResult]:
         """TODO
         """
         file_fullname = f"{self.format.file_prefix}{filename}{self.format.file_end}"
         file_path = get_asset_path(self.format.asset_type, *[*directories, file_fullname])
-        obj = self._try_deserialize(file_path, **kargs)
+        obj = self._try_deserialize(file_path, **kwargs)
 
         if isinstance(obj, DeserializeResult):
             return None, obj
