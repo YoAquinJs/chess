@@ -12,15 +12,14 @@ from utils.exceptions import EnumParseError
 
 PIECE_STR_LENGTH = 2
 
-
+SerPiece = tuple[str, tuple[int,int]]
 @dataclass
 class Piece():
     """TODO
     """
     type: PieceType
     color: PlayerColor
-    row: int
-    column: int
+    coord: Coord
     moving_dir: int = field(init=False)
     extendable_mov: bool = field(init=False)
     movements: dict[Dir, MovSpecialCase]= field(init=False)
@@ -29,7 +28,7 @@ class Piece():
         self.moving_dir = WHITE_MOV_DIR if self.color == PlayerColor.WHITE else BLACK_MOV_DIR
         if self.moving_dir not in (1, -1):
             raise ValueError("The movement direction of the piece can only be 1 or -1")
-        self.extendable_mov = Piece.get_extenability(self.type)
+        self.extendable_mov = Piece.get_extendability(self.type)
         self.movements = Piece.get_type_movements(self.type, self.moving_dir)
 
     def __str__(self) -> str:
@@ -45,7 +44,7 @@ class Piece():
         return self.__hash__() == other.__hash__()
 
     @staticmethod
-    def get_extenability(piece_type: PieceType) -> bool:
+    def get_extendability(piece_type: PieceType) -> bool:
         """Get whether the piece has or not extendable movement
 
         Args:
@@ -129,6 +128,17 @@ class Piece():
                 Dir(0,2)   : MovSpecialCase.CASTLE
                 }
 
+    def serialize(self) -> SerPiece:
+        """TODO
+        """
+        return (str(self), self.coord.to_tupple())
+
+    @staticmethod
+    def deserialize(ser: SerPiece) -> Optional[Piece]:
+        """TODO
+        """
+        return Piece.parse_from_str(ser[0], Coord(*ser[1]))
+
     @staticmethod
     def parse_from_str(piece_str: str, coord: Coord) -> Optional[Piece]:
         """TODO
@@ -139,6 +149,6 @@ class Piece():
         try:
             color = cast(PlayerColor, PlayerColor[piece_str[0]])
             piece_type = cast(PieceType, PieceType[piece_str[1]])
-            return Piece(piece_type, color, coord.row, coord.column)
+            return Piece(piece_type, color, coord)
         except EnumParseError:
             return None
