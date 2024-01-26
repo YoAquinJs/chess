@@ -1,3 +1,6 @@
+"""This module contains the Serializable Class and corresponding contstants,
+it's in charge of managing the savings and loadings of Serializable objects,
+plus some utilities relate"""
 #TODO build a ConsistantDataPath to serialize to
 
 from dataclasses import dataclass, field
@@ -33,6 +36,15 @@ class DeserializeResult(Enum):
 Ser = TypeVar("Ser", bound=Serializable)
 @dataclass
 class Serializer(Generic[Ser]):
+    """Serializer for Serializable Objects, requires a Serializable Type for it's Ser Generic type
+
+    Attributes:
+        format (FileFormat): _description_
+        constructor (Callable[[dict[str, Any]], Ser]): The Serializable Object constructor
+        max_saves_count (int): The maximum amount of saves if any
+        has_max_saves (bool): Whether the serializable has or not a limit in savings
+
+    """
 
     format: FileFormat
     constructor: Callable[[dict[str, Any]], Ser]
@@ -45,6 +57,14 @@ class Serializer(Generic[Ser]):
         self.has_max_saves = self.max_saves_count > 0
 
     def get_saves(self, dir_path: str) -> list[str]:
+        """Get the saves in a directory
+
+        Args:
+            dir_path (str): Directory
+
+        Returns:
+            list[str]: File names of saves in directory
+        """
         prefix, file_end = self.format.file_prefix, self.format.file_end
         files = filter(lambda f: path.isfile(path.join(dir_path, f)), listdir(dir_path))
         saves = filter(lambda f: f.startswith(prefix) and f.endswith(file_end), files)
@@ -57,6 +77,16 @@ class Serializer(Generic[Ser]):
         return saves_count >= self.max_saves_count
 
     def serialize(self, obj: Ser, filename: str, *directories: str) -> SerializeResult:
+        """Serializes the specified Serializable if possible
+
+        Args:
+            obj (Ser): Object to serialize
+            filename (str): Filename
+            *directories (str): Sub directories in the specified Asset Type
+
+        Returns:
+            SerializeResult: Result status
+        """
         # Format Json for fixing visualization
         def format_json(json: str) -> str:
             removed = 0
@@ -104,6 +134,16 @@ class Serializer(Generic[Ser]):
 
     def deserialize(self, filename: str, *directories: str,
                     **kwargs: Any) -> tuple[Optional[Ser], DeserializeResult]:
+        """Deserializes object if found and is valid
+
+        Args:
+            filename (str): Filename
+            *directories (str): Sub directories in the specified Asset Type
+            **kwargs (str): Additional arguments for the Serializable Constructor
+
+        Returns:
+            tuple[Optional[Ser], DeserializeResult]: Loaded object if valid and result status
+        """
         file_fullname = f"{self.format.file_prefix}{filename}{self.format.file_end}"
         file_path = get_asset_path(self.format.asset_type, *[*directories, file_fullname])
         obj = self._try_deserialize(file_path, **kwargs)
