@@ -1,12 +1,14 @@
 """This module contains the grid class for handling the boards piece grid"""
 
 from __future__ import annotations
+
 from typing import Any, Optional
 
-from chess_engine.piece import Piece, PIECE_STR_LENGTH
+from chess_engine.piece import PIECE_STR_LENGTH, Piece
 from chess_engine.structs import Coord
 from game_logic.consts import COLUMNS, ROWS
 from serialization.serializable import Serializable
+
 
 class Grid(Serializable):
     """TODO
@@ -43,12 +45,10 @@ class Grid(Serializable):
         """
         piece1 = self.get_at(coord1)
         if piece1 is not None:
-            piece1.row = coord2.row
-            piece1.column = coord2.column
+            piece1.coord = coord2
         piece2 = self.get_at(coord1)
         if piece2 is not None:
-            piece2.row = coord1.row
-            piece2.column = coord1.column
+            piece2.coord = coord1
 
         self.set_at(coord1, piece2)
         self.set_at(coord2, piece1)
@@ -63,6 +63,21 @@ class Grid(Serializable):
                     print(c, end='')
                 piece = self.get_at(Coord(ri-1, ci))
                 print(f"{'##' if piece is None else str(piece)} ", end='')
+
+    @staticmethod
+    def from_str_grid(text_grid: list[list[str]]) -> Grid:
+        """TODO
+        """
+        if len(text_grid) != len(ROWS) or len(text_grid[0]) != len(COLUMNS):
+            raise ValueError("Text grid must have the same lengths as the \
+                            'ROWS' and 'COLUMNS' constants")
+
+        grid: list[list[Optional[Piece]]] = []
+        for r, row in enumerate(text_grid):
+            grid.append([])
+            for c, piece_str in enumerate(row):
+                grid[r].append(Piece.parse_from_str(piece_str, Coord(r, c)))
+        return Grid(grid)
 
     def get_serialization_attrs(self) -> dict[str, Any]:
         text_grid: list[list[str]] = []
@@ -80,18 +95,3 @@ class Grid(Serializable):
         """TODO
         """
         return Grid.from_str_grid(attrs["grid"])
-
-    @staticmethod
-    def from_str_grid(text_grid: list[list[str]]) -> Grid:
-        """TODO
-        """
-        if len(text_grid) != len(ROWS) or len(text_grid[0]) != len(COLUMNS):
-            raise ValueError("Text grid must have the same lengths as the \
-                            'ROWS' and 'COLUMNS' constants")
-
-        grid: list[list[Optional[Piece]]] = []
-        for r, row in enumerate(text_grid):
-            grid.append([])
-            for c, piece_str in enumerate(row):
-                grid[r].append(Piece.parse_from_str(piece_str, Coord(r, c)))
-        return Grid(grid)

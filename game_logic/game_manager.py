@@ -5,7 +5,7 @@ from typing import Any, Type
 import pygame
 
 # Import internal modules
-from game_logic.game import Game
+from chess_engine.chess_game import ChessGame
 from game_logic.scene import Scene, SceneBaseData
 from ui.font import Font
 
@@ -18,7 +18,7 @@ class GameManager():
     running = True
 
     currentScene: Scene
-    currentGame: Game
+    currentGame: ChessGame
     loadedGame: int = -1
 
     @classmethod
@@ -42,10 +42,10 @@ class GameManager():
         cls.currentScene.render()
 
     @classmethod
-    def load_screen(cls, scene_type: Type[Scene], **kargs: Any) -> None:
+    def load_screen(cls, scene_type: Type[Scene], **kwargs: Any) -> None:
         """Loads the specified scene
         """
-        cls.currentScene = scene_type(SceneBaseData(cls.font, cls.screen), **kargs)
+        cls.currentScene = scene_type(SceneBaseData(cls.font, cls.screen), **kwargs)
 
     @classmethod
     def quit(cls) -> None:
