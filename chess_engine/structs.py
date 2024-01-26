@@ -14,6 +14,11 @@ class Coord(NamedTuple):
     row: int
     column: int
 
+    def to_tupple(self) -> tuple[int, int]:
+        """TODO
+        """
+        return (self.row, self.column)
+
 class Dir(NamedTuple):
     """Represents a direction
 
@@ -24,3 +29,8 @@ class Dir(NamedTuple):
 
     x: int
     y: int
+
+    def to_tupple(self) -> tuple[int, int]:
+        """TODO
+        """
+        return (self.x, self.y)
