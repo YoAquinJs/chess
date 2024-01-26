@@ -1,8 +1,11 @@
-"""TODO"""
+"""This module contains the Serializable ABC,
+which represents an object that can be serialized with the Serializer Class"""
 
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any
+
 
 class Serializable(ABC):
     """Serializable class interface
@@ -10,11 +13,21 @@ class Serializable(ABC):
 
     @abstractmethod
     def get_serialization_attrs(self) -> dict[str, Any]:
-        """TODO
+        """Gives a dictionary of the object's serialization attributes
+
+        Returns:
+            dict[str, Any]: Dictionary
         """
 
     @abstractmethod
     @classmethod
     def get_from_deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> Serializable:
-        """TODO
+        """Contructs the Object from the deserialized daa
+
+        Args:
+            attrs (dict[str, Any]): Deserialized data
+            **kwargs (Any): Aditional arguments for the contructor
+
+        Returns:
+            Serializable: Contructed object
         """

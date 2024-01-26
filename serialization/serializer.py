@@ -139,7 +139,7 @@ class Serializer(Generic[Ser]):
         Args:
             filename (str): Filename
             *directories (str): Sub directories in the specified Asset Type
-            **kwargs (str): Additional arguments for the Serializable Constructor
+            **kwargs (Any): Additional arguments for the Serializable Constructor
 
         Returns:
             tuple[Optional[Ser], DeserializeResult]: Loaded object if valid and result status
