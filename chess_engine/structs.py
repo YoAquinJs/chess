@@ -19,6 +19,11 @@ class Coord(NamedTuple):
         """
         return (self.row, self.column)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Coord):
+            return False
+        return self.row == other.row and self.column == other.column
+
 class Dir(NamedTuple):
     """Represents a direction
 

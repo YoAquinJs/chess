@@ -68,7 +68,6 @@ class Piece():
     def __hash__(self) -> int:
         return id(self)
 
-    # Equality doesn't compare coordinates
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Piece):
             return False
@@ -76,6 +75,8 @@ class Piece():
         if self.type != other.type:
             return False
         if self.color != other.color:
+            return False
+        if self.coord != other.coord:
             return False
         return True
 
