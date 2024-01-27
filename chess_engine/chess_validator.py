@@ -1,25 +1,33 @@
 """This module contains the Board model object and it's properties"""
 
-# Import external libraries
 from __future__ import annotations
 
 from asyncio import run
 from copy import deepcopy
+from enum import Enum, auto
 from typing import Any, Optional
 
-from chess_engine.piece import Piece
-from game_logic.consts import (COLUMNS, ROWS, BoardState, MovSpecialCase,
-                               PieceType, PlayerColor, PrintColor)
+from chess_engine.grid import COLUMNS, ROWS, Grid
+from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
+from chess_engine.structs import Coord
 from serialization.serializable import Serializable
-# Import Internal modules
-from utils.utils import color_print, opponent
+from utils.parseable_enum import ParseableEnum
+from utils.utils import PrintColor, color_print, opponent
 
+
+class TurnState(Enum, metaclass=ParseableEnum):
+    """Enum for states in a chess game
+    """
+    MOVE_TURN = auto()
+    CHECK = auto()
+    CHECKMATE = auto()
+    STALEMATE = auto()
 
 class ChessValidator(Serializable):
     """TODO
     """
 
-    def __init__(self, grid: list[list[Piece]], turn: PlayerColor = PlayerColor.WHITE, afterMoveCheck: bool = False):
+    def __init__(self, grid: list[list[Piece]], turn: SideColor = SideColor.WHITE, afterMoveCheck: bool = False):
         self.__grid = grid
         self.get_promotion_piece = None
 
@@ -27,7 +35,7 @@ class ChessValidator(Serializable):
         self.canCastleLeft = True
         self.canCastleRigth = True
 
-        self.boardState = BoardState.MOVE_TURN
+        self.boardState = TurnState.MOVE_TURN
         self.turn = turn
         self.possibleEnPassant = None
 
@@ -42,7 +50,7 @@ class ChessValidator(Serializable):
                 piece = self.__grid[row][column]
 
                 if piece.type == PieceType.KING:
-                    if piece.color == PlayerColor.WHITE:
+                    if piece.color == SideColor.WHITE:
                         if self.whiteKing != None:
                             raise ValueError("There are multiple white kings in this board")
                         self.whiteKing = piece
@@ -52,7 +60,7 @@ class ChessValidator(Serializable):
                         self.blackKing = piece
 
                 if piece.type != PieceType.EMPTY:
-                    if piece.color == PlayerColor.WHITE:
+                    if piece.color == SideColor.WHITE:
                         self.whitePieces[piece] = []
                     else:
                         self.blackPieces[piece] = []
@@ -67,7 +75,32 @@ class ChessValidator(Serializable):
         self.get_posible_turn_movements()
         self.set_game_state(afterMoveCheck)
 
-    def is_opponent(self, row: int, column: int, playerColor: PlayerColor) -> bool:
+    def is_valid_move(self, origin: Coord, dest: Coord, turn: SideColor, grid: Grid) -> bool:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def is_pawn_promotion(self, piece: Piece, destination: Coord, grid: Grid) -> bool:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def get_board_state(self, turn: SideColor, grid: Grid) -> TurnState:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def is_checkmate(self, turn: SideColor, grid: Grid) -> TurnState:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def is_stalemate(self, turn: SideColor, grid: Grid) -> TurnState:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def is_opponent(self, row: int, column: int, playerColor: SideColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not
 
         Args:
@@ -81,7 +114,7 @@ class ChessValidator(Serializable):
         
         return self.__grid[row][column].color == opponent(playerColor)
 
-    def is_player(self, row: int, column: int, playerColor: PlayerColor) -> bool:
+    def is_player(self, row: int, column: int, playerColor: SideColor) -> bool:
         """Returns whether the square is ocuppied by a piece of the player or not
 
         Args:
@@ -95,7 +128,7 @@ class ChessValidator(Serializable):
         
         return self.__grid[row][column].color == playerColor
 
-    def is_attacked(self, row: int, column: int, opponent: PlayerColor) -> bool:
+    def is_attacked(self, row: int, column: int, opponent: SideColor) -> bool:
         """Determines if the specified square is attacked by the opponent or not
 
         Args:
@@ -107,7 +140,7 @@ class ChessValidator(Serializable):
             bool: Whether the square is attacked or not
         """
         
-        opponentPieces = self.whitePieces if opponent == PlayerColor.WHITE else self.blackPieces
+        opponentPieces = self.whitePieces if opponent == SideColor.WHITE else self.blackPieces
         return any((row,column) in attackedSquares for attackedSquares in opponentPieces.values())
 
     def empty_square(self, row: int, column: int) -> None:
@@ -118,7 +151,7 @@ class ChessValidator(Serializable):
             column (int): Column of the square.
         """
         
-        self.__grid[row][column] = Piece(PieceType.EMPTY, PlayerColor.EMPTY, row, column)
+        self.__grid[row][column] = Piece(PieceType.EMPTY, SideColor.EMPTY, row, column)
 
     def add_piece(self, row: int, column: int, piece: Piece) -> bool:
         """Adds a piece to the board if the square is empty
@@ -136,7 +169,7 @@ class ChessValidator(Serializable):
             color_print(f"The piece {piece.color}{piece.type} is trying to be added in {(row,column)}, where piece {self.__grid[row][column].type}{self.__grid[row][column].type} is", PrintColor.YELLOW)
             return False
         
-        if piece.color == PlayerColor.WHITE:
+        if piece.color == SideColor.WHITE:
             self.whitePieces[piece] = []
         else:
             self.blackPieces[piece] = []
@@ -159,7 +192,7 @@ class ChessValidator(Serializable):
             color_print(f"An empty square {(row,column)} is trying be removed", PrintColor.YELLOW)
             return False
         
-        if self.__grid[row][column].color == PlayerColor.WHITE:
+        if self.__grid[row][column].color == SideColor.WHITE:
             self.whitePieces.pop(self.__grid[row][column], None)
         else:
             self.blackPieces.pop(self.__grid[row][column], None)
@@ -167,14 +200,14 @@ class ChessValidator(Serializable):
         
         return True
 
-    def squares_under_attack(self, opponent: PlayerColor) -> None:
+    def squares_under_attack(self, opponent: SideColor) -> None:
         """Calculate the squares under attack by the opponent pieces
 
         Args:
             opponent (PlayerColor): Opponent color.
         """
 
-        opponentPieces = self.whitePieces if opponent == PlayerColor.WHITE else self.blackPieces
+        opponentPieces = self.whitePieces if opponent == SideColor.WHITE else self.blackPieces
         
         for piece, posibleMovs in opponentPieces.items():
             posibleMovs.clear()
@@ -184,7 +217,7 @@ class ChessValidator(Serializable):
                 elif piece.column != movement[1]: # If the movement is different to pawn frontal move, add it
                     posibleMovs.append(movement)
 
-    def get_posible_turn_movements(self, turn: PlayerColor = None) -> None:
+    def get_posible_turn_movements(self, turn: SideColor = None) -> None:
         """Calculate the squares which the turn pieces can move to
 
         Args:
@@ -194,7 +227,7 @@ class ChessValidator(Serializable):
         if turn == None:
             turn = self.turn
         
-        playerPieces = self.whitePieces if turn == PlayerColor.WHITE else self.blackPieces
+        playerPieces = self.whitePieces if turn == SideColor.WHITE else self.blackPieces
         
         for piece, posibleMovs in playerPieces.items():
             posibleMovs.clear()
@@ -207,22 +240,22 @@ class ChessValidator(Serializable):
             afterMoveCheck (bool, optional): Whether to not determine if the current board is checkmate or stalemate, used for avoiding infinite recursion loops. Defaults to false.
         """
         
-        playerKing = self.whiteKing if self.turn == PlayerColor.WHITE else self.blackKing
+        playerKing = self.whiteKing if self.turn == SideColor.WHITE else self.blackKing
         inCheck = self.is_attacked(playerKing.row, playerKing.column, opponent(self.turn))
         
         # Check whether to continuo with stalemate or checkmate validation
         if afterMoveCheck:
-            self.boardState = BoardState.CHECK if inCheck else BoardState.MOVE_TURN
+            self.boardState = TurnState.CHECK if inCheck else TurnState.MOVE_TURN
             return
         
         # If only kings left in board, mark stalemate
         if len(self.whitePieces) == 1 and len(self.blackPieces == 1):
-            self.boardState = BoardState.STALEMATE
+            self.boardState = TurnState.STALEMATE
             return
 
         # Validate if the player has any legal movement available, if not it's either stalemate or checkmate
         anyValidMov = False
-        playerPieces = self.whitePieces if self.turn == PlayerColor.WHITE else self.blackPieces
+        playerPieces = self.whitePieces if self.turn == SideColor.WHITE else self.blackPieces
         for piece, posibleMovs in playerPieces.items():
             if any((not self.in_check_after_mov(piece.row, piece.column, mov[0], mov[1])) for mov in posibleMovs):
                 anyValidMov = True
@@ -230,13 +263,13 @@ class ChessValidator(Serializable):
                 
         # Set board state
         if not anyValidMov and inCheck:
-            self.boardState = BoardState.CHECKMATE
+            self.boardState = TurnState.CHECKMATE
         elif inCheck:
-            self.boardState = BoardState.CHECK
+            self.boardState = TurnState.CHECK
         elif not anyValidMov:
-            self.boardState = BoardState.STALEMATE
+            self.boardState = TurnState.STALEMATE
         else:
-            self.boardState = BoardState.MOVE_TURN
+            self.boardState = TurnState.MOVE_TURN
 
     def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
         """Swap the piece from the square 1, with the piece with the square 2
@@ -323,7 +356,7 @@ class ChessValidator(Serializable):
         if eatenPiece != None:
             self.add_piece(destinationRow if not enPassant else destinationRow-piece.moving_dir, destinationColumn, eatenPiece)
 
-        return hipothetycalBoard.boardState == BoardState.CHECK or hipothetycalBoard.boardState == BoardState.CHECKMATE
+        return hipothetycalBoard.boardState == TurnState.CHECK or hipothetycalBoard.boardState == TurnState.CHECKMATE
 
     def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> list[tuple[int, int]]:
         """Return all the valid movements of a piece
@@ -347,7 +380,7 @@ class ChessValidator(Serializable):
                 if piece.type == PieceType.PAWN:
                     # Verify pawn in it's initial row, and that it's path is empty, for double pawn move
                     if specialCase == MovSpecialCase.DOUBLE_PAWN_MOVE and\
-                        ((piece.row == 1 and piece.color == PlayerColor.BLACK) or (piece.row == 6 and piece.color == PlayerColor.WHITE))\
+                        ((piece.row == 1 and piece.color == SideColor.BLACK) or (piece.row == 6 and piece.color == SideColor.WHITE))\
                         and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that pawn's path is empty in normal movement
@@ -360,7 +393,7 @@ class ChessValidator(Serializable):
                 elif specialCase == MovSpecialCase.CASTLE and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
                     and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.EMPTY\
                     and self.__grid[piece.row][ piece.column + (direction[1])].type == PieceType.EMPTY\
-                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != BoardState.CHECK:
+                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != TurnState.CHECK:
                     if direction[1] < 0:
                         if self.canCastleLeft and self.__grid[piece.row][ piece.column + (direction[1]) - 1].type == PieceType.EMPTY:
                             validMovements.append(movement)
@@ -398,7 +431,7 @@ class ChessValidator(Serializable):
 
         # If the movement is an ilegal movement
         movement = (destinationRow, destinationColumn)
-        playerPieces = self.whitePieces if self.turn == PlayerColor.WHITE else self.blackPieces
+        playerPieces = self.whitePieces if self.turn == SideColor.WHITE else self.blackPieces
         if (movement not in self.get_valid_movements(piece)) if piece.type == PieceType.KING else (movement not in playerPieces[piece]):
             return False
 

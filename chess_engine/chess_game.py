@@ -9,11 +9,10 @@ from typing import Optional, cast
 
 from chess_engine.chess_game_data import ChessGameData, GameState
 # Import Internal modules
-from chess_engine.chess_validator import ChessValidator
+from chess_engine.chess_validator import ChessValidator, TurnState
 from chess_engine.grid import Grid
-from chess_engine.piece import Piece
+from chess_engine.piece import Piece, PieceType, SideColor
 from chess_engine.structs import Coord
-from game_logic.consts import PieceType, PlayerColor, TurnState
 from utils.utils import opponent
 
 
@@ -96,7 +95,7 @@ class ChessGame():
             self.turn_state = self.validator.is_stalemate(opponent(self.data.turn), self.grid)
 
         if self.turn_state == TurnState.CHECKMATE:
-            is_black_turn = self.data.turn == PlayerColor.BLACK
+            is_black_turn = self.data.turn == SideColor.BLACK
             player_won = GameState.BLACK_WIN if is_black_turn else GameState.WHITE_WIN
             self.data.state = player_won
 

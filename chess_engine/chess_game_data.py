@@ -6,9 +6,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, Optional, cast
 
-from chess_engine.piece import Piece, SerPiece
+from chess_engine.piece import Piece, SerPiece, SideColor
 from chess_engine.structs import Coord
-from game_logic.consts import PlayerColor
 from serialization.serializable import Serializable
 from utils.parseable_enum import ParseableEnum
 
@@ -29,7 +28,7 @@ class ChessGameData(Serializable):
     """
 
     state: GameState
-    turn: PlayerColor
+    turn: SideColor
     white_castle_left: bool
     white_castle_right: bool
     black_castle_left: bool
@@ -83,7 +82,7 @@ class ChessGameData(Serializable):
 
         return ChessGameData(
             cast(GameState, GameState[attrs["gameStatus"]]),
-            cast(PlayerColor, PlayerColor[attrs["turn"]]),
+            cast(SideColor, SideColor[attrs["turn"]]),
             attrs["white_castle_left"],
             attrs["white_castle_right"],
             attrs["black_castle_left"],

@@ -3,12 +3,40 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from typing import Optional, cast
 
 from chess_engine.structs import Coord, Dir
-from game_logic.consts import (BLACK_MOV_DIR, WHITE_MOV_DIR, MovSpecialCase,
-                               PieceType, PlayerColor)
 from utils.exceptions import EnumParseError
+from utils.parseable_enum import ParseableEnum
+
+
+class SideColor(Enum, metaclass=ParseableEnum):
+    """Enum for piece color
+    """
+    WHITE = 'w'
+    BLACK = 'b'
+
+class PieceType(Enum, metaclass=ParseableEnum):
+    """Enum for each type of piece
+    """
+    PAWN = 'P'
+    BISHOP = 'B'
+    KNIGTH = 'K'
+    ROOK = 'R'
+    QUEEN = 'Q'
+    KING = '@'
+
+class MovSpecialCase(Enum):
+    """Enum for each type of piece
+    """
+    NONE = auto()
+    CASTLE = auto()
+    DOUBLE_PAWN_MOVE = auto()
+    IS_EMPTY = auto()
+
+BLACK_MOV_DIR = 1
+WHITE_MOV_DIR = -1
 
 PIECE_STR_LENGTH = 2
 
@@ -18,14 +46,14 @@ class Piece():
     """TODO
     """
     type: PieceType
-    color: PlayerColor
+    color: SideColor
     coord: Coord
     moving_dir: int = field(init=False)
     extendable_mov: bool = field(init=False)
     movements: dict[Dir, MovSpecialCase]= field(init=False)
 
     def __post_init__(self) -> None:
-        self.moving_dir = WHITE_MOV_DIR if self.color == PlayerColor.WHITE else BLACK_MOV_DIR
+        self.moving_dir = WHITE_MOV_DIR if self.color == SideColor.WHITE else BLACK_MOV_DIR
         if self.moving_dir not in (1, -1):
             raise ValueError("The movement direction of the piece can only be 1 or -1")
         self.extendable_mov = Piece.get_extendability(self.type)
@@ -147,7 +175,7 @@ class Piece():
             raise ValueError(f"The parsed string must contain {PIECE_STR_LENGTH} characters")
 
         try:
-            color = cast(PlayerColor, PlayerColor[piece_str[0]])
+            color = cast(SideColor, SideColor[piece_str[0]])
             piece_type = cast(PieceType, PieceType[piece_str[1]])
             return Piece(piece_type, color, coord)
         except EnumParseError:

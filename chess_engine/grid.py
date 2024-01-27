@@ -6,9 +6,21 @@ from typing import Any, Optional
 
 from chess_engine.piece import PIECE_STR_LENGTH, Piece
 from chess_engine.structs import Coord
-from game_logic.consts import COLUMNS, ROWS
 from serialization.serializable import Serializable
 
+# Constants for board
+ROWS    = ['8','7','6','5','4','3','2','1']
+COLUMNS = ['a','b','c','d','e','f','g','h']
+BOARD_START = [
+    ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'], # 8
+    ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'], # 7
+    ['##', '##', '##', '##', '##', '##', '##', '##'], # 6
+    ['##', '##', '##', '##', '##', '##', '##', '##'], # 5
+    ['##', '##', '##', '##', '##', '##', '##', '##'], # 4
+    ['##', '##', '##', '##', '##', '##', '##', '##'], # 3
+    ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'], # 2
+    ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']  # 1
+]#    a     b     c     d      e     f     g     h
 
 class Grid(Serializable):
     """TODO
@@ -63,6 +75,12 @@ class Grid(Serializable):
                     print(c, end='')
                 piece = self.get_at(Coord(ri-1, ci))
                 print(f"{'##' if piece is None else str(piece)} ", end='')
+
+    @staticmethod
+    def get_start_grid() -> Grid:
+        """TODO
+        """
+        return Grid.from_str_grid(BOARD_START)
 
     @staticmethod
     def from_str_grid(text_grid: list[list[str]]) -> Grid:

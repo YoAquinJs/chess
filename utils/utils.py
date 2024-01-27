@@ -6,8 +6,9 @@ from os import path
 
 import pygame
 
+from chess_engine.piece import SideColor
 # Import internal module
-from game_logic.consts import SCREEN_SIZE, AssetType, PlayerColor, PrintColor
+from game_logic.consts import SCREEN_SIZE, AssetType, PrintColor
 
 
 def color_print(text: str, color: PrintColor, end: str='\n') -> None:
@@ -20,7 +21,7 @@ def color_print(text: str, color: PrintColor, end: str='\n') -> None:
     """
     print(color.value + text + PrintColor.RESET.value, end=end)
 
-def opponent(player: PlayerColor) -> PlayerColor:
+def opponent(player: SideColor) -> SideColor:
     """Returns the opponent of the specified player color
 
     Args:
@@ -29,7 +30,7 @@ def opponent(player: PlayerColor) -> PlayerColor:
     Returns:
         PlayerColor: The opponent of player
     """
-    return PlayerColor.BLACK if player == PlayerColor.WHITE else PlayerColor.WHITE
+    return SideColor.BLACK if player == SideColor.WHITE else SideColor.WHITE
 
 def scale_img(image: pygame.Surface, scale: float=1, scale_to_screen: bool=True) -> pygame.Surface:
     """Scales the image in the given path
