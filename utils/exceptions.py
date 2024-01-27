@@ -5,3 +5,6 @@ class EnumParseError(Exception):
 
 class InvalidChessGameError(Exception):
     """Raise when a chess game it's initialized with invalid data"""
+
+class InvalidGridError(Exception):
+    """Raise when a chess game it's initialized with invalid data"""

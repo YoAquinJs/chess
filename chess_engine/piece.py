@@ -68,8 +68,16 @@ class Piece():
     def __hash__(self) -> int:
         return id(self)
 
+    # Equality doesn't compare coordinates
     def __eq__(self, other: object) -> bool:
-        return self.__hash__() == other.__hash__()
+        if not isinstance(other, Piece):
+            return False
+
+        if self.type != other.type:
+            return False
+        if self.color != other.color:
+            return False
+        return True
 
     @staticmethod
     def get_extendability(piece_type: PieceType) -> bool:

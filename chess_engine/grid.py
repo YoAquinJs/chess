@@ -7,6 +7,7 @@ from typing import Any, Optional
 from chess_engine.piece import PIECE_STR_LENGTH, Piece
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
+from utils.exceptions import InvalidGridError
 
 # Constants for board
 ROWS    = ['8','7','6','5','4','3','2','1']
@@ -14,10 +15,10 @@ COLUMNS = ['a','b','c','d','e','f','g','h']
 BOARD_START = [
     ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'], # 8
     ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'], # 7
-    ['##', '##', '##', '##', '##', '##', '##', '##'], # 6
-    ['##', '##', '##', '##', '##', '##', '##', '##'], # 5
-    ['##', '##', '##', '##', '##', '##', '##', '##'], # 4
-    ['##', '##', '##', '##', '##', '##', '##', '##'], # 3
+    ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '], # 6
+    ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '], # 5
+    ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '], # 4
+    ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '], # 3
     ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'], # 2
     ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']  # 1
 ]#    a     b     c     d      e     f     g     h
@@ -27,7 +28,25 @@ class Grid(Serializable):
     """
 
     def __init__(self, grid: list[list[Optional[Piece]]]) -> None:
+        if len(grid) != len(ROWS):
+            raise InvalidGridError("Invalid row count")
+        for column in grid:
+            if len(column) != len(COLUMNS):
+                raise InvalidGridError("Invalid column count")
+
         self.__grid = grid
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Grid):
+            return False
+
+        for r, _ in enumerate(ROWS):
+            for c, _ in enumerate(COLUMNS):
+                coord = Coord(r, c)
+                if other.get_at(coord) != self.get_at(coord):
+                    return False
+
+        return True
 
     def get_at(self, coord: Coord) -> Optional[Piece]:
         """TODO
