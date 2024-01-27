@@ -7,12 +7,12 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Optional
 
+from chess_engine.chess_game_data import Movement
 from chess_engine.grid import COLUMNS, ROWS, Grid
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import Coord
 from utils.parseable_enum import ParseableEnum
 from utils.utils import opponent
-from chess_engine.chess_game_data import Movement
 
 GridContext = tuple[SideColor, Grid]
 
@@ -28,22 +28,7 @@ class ChessValidator:
     """TODO
     """
 
-    def __init__(self, grid: list[list[Piece]], turn: SideColor = SideColor.WHITE, afterMoveCheck: bool = False):
-        self.__grid = grid
-        self.get_promotion_piece = None
-
-        # Default board params
-        self.canCastleLeft = True
-        self.canCastleRigth = True
-
-        self.boardState = TurnState.MOVE_TURN
-        self.turn = turn
-        self.possibleEnPassant = None
-
-        self.whiteKing = None
-        self.blackKing = None
-        self.whitePieces = {}
-        self.blackPieces = {}
+    def __init__(self):
 
         # Get all the color pieces in their correspondent lists
         for row in range(len(ROWS)):
@@ -81,12 +66,19 @@ class ChessValidator:
         """
         raise NotImplementedError()
 
-    def is_valid_move(self, origin: Coord, dest: Coord, last_mov: Movement, grid_ctx: GridContext) -> bool:
+    def is_valid_history(self, move_history: list[Movement], grid_ctx: GridContext) -> bool:
         """TODO
         """
         raise NotImplementedError()
 
-    def is_pawn_promotion(self, piece: Piece, destination: Coord, grid: Grid) -> bool:
+
+    def is_valid_move(self, origin: Coord, dest: Coord,
+                      last_mov: Movement, grid_ctx: GridContext) -> bool:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def is_pawn_promotion(self, piece: Piece, dest: Coord, grid: Grid) -> bool:
         """TODO
         """
         raise NotImplementedError()

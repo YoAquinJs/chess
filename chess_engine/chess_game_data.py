@@ -40,6 +40,19 @@ class ChessGameData(Serializable):
         """
         self.move_history.append((piece, destination))
 
+    @staticmethod
+    def get_new_data() -> ChessGameData:
+        """TODO"""
+        return ChessGameData(
+            GameState.PENDING,
+            SideColor.WHITE,
+            True,
+            True,
+            True,
+            True,
+            []
+            )
+
     def get_serialization_attrs(self) -> dict[str, Any]:
         def serializable_move_history(move_history: list[Movement]) -> list[SerMovement]:
             ser_move_history: list[SerMovement] = []

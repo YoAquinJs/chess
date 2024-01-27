@@ -9,10 +9,11 @@ from typing import Optional, cast
 
 from chess_engine.chess_game_data import ChessGameData, GameState
 # Import Internal modules
-from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
+from chess_engine.structs import Coord
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
-from chess_engine.structs import Coord
+from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
+from utils.exceptions import InvalidChessGameError
 from utils.utils import opponent
 
 
@@ -26,15 +27,20 @@ class MoveStatus(Enum):
 
 @dataclass
 class ChessGame():
-    """TODO"""
+    """TODO
+    """
 
-    data: ChessGameData
     grid: Grid
+    data: ChessGameData
     validator: ChessValidator
     turn_state: TurnState = field(init=False)
 
     def __post_init__(self) -> None:
         self.turn_state = self.validator.get_board_state(self.grid_ctx())
+        if not self.validator.is_valid_grid(self.grid_ctx()):
+            raise InvalidChessGameError("Invalid grid")
+        if not self.validator.is_valid_history(self.data.move_history, self.grid_ctx()):
+            raise InvalidChessGameError("Invalid move history")
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
         """TODO
@@ -115,10 +121,12 @@ class ChessGame():
 
     @classmethod
     def new_game(cls) -> ChessGame:
-        """Returns a ChessGame with all parameters to default
+        """Returns a ChessGame from start
 
         Returns:
             ChessGame: ChessGame
         """
-
-        raise NotImplementedError()
+        grid = Grid.get_start_grid()
+        game_data = ChessGameData.get_new_data()
+        validator = ChessValidator()
+        return ChessGame(grid, game_data, validator)
