@@ -20,8 +20,8 @@ class GameState(Enum, metaclass=ParseableEnum):
     BLACK_WIN = auto()
     TIE = auto()
 
-MoveHistory = list[tuple[Piece, Piece | Coord]]
-SerMoveHistory = list[tuple[SerPiece, SerPiece | tuple[int,int]]]
+Movement = tuple[Piece, Piece | Coord]
+SerMovement = tuple[SerPiece, SerPiece | tuple[int,int]]
 @dataclass
 class ChessGameData(Serializable):
     """TODO
@@ -33,7 +33,7 @@ class ChessGameData(Serializable):
     white_castle_right: bool
     black_castle_left: bool
     black_castle_right: bool
-    move_history: MoveHistory
+    move_history: list[Movement]
 
     def append_move(self, piece: Piece, destination: Piece | Coord) -> None:
         """TODO
@@ -41,8 +41,8 @@ class ChessGameData(Serializable):
         self.move_history.append((piece, destination))
 
     def get_serialization_attrs(self) -> dict[str, Any]:
-        def serializable_move_history(move_history: MoveHistory) -> SerMoveHistory:
-            ser_move_history: SerMoveHistory = []
+        def serializable_move_history(move_history: list[Movement]) -> list[SerMovement]:
+            ser_move_history: list[SerMovement] = []
             for piece, dest in move_history:
                 ser_dest = (dest.row, dest.column) if isinstance(dest, Coord) else dest.serialize()
                 ser_move_history.append((piece.serialize(), ser_dest))
@@ -62,7 +62,7 @@ class ChessGameData(Serializable):
     def get_from_deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> ChessGameData:
         """TODO
         """
-        def _parse_move_history(ser_move_history: SerMoveHistory) -> MoveHistory:
+        def _parse_move_history(ser_move_history: list[SerMovement]) -> list[Movement]:
             def get_dest(ser_dest: SerPiece | tuple[int,int]) -> Optional[Piece] | Coord:
                 match ser_dest:
                     case (_, (_, _)):
@@ -70,7 +70,7 @@ class ChessGameData(Serializable):
                     case (_, _):
                         return Coord(*ser_dest)
 
-            move_history: MoveHistory = []
+            move_history: list[Movement] = []
             for ser_piece, ser_dest in ser_move_history:
                 piece = Piece.deserialize(ser_piece)
                 dest = get_dest(ser_dest)

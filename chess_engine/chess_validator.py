@@ -10,10 +10,11 @@ from typing import Any, Optional
 from chess_engine.grid import COLUMNS, ROWS, Grid
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import Coord
-from serialization.serializable import Serializable
 from utils.parseable_enum import ParseableEnum
-from utils.utils import PrintColor, color_print, opponent
+from utils.utils import opponent
+from chess_engine.chess_game_data import Movement
 
+GridContext = tuple[SideColor, Grid]
 
 class TurnState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game
@@ -23,7 +24,7 @@ class TurnState(Enum, metaclass=ParseableEnum):
     CHECKMATE = auto()
     STALEMATE = auto()
 
-class ChessValidator(Serializable):
+class ChessValidator:
     """TODO
     """
 
@@ -75,7 +76,12 @@ class ChessValidator(Serializable):
         self.get_posible_turn_movements()
         self.set_game_state(afterMoveCheck)
 
-    def is_valid_move(self, origin: Coord, dest: Coord, turn: SideColor, grid: Grid) -> bool:
+    def is_valid_grid(self, grid_ctx: GridContext) -> bool:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    def is_valid_move(self, origin: Coord, dest: Coord, last_mov: Movement, grid_ctx: GridContext) -> bool:
         """TODO
         """
         raise NotImplementedError()
@@ -85,17 +91,17 @@ class ChessValidator(Serializable):
         """
         raise NotImplementedError()
 
-    def get_board_state(self, turn: SideColor, grid: Grid) -> TurnState:
+    def get_board_state(self, grid_ctx: GridContext) -> TurnState:
         """TODO
         """
         raise NotImplementedError()
 
-    def is_checkmate(self, turn: SideColor, grid: Grid) -> TurnState:
+    def is_checkmate(self, grid_ctx: GridContext) -> TurnState:
         """TODO
         """
         raise NotImplementedError()
 
-    def is_stalemate(self, turn: SideColor, grid: Grid) -> TurnState:
+    def is_stalemate(self, grid_ctx: GridContext) -> TurnState:
         """TODO
         """
         raise NotImplementedError()
@@ -142,63 +148,6 @@ class ChessValidator(Serializable):
         
         opponentPieces = self.whitePieces if opponent == SideColor.WHITE else self.blackPieces
         return any((row,column) in attackedSquares for attackedSquares in opponentPieces.values())
-
-    def empty_square(self, row: int, column: int) -> None:
-        """Empty the specified square
-
-        Args:
-            row (int): Row of the square.
-            column (int): Column of the square.
-        """
-        
-        self.__grid[row][column] = Piece(PieceType.EMPTY, SideColor.EMPTY, row, column)
-
-    def add_piece(self, row: int, column: int, piece: Piece) -> bool:
-        """Adds a piece to the board if the square is empty
-
-        Args:
-            row (int): Row where the piece will be added.
-            column (int): Column where the piece will be added.
-            piece (Piece): Piece to be addded.
-
-        Returns:
-            bool: Whether the piece was added or not
-        """
-        
-        if self.__grid[row][column].type != PieceType.EMPTY:
-            color_print(f"The piece {piece.color}{piece.type} is trying to be added in {(row,column)}, where piece {self.__grid[row][column].type}{self.__grid[row][column].type} is", PrintColor.YELLOW)
-            return False
-        
-        if piece.color == SideColor.WHITE:
-            self.whitePieces[piece] = []
-        else:
-            self.blackPieces[piece] = []
-        self.__grid[row][column] = piece
-        
-        return True
-
-    def remove_piece(self, row: int, column: int) -> bool:
-        """Removes a piece from the board if the square is not empty
-
-        Args:
-            row (int): Row where the piece will be removed.
-            column (int): Column where the piece will be removed.
-
-        Returns:
-            bool: Whether the piece was removed or not
-        """
-
-        if self.__grid[row][column].type == PieceType.EMPTY:
-            color_print(f"An empty square {(row,column)} is trying be removed", PrintColor.YELLOW)
-            return False
-        
-        if self.__grid[row][column].color == SideColor.WHITE:
-            self.whitePieces.pop(self.__grid[row][column], None)
-        else:
-            self.blackPieces.pop(self.__grid[row][column], None)
-        self.empty_square(row, column)
-        
-        return True
 
     def squares_under_attack(self, opponent: SideColor) -> None:
         """Calculate the squares under attack by the opponent pieces
@@ -270,22 +219,6 @@ class ChessValidator(Serializable):
             self.boardState = TurnState.STALEMATE
         else:
             self.boardState = TurnState.MOVE_TURN
-
-    def swap_pieces(self, row1: int, column1: int, row2: int, column2: int):
-        """Swap the piece from the square 1, with the piece with the square 2
-
-        Args:
-            row1 (int): Row for square 1
-            column1 (int): column for square 1
-            row2 (int): Row for square 2
-            column2 (int): column for square 2
-        """
-        
-        self.__grid[row1][column1].row = row2
-        self.__grid[row1][column1].column = column2
-        self.__grid[row2][column2].row = row1
-        self.__grid[row2][column2].column = column1
-        self.__grid[row1][column1], self.__grid[row2][column2] = self.__grid[row2][column2], self.__grid[row1][column1]
 
     def get_max_extendable_movements(self, piece: Piece, direction: tuple[int, int], maxIterations: int) -> int:
         """Given a piece and direction, returns the number of movements it can perform without colliding, before reaching a given limit
@@ -501,21 +434,3 @@ class ChessValidator(Serializable):
             'piece': piece,
             'eatPiece': eat_piece if eat_piece.type !=PieceType.EMPTY else None
         }
-
-    def serialize(self) -> dict[str, Any]:
-        return {
-            'turn' : self.turn.value,
-            'canCastleLeft' : self.canCastleLeft,
-            'canCastleRigth' : self.canCastleRigth,
-            'possibleEnPassant' : self.possibleEnPassant,
-        }
-
-    @classmethod
-    def deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> ChessValidator:
-        """TODO
-        """
-        board = ChessValidator(kwargs["grid"], attrs["turn"])
-        board.canCastleRigth = attrs['canCastleRigth']
-        board.canCastleLeft = attrs['canCastleLeft']
-        board.possibleEnPassant = tuple(attrs['possibleEnPassant']) if attrs['possibleEnPassant'] != None else None
-        return board

@@ -9,7 +9,7 @@ from typing import Optional, cast
 
 from chess_engine.chess_game_data import ChessGameData, GameState
 # Import Internal modules
-from chess_engine.chess_validator import ChessValidator, TurnState
+from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
 from chess_engine.structs import Coord
@@ -34,7 +34,7 @@ class ChessGame():
     turn_state: TurnState = field(init=False)
 
     def __post_init__(self) -> None:
-        self.turn_state = self.validator.get_board_state(self.data.turn, self.grid)
+        self.turn_state = self.validator.get_board_state(self.grid_ctx())
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
         """TODO
@@ -66,7 +66,7 @@ class ChessGame():
         self._perform_move((origin, destination, o_piece, prom_piece))
 
         # Next turn state
-        self.turn_state = self.validator.get_board_state(opponent(self.data.turn), self.grid)
+        self.turn_state = self.validator.get_board_state(self.opponent_grid_ctx())
         self.check_for_endgame()
 
         self.data.turn = opponent(self.data.turn)
@@ -76,7 +76,8 @@ class ChessGame():
         if self.data.state != GameState.PENDING:
             return MoveStatus.GAME_ENDED
 
-        if not self.validator.is_valid_move(origin, destination, self.data.turn, self.grid):
+        last_mov = self.data.move_history[-1]
+        if not self.validator.is_valid_move(origin, destination, last_mov, self.grid_ctx()):
             return MoveStatus.INVALID
 
         return None
@@ -90,9 +91,9 @@ class ChessGame():
         """TODO
         """
         if self.turn_state == TurnState.CHECK:
-            self.turn_state = self.validator.is_checkmate(opponent(self.data.turn), self.grid)
+            self.turn_state = self.validator.is_checkmate(self.opponent_grid_ctx())
         else:
-            self.turn_state = self.validator.is_stalemate(opponent(self.data.turn), self.grid)
+            self.turn_state = self.validator.is_stalemate(self.opponent_grid_ctx())
 
         if self.turn_state == TurnState.CHECKMATE:
             is_black_turn = self.data.turn == SideColor.BLACK
@@ -101,6 +102,16 @@ class ChessGame():
 
         if self.turn_state == TurnState.STALEMATE:
             self.data.state = GameState.TIE
+
+    def grid_ctx(self) -> GridContext:
+        """TODO
+        """
+        return (self.data.turn, self.grid)
+
+    def opponent_grid_ctx(self) -> GridContext:
+        """TODO
+        """
+        return (opponent(self.data.turn), self.grid)
 
     @classmethod
     def new_game(cls) -> ChessGame:

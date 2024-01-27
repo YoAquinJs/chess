@@ -81,11 +81,7 @@ class Piece():
         Returns:
             bool: Extendable
         """
-        match piece_type:
-            case PieceType.PAWN | PieceType.KING:
-                return False
-            case _:
-                return True
+        return piece_type not in (PieceType.PAWN, PieceType.KING)
 
     @staticmethod
     def get_type_movements(piece_type: PieceType, mov_dir: int=0) -> dict[Dir, MovSpecialCase]:

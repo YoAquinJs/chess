@@ -1,7 +1,4 @@
-"""This module contains constants for all subsystems of the app"""
-
-#! This module shouldn't import from any other app module
-from __future__ import annotations
+"""TODO"""
 
 from enum import Enum
 from os import getcwd, makedirs, path
