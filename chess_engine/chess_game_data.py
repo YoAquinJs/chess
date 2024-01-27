@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from chess_engine.piece import Piece, SerPiece
 from chess_engine.structs import Coord
@@ -13,13 +13,12 @@ from serialization.serializable import Serializable
 from utils.parseable_enum import ParseableEnum
 
 
-class GameStatus(Enum, metaclass=ParseableEnum):
+class GameState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game
     """
     PENDING = auto()
     WHITE_WIN = auto()
     BLACK_WIN = auto()
-    STALEMATE = auto()
     TIE = auto()
 
 MoveHistory = list[tuple[Piece, Piece | Coord]]
@@ -29,13 +28,18 @@ class ChessGameData(Serializable):
     """TODO
     """
 
-    status: GameStatus
+    state: GameState
     turn: PlayerColor
     white_castle_left: bool
     white_castle_right: bool
     black_castle_left: bool
     black_castle_right: bool
     move_history: MoveHistory
+
+    def append_move(self, piece: Piece, destination: Piece | Coord) -> None:
+        """TODO
+        """
+        self.move_history.append((piece, destination))
 
     def get_serialization_attrs(self) -> dict[str, Any]:
         def serializable_move_history(move_history: MoveHistory) -> SerMoveHistory:
@@ -46,7 +50,7 @@ class ChessGameData(Serializable):
             return ser_move_history
 
         return {
-            "gameStatus"         : self.status.value,
+            "gameStatus"         : self.state.value,
             "turn"               : self.turn.value,
             "white_castle_left"  : self.white_castle_left,
             "white_castle_right" : self.white_castle_right,
@@ -78,8 +82,8 @@ class ChessGameData(Serializable):
             return move_history
 
         return ChessGameData(
-            attrs["gameStatus"],
-            attrs["turn"],
+            cast(GameState, GameState[attrs["gameStatus"]]),
+            cast(PlayerColor, PlayerColor[attrs["turn"]]),
             attrs["white_castle_left"],
             attrs["white_castle_right"],
             attrs["black_castle_left"],

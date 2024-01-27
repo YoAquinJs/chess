@@ -3,67 +3,105 @@
 # Import external libraries
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Optional, cast
+from typing import Optional, cast
 
-from chess_engine.chess_game_data import ChessGameData
+from chess_engine.chess_game_data import ChessGameData, GameState
 # Import Internal modules
 from chess_engine.chess_validator import ChessValidator
+from chess_engine.grid import Grid
 from chess_engine.piece import Piece
 from chess_engine.structs import Coord
-from game_logic.consts import COLUMNS, ROWS, BoardState, PieceType, PlayerColor
+from game_logic.consts import PieceType, PlayerColor, TurnState
+from utils.utils import opponent
 
+
+class MoveStatus(Enum):
+    """TODO
+    """
+    PERFORMED = auto()
+    GAME_ENDED = auto()
+    INVALID = auto()
+    REQUIRE_PROMOTION = auto()
 
 @dataclass
 class ChessGame():
     """TODO"""
 
     data: ChessGameData
+    grid: Grid
     validator: ChessValidator
+    turn_state: TurnState = field(init=False)
 
-    async def get_promotion_piece(self, color: PlayerColor, row: int, column: int) -> Piece:
-        """Asks the user for the promotion piece
+    def __post_init__(self) -> None:
+        self.turn_state = self.validator.get_board_state(self.data.turn, self.grid)
 
-        Args:
-            color (PlayerColor): Piece color.
-            row (int): Piece instantiation row.
-            column (int): Piece instantiation column.
-
-        Returns:
-            Piece: Promotion Piece
-        """
-
-        piece_type: Optional[PieceType] = None
-        while piece_type is None:
-            try:
-                piece_type = cast(PieceType, PieceType[input("Enter the promotion piece: ")])
-                if piece_type == PieceType.KING:
-                    piece_type = None
-            except KeyError:
-                print("Invalid type")
-
-        return Piece(piece_type, color, row, column)
-
-    def attempt_move(self, origin: Coord, destination: Coord) -> bool:
+    def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
         """TODO
         """
+        invalid = self._is_valid_move(origin, destination)
+        if invalid is not None:
+            return invalid
 
-        if self.status != GameStatus.PENDING:
-            return False
+        o_piece, d_piece = self.grid.get_at(origin), self.grid.get_at(destination)
+        o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
-        moved, move_inf = self.validator.attempt_move(movement[0], movement[1], movement[2], movement[3])
-        if not moved:
-            return False
+        if self.validator.is_pawn_promotion(o_piece, destination, self.grid):
+            return MoveStatus.REQUIRE_PROMOTION
 
-        self.move_history.append((str(move_inf["piece"]), None if move_inf["eatPiece"] == None else str(move_inf["eatPiece"]), movement))
+        self._perform_move((origin, destination, o_piece, d_piece))
+        return MoveStatus.PERFORMED
 
-        if self.validator.boardState == BoardState.CHECKMATE:
-            self.status = GameStatus.WHITE_WIN if self.validator.turn == PlayerColor.BLACK else GameStatus.BLACK_WIN  
-        elif self.validator.boardState == BoardState.STALEMATE:
-            self.status == GameStatus.STALEMATE
+    def attempt_promotion(self, origin: Coord, destination: Coord,
+                          piece_type: PieceType) -> MoveStatus:
+        """TODO
+        """
+        invalid = self._is_valid_move(origin, destination)
+        if invalid is not None:
+            return invalid
 
-        return True
+        o_piece, prom_piece = self.grid.get_at(origin), Piece(piece_type, self.data.turn, origin)
+        o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
+
+        self._perform_move((origin, destination, o_piece, prom_piece))
+
+        # Next turn state
+        self.turn_state = self.validator.get_board_state(opponent(self.data.turn), self.grid)
+        self.check_for_endgame()
+
+        self.data.turn = opponent(self.data.turn)
+        return MoveStatus.PERFORMED
+
+    def _is_valid_move(self, origin: Coord, destination: Coord) -> Optional[MoveStatus]:
+        if self.data.state != GameState.PENDING:
+            return MoveStatus.GAME_ENDED
+
+        if not self.validator.is_valid_move(origin, destination, self.data.turn, self.grid):
+            return MoveStatus.INVALID
+
+        return None
+
+    def _perform_move(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
+        origin, destination, o_piece, d_piece = context
+        self.grid.swap_pieces(origin, destination)
+        self.data.append_move(o_piece, destination if d_piece is None else d_piece)
+
+    def check_for_endgame(self) -> None:
+        """TODO
+        """
+        if self.turn_state == TurnState.CHECK:
+            self.turn_state = self.validator.is_checkmate(opponent(self.data.turn), self.grid)
+        else:
+            self.turn_state = self.validator.is_stalemate(opponent(self.data.turn), self.grid)
+
+        if self.turn_state == TurnState.CHECKMATE:
+            is_black_turn = self.data.turn == PlayerColor.BLACK
+            player_won = GameState.BLACK_WIN if is_black_turn else GameState.WHITE_WIN
+            self.data.state = player_won
+
+        if self.turn_state == TurnState.STALEMATE:
+            self.data.state = GameState.TIE
 
     @classmethod
     def new_game(cls) -> ChessGame:
@@ -72,6 +110,5 @@ class ChessGame():
         Returns:
             ChessGame: ChessGame
         """
-        
-        #board = ChessValidator.start_board()
-        #return cls(GameStatus.PENDING, board,)
+
+        raise NotImplementedError()
