@@ -66,7 +66,8 @@ class ChessGame():
         if invalid is not None:
             return invalid
 
-        o_piece, prom_piece = self.grid.get_at(origin), Piece(piece_type, self.data.turn, origin)
+        o_piece = self.grid.get_at(origin)
+        prom_piece = Piece(piece_type, self.data.turn, destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
         self._perform_move((origin, destination, o_piece, prom_piece))
@@ -92,6 +93,12 @@ class ChessGame():
         origin, destination, o_piece, d_piece = context
         self.grid.swap_pieces(origin, destination)
         self.data.append_move(o_piece, destination if d_piece is None else d_piece)
+
+    def _perform_promotion(self, context: tuple[Coord, Coord, Piece, Piece]) -> None:
+        origin, destination, o_piece, prom_piece = context
+        self.grid.set_at(origin, None)
+        self.grid.set_at(destination, prom_piece)
+        self.data.append_move(o_piece, prom_piece)
 
     def check_for_endgame(self) -> None:
         """TODO
