@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from chess_engine.piece import PIECE_STR_LENGTH, Piece
+from chess_engine.piece import PIECE_STR_LENGTH, Piece, SideColor
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
 from utils.exceptions import InvalidGridError
@@ -35,6 +35,9 @@ class Grid(Serializable):
                 raise InvalidGridError("Invalid column count")
 
         self.__grid = grid
+        self.white_pieces: set[Piece]
+        self.black_pieces: set[Piece]
+        self._set_piece_lists()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Grid):
@@ -63,9 +66,30 @@ class Grid(Serializable):
         Returns:
             Optional[Piece]: Previous piece in the coordinate or None if it was empty
         """
+        prev_piece = self._set_at(coord, piece)
+        self._set_piece_lists()
+        return prev_piece
+
+    def _set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
         prev_piece = self.__grid[coord.row][coord.column]
         self.__grid[coord.row][coord.column] = piece
         return prev_piece
+
+    def _set_piece_lists(self) -> None:
+        def add_possible(piece: Optional[Piece]) -> None:
+            if not isinstance(piece, Piece):
+                return
+            if piece.color == SideColor.WHITE:
+                self.white_pieces.add(piece)
+            if piece.color == SideColor.BLACK:
+                self.black_pieces.add(piece)
+
+        self.white_pieces = set()
+        self.black_pieces = set()
+        for r, _ in enumerate(ROWS):
+            for c, _ in enumerate(COLUMNS):
+                coord = Coord(r, c)
+                add_possible(self.get_at(coord))
 
     def swap_pieces(self, coord1: Coord, coord2: Coord) -> None:
         """Swaps the pieces in the given coordinates

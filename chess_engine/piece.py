@@ -66,7 +66,7 @@ class Piece():
         return piece_str
 
     def __hash__(self) -> int:
-        return id(self)
+        return hash((self.type, self.color, self.coord.row, self.coord.column))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Piece):
