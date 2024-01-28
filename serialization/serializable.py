@@ -19,8 +19,8 @@ class Serializable(ABC):
             dict[str, Any]: Dictionary
         """
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def get_from_deserialize(cls, attrs: dict[str, Any], **kwargs: Any) -> Serializable:
         """Contructs the Object from the deserialized daa
 
