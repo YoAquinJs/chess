@@ -29,13 +29,22 @@ class MovSpecialCase(Enum):
     DOUBLE_PAWN_MOVE = auto()
     IS_EMPTY = auto()
 
+class ValidationStatus(Enum):
+    """TODO
+    """
+    VALID = auto()
+    INVALID = auto()
+    NEED_LAST_MOVE = auto()
+    NEED_CASTLING_STATE = auto()
+    NEED_PROMOTION_PIECE = auto()
+
 class MoveStatus(Enum):
     """TODO
     """
     PERFORMED = auto()
-    GAME_ALREADY_ENDED = auto()
     INVALID = auto()
     REQUIRE_PROMOTION = auto()
+    GAME_ALREADY_ENDED = auto()
 
 class TurnState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game

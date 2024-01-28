@@ -9,7 +9,7 @@ from typing import Optional, cast
 
 from chess_engine.chess_game_data import ChessGameData, GameState
 from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
-from chess_engine.enums import MoveStatus
+from chess_engine.enums import MoveStatus, ValidationStatus
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
 # Import Internal modules
@@ -48,9 +48,6 @@ class ChessGame():
         o_piece, d_piece = self.grid.get_at(origin), self.grid.get_at(destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
-        if ChessValidator.is_pawn_promotion(o_piece, destination, self.grid):
-            return MoveStatus.REQUIRE_PROMOTION
-
         self._perform_move((origin, destination, o_piece, d_piece))
         return MoveStatus.PERFORMED
 
@@ -59,7 +56,7 @@ class ChessGame():
         """TODO
         """
         invalid = self._is_valid_move(origin, destination)
-        if invalid is not None:
+        if invalid is not None and invalid != MoveStatus.REQUIRE_PROMOTION:
             return invalid
 
         o_piece = self.grid.get_at(origin)
@@ -79,11 +76,25 @@ class ChessGame():
         if self.data.state != GameState.PENDING:
             return MoveStatus.GAME_ALREADY_ENDED
 
-        last_mov = self.data.move_history[-1]
-        if not ChessValidator.is_valid_move(origin, destination, last_mov, self.grid_ctx()):
-            return MoveStatus.INVALID
-
-        return None
+        validation = ChessValidator.is_valid_move(origin, destination, self.grid_ctx())
+        match validation:
+            case ValidationStatus.INVALID:
+                return MoveStatus.INVALID
+            case ValidationStatus.NEED_LAST_MOVE:
+                last_mov = self.data.move_history[-1] if len(self.data.move_history) > 0 else None
+                context = (origin, destination, last_mov, self.grid_ctx())
+                is_valid = ChessValidator.is_valid_enpassant(*context)
+                return None if is_valid else MoveStatus.INVALID
+            case ValidationStatus.NEED_CASTLING_STATE:
+                w_castle, b_castle = self.data.white_castle, self.data.black_castle
+                castling_state = w_castle if self.data.turn == SideColor.WHITE else b_castle
+                context = (origin, destination, castling_state, self.grid_ctx())
+                is_valid = ChessValidator.is_valid_castle(*context)
+                return None if is_valid else MoveStatus.INVALID
+            case ValidationStatus.NEED_PROMOTION_PIECE:
+                return MoveStatus.REQUIRE_PROMOTION
+            case _:
+                return None
 
     def _perform_move(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
         origin, destination, o_piece, d_piece = context

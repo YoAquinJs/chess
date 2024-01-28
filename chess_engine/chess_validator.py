@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import Any, Optional, cast
 
 from chess_engine.chess_game_data import Movement
-from chess_engine.enums import TurnState
+from chess_engine.enums import TurnState, ValidationStatus
 from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import CastlingState, Coord
@@ -45,7 +45,7 @@ class ChessValidator:
         for piece, dest in move_history:
             origin = piece.coord
             destination = dest if isinstance(dest, Coord) else dest.coord
-            if not cls.is_valid_move(origin, destination, last_move, (turn, grid)):
+            if not cls.is_valid_move(origin, destination, (turn, grid)):
                 return False, (turn, grid)
 
             if cls.is_pawn_promotion(piece, destination, grid):
@@ -77,8 +77,21 @@ class ChessValidator:
         return True
 
     @classmethod
-    def is_valid_move(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
-                      grid_ctx: GridContext) -> bool:
+    def is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def is_valid_enpassant(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
+                           grid_ctx: GridContext) -> bool:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
+                           grid_ctx: GridContext) -> bool:
         """TODO
         """
         raise NotImplementedError()
