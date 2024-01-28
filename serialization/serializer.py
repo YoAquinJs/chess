@@ -4,10 +4,10 @@ plus some utilities relate"""
 #TODO build a ConsistantDataPath to serialize to
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from json import dumps, load
 from os import listdir, path
 from typing import Any, Callable, Generic, Optional, TypeVar
+from serialization.enums import DeserializeStatus, SerializeStatus
 
 from serialization.file_format import FileFormat
 from serialization.serializable import Serializable
@@ -16,21 +16,6 @@ from utils.utils import get_asset_path
 JSON_INDENT = 4
 ENCODING = "utf-8"
 FILE_EXTENSION = "json"
-
-class SerializeResult(Enum):
-    """Result status for serialization
-    """
-    SUCCESFULL = auto()
-    MAX_SAVES_REACHED = auto()
-    NOT_FOUND = auto()
-    INCORRECT_OBJ_TYPE=auto()
-
-class DeserializeResult(Enum):
-    """Result status for deserialization
-    """
-    SUCCESFULL = auto()
-    NOT_FOUND = auto()
-    MISSING_ATTRS = auto()
 
 
 Ser = TypeVar("Ser", bound=Serializable)
@@ -75,7 +60,7 @@ class Serializer(Generic[Ser]):
         saves_count = len(self.get_saves(dir_path))
         return saves_count >= self.max_saves_count
 
-    def serialize(self, obj: Ser, filename: str, *directories: str) -> SerializeResult:
+    def serialize(self, obj: Ser, filename: str, *directories: str) -> SerializeStatus:
         """Serializes the specified Serializable if possible
 
         Args:
@@ -107,7 +92,7 @@ class Serializer(Generic[Ser]):
         # Validate Maximum Saves Reached
         dir_path = get_asset_path(self.format.asset_type, *directories)
         if self._validate_max_saves(*directories):
-            return SerializeResult.MAX_SAVES_REACHED
+            return SerializeStatus.MAX_SAVES_REACHED
 
         try:
             file_fullname = self.format.get_fullname(filename)
@@ -116,23 +101,23 @@ class Serializer(Generic[Ser]):
                 json_dict = obj.get_serialization_attrs()
                 json = format_json(dumps(json_dict, indent=JSON_INDENT))
                 file.write(json)
-                return SerializeResult.SUCCESFULL
+                return SerializeStatus.SUCCESFULL
 
         except FileNotFoundError:
-            return SerializeResult.NOT_FOUND
+            return SerializeStatus.NOT_FOUND
 
-    def _try_deserialize(self, file_path: str, **kwargs: Any) -> Ser | DeserializeResult:
+    def _try_deserialize(self, file_path: str, **kwargs: Any) -> Ser | DeserializeStatus:
         try:
             with open(file_path, "r", encoding=ENCODING) as file:
                 json = load(file)
             return self.constructor(json, **kwargs)
         except KeyError:
-            return DeserializeResult.MISSING_ATTRS
+            return DeserializeStatus.MISSING_ATTRS
         except FileNotFoundError:
-            return DeserializeResult.NOT_FOUND
+            return DeserializeStatus.NOT_FOUND
 
     def deserialize(self, filename: str, *directories: str,
-                    **kwargs: Any) -> tuple[Optional[Ser], DeserializeResult]:
+                    **kwargs: Any) -> tuple[Optional[Ser], DeserializeStatus]:
         """Deserializes object if found and is valid
 
         Args:
@@ -147,6 +132,6 @@ class Serializer(Generic[Ser]):
         file_path = get_asset_path(self.format.asset_type, *[*directories, file_fullname])
         obj = self._try_deserialize(file_path, **kwargs)
 
-        if isinstance(obj, DeserializeResult):
+        if isinstance(obj, DeserializeStatus):
             return None, obj
-        return obj, DeserializeResult.SUCCESFULL
+        return obj, DeserializeStatus.SUCCESFULL
