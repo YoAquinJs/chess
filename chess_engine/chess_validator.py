@@ -11,17 +11,11 @@ from chess_engine.chess_game_data import Movement
 from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import Coord
+from utils.exceptions import StaticClassInstanceError
 from utils.parseable_enum import ParseableEnum
 from utils.utils import opponent
 
-INITIAL_PIECE_COUNT = {
-    PieceType.PAWN : 8,
-    PieceType.BISHOP : 2,
-    PieceType.KNIGTH : 2,
-    PieceType.ROOK : 2,
-    PieceType.QUEEN : 1,
-    PieceType.KING : 1
-}
+
 
 class TurnState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game
@@ -36,45 +30,23 @@ class ChessValidator:
     """TODO
     """
 
-    def __init__(self):
+    initial_piece_count = {
+        PieceType.PAWN : 8,
+        PieceType.BISHOP : 2,
+        PieceType.KNIGTH : 2,
+        PieceType.ROOK : 2,
+        PieceType.QUEEN : 1,
+        PieceType.KING : 1
+    }
 
-        # Get all the color pieces in their correspondent lists
-        for row in range(len(ROWS)):
-            for column in range(len(COLUMNS)):
-                piece = self.__grid[row][column]
-
-                if piece.type == PieceType.KING:
-                    if piece.color == SideColor.WHITE:
-                        if self.whiteKing != None:
-                            raise ValueError("There are multiple white kings in this board")
-                        self.whiteKing = piece
-                    else:
-                        if self.blackKing != None:
-                            raise ValueError("There are multiple black kings in this board")
-                        self.blackKing = piece
-
-                if piece.type != PieceType.EMPTY:
-                    if piece.color == SideColor.WHITE:
-                        self.whitePieces[piece] = []
-                    else:
-                        self.blackPieces[piece] = []
-
-        if self.whiteKing == None:
-            raise ValueError("There is no white king in this board")
-        if self.blackKing == None:
-            raise ValueError("There is no black king in this board")
-
-        # Set turn conditions
-        self.squares_under_attack(opponent(self.turn))
-        self.get_posible_turn_movements()
-        self.set_game_state(afterMoveCheck)
-
-    def grid_matches_history(self, mov_grid_ctx: GridContext, grid_ctx: GridContext) -> bool:
+    @classmethod
+    def grid_matches_history(cls, mov_grid_ctx: GridContext, grid_ctx: GridContext) -> bool:
         """TODO
         """
         return mov_grid_ctx[0] == grid_ctx[0] and mov_grid_ctx[1] == grid_ctx[1]
 
-    def is_valid_history(self, move_history: list[Movement]) -> tuple[bool, GridContext]:
+    @classmethod
+    def is_valid_history(cls, move_history: list[Movement]) -> tuple[bool, GridContext]:
         """TODO
         """
         grid = Grid.get_start_grid()
@@ -83,10 +55,10 @@ class ChessValidator:
         for piece, dest in move_history:
             origin = piece.coord
             destination = dest if isinstance(dest, Coord) else dest.coord
-            if not self.is_valid_move(origin, destination, last_move, (turn, grid)):
+            if not cls.is_valid_move(origin, destination, last_move, (turn, grid)):
                 return False, (turn, grid)
 
-            if self.is_pawn_promotion(piece, destination, grid):
+            if cls.is_pawn_promotion(piece, destination, grid):
                 grid.set_at(origin, None)
                 grid.set_at(destination, cast(Piece, dest))
             else:
@@ -96,7 +68,8 @@ class ChessValidator:
             last_move = (piece, dest)
         return True, (turn, grid)
 
-    def is_valid_initial_grid(self) -> bool:
+    @classmethod
+    def is_valid_initial_grid(cls) -> bool:
         """TODO
         """
         grid = Grid.get_start_grid()
@@ -108,33 +81,38 @@ class ChessValidator:
         for piece in grid.black_pieces:
             black_pieces[piece.type] += 1
 
-        for piece_type, ideal_count in INITIAL_PIECE_COUNT.items():
+        for piece_type, ideal_count in cls.initial_piece_count.items():
             if white_pieces[piece_type] != ideal_count or black_pieces[piece_type] != ideal_count:
                 return False
         return True
 
-    def is_valid_move(self, origin: Coord, dest: Coord, last_mov: Optional[Movement],
+    @classmethod
+    def is_valid_move(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
                       grid_ctx: GridContext) -> bool:
         """TODO
         """
         raise NotImplementedError()
 
-    def is_pawn_promotion(self, piece: Piece, dest: Coord, grid: Grid) -> bool:
+    @classmethod
+    def is_pawn_promotion(cls, piece: Piece, dest: Coord, grid: Grid) -> bool:
         """TODO
         """
         raise NotImplementedError()
 
-    def get_board_state(self, grid_ctx: GridContext) -> TurnState:
+    @classmethod
+    def get_board_state(cls, grid_ctx: GridContext) -> TurnState:
         """TODO
         """
         raise NotImplementedError()
 
-    def is_checkmate(self, grid_ctx: GridContext) -> TurnState:
+    @classmethod
+    def is_checkmate(cls, grid_ctx: GridContext) -> TurnState:
         """TODO
         """
         raise NotImplementedError()
 
-    def is_stalemate(self, grid_ctx: GridContext) -> TurnState:
+    @classmethod
+    def is_stalemate(cls, grid_ctx: GridContext) -> TurnState:
         """TODO
         """
         raise NotImplementedError()
@@ -467,3 +445,6 @@ class ChessValidator:
             'piece': piece,
             'eatPiece': eat_piece if eat_piece.type !=PieceType.EMPTY else None
         }
+
+    def __init__(self) -> None:
+        raise StaticClassInstanceError("Validator is a static class")

@@ -33,17 +33,16 @@ class ChessGame():
 
     grid: Grid
     data: ChessGameData
-    validator: ChessValidator
     turn_state: TurnState = field(init=False)
 
     def __post_init__(self) -> None:
-        self.turn_state = self.validator.get_board_state(self.grid_ctx())
-        if not self.validator.is_valid_initial_grid():
+        self.turn_state = ChessValidator.get_board_state(self.grid_ctx())
+        if not   ChessValidator.is_valid_initial_grid():
             raise InvalidChessGameError("Invalid Initial Grid Constructor")
-        valid_history, mov_grid_ctx = self.validator.is_valid_history(self.data.move_history)
+        valid_history, mov_grid_ctx =   ChessValidator.is_valid_history(self.data.move_history)
         if not valid_history:
             raise InvalidChessGameError("Invalid move history")
-        if not self.validator.grid_matches_history(mov_grid_ctx, self.grid_ctx()):
+        if not ChessValidator.grid_matches_history(mov_grid_ctx, self.grid_ctx()):
             raise InvalidChessGameError("Invalid grid")
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
@@ -56,7 +55,7 @@ class ChessGame():
         o_piece, d_piece = self.grid.get_at(origin), self.grid.get_at(destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
-        if self.validator.is_pawn_promotion(o_piece, destination, self.grid):
+        if ChessValidator.is_pawn_promotion(o_piece, destination, self.grid):
             return MoveStatus.REQUIRE_PROMOTION
 
         self._perform_move((origin, destination, o_piece, d_piece))
@@ -77,7 +76,7 @@ class ChessGame():
         self._perform_promotion((origin, destination, o_piece, prom_piece))
 
         # Next turn state
-        self.turn_state = self.validator.get_board_state(self.opponent_grid_ctx())
+        self.turn_state = ChessValidator.get_board_state(self.opponent_grid_ctx())
         self.check_for_endgame()
 
         self.data.turn = opponent(self.data.turn)
@@ -88,7 +87,7 @@ class ChessGame():
             return MoveStatus.GAME_ENDED
 
         last_mov = self.data.move_history[-1]
-        if not self.validator.is_valid_move(origin, destination, last_mov, self.grid_ctx()):
+        if not ChessValidator.is_valid_move(origin, destination, last_mov, self.grid_ctx()):
             return MoveStatus.INVALID
 
         return None
@@ -108,9 +107,9 @@ class ChessGame():
         """TODO
         """
         if self.turn_state == TurnState.CHECK:
-            self.turn_state = self.validator.is_checkmate(self.opponent_grid_ctx())
+            self.turn_state = ChessValidator.is_checkmate(self.opponent_grid_ctx())
         else:
-            self.turn_state = self.validator.is_stalemate(self.opponent_grid_ctx())
+            self.turn_state = ChessValidator.is_stalemate(self.opponent_grid_ctx())
 
         if self.turn_state == TurnState.CHECKMATE:
             is_black_turn = self.data.turn == SideColor.BLACK
@@ -139,5 +138,4 @@ class ChessGame():
         """
         grid = Grid.get_start_grid()
         game_data = ChessGameData.get_new_data()
-        validator = ChessValidator()
-        return ChessGame(grid, game_data, validator)
+        return ChessGame(grid, game_data)

@@ -8,3 +8,6 @@ class InvalidChessGameError(Exception):
 
 class InvalidGridError(Exception):
     """Raise when a chess game it's initialized with invalid data"""
+
+class StaticClassInstanceError(Exception):
+    """Raise when trying to instance a static class"""
