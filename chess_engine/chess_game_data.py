@@ -7,7 +7,7 @@ from enum import Enum, auto
 from typing import Any, Optional, cast
 
 from chess_engine.piece import Piece, SerPiece, SideColor
-from chess_engine.structs import Coord
+from chess_engine.structs import CastlingState, Coord
 from serialization.serializable import Serializable
 from utils.parseable_enum import ParseableEnum
 
@@ -29,10 +29,8 @@ class ChessGameData(Serializable):
 
     state: GameState
     turn: SideColor
-    white_castle_left: bool
-    white_castle_right: bool
-    black_castle_left: bool
-    black_castle_right: bool
+    white_castle: CastlingState
+    black_castle: CastlingState
     move_history: list[Movement]
 
     def append_move(self, piece: Piece, destination: Piece | Coord) -> None:
@@ -46,10 +44,8 @@ class ChessGameData(Serializable):
         return ChessGameData(
             GameState.PENDING,
             SideColor.WHITE,
-            True,
-            True,
-            True,
-            True,
+            CastlingState(True, True),
+            CastlingState(True, True),
             []
             )
 
@@ -62,13 +58,13 @@ class ChessGameData(Serializable):
             return ser_move_history
 
         return {
-            "gameStatus"         : self.state.value,
-            "turn"               : self.turn.value,
-            "white_castle_left"  : self.white_castle_left,
-            "white_castle_right" : self.white_castle_right,
-            "black_castle_left"  : self.black_castle_left,
-            "black_castle_right" :self.black_castle_right,
-            "moveHistory" : serializable_move_history(self.move_history)
+            "gameStatus"    : self.state.value,
+            "turn"          : self.turn.value,
+            "whiteCastle_l" : self.white_castle.left,
+            "whiteCastle_r" : self.white_castle.right,
+            "blackCastle_l" : self.black_castle.left,
+            "blackCastle_r" : self.black_castle.right,
+            "moveHistory"   : serializable_move_history(self.move_history)
         }
 
     @classmethod
@@ -96,9 +92,7 @@ class ChessGameData(Serializable):
         return ChessGameData(
             cast(GameState, GameState[attrs["gameStatus"]]),
             cast(SideColor, SideColor[attrs["turn"]]),
-            attrs["white_castle_left"],
-            attrs["white_castle_right"],
-            attrs["black_castle_left"],
-            attrs["black_castle_right"],
+            CastlingState(attrs["whiteCastle_l"],attrs["whiteCastle_r"]),
+            CastlingState(attrs["blackCastle_l"],attrs["blackCastle_r"]),
             _parse_move_history(attrs["moveHistory"])
             )

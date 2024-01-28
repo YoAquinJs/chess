@@ -39,3 +39,14 @@ class Dir(NamedTuple):
         """TODO
         """
         return (self.x, self.y)
+
+class CastlingState(NamedTuple):
+    """Represents the castling state of a player
+
+    Attributes:
+        leff (bool): Left castle state.
+        right (int): Right castle state.
+    """
+
+    left: bool
+    right: bool

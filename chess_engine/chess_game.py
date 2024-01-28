@@ -36,14 +36,15 @@ class ChessGame():
     turn_state: TurnState = field(init=False)
 
     def __post_init__(self) -> None:
-        self.turn_state = ChessValidator.get_board_state(self.grid_ctx())
-        if not   ChessValidator.is_valid_initial_grid():
+        if not ChessValidator.is_valid_initial_grid():
             raise InvalidChessGameError("Invalid Initial Grid Constructor")
-        valid_history, mov_grid_ctx =   ChessValidator.is_valid_history(self.data.move_history)
+        valid_history, mov_grid_ctx = ChessValidator.is_valid_history(self.data.move_history)
         if not valid_history:
             raise InvalidChessGameError("Invalid move history")
         if not ChessValidator.grid_matches_history(mov_grid_ctx, self.grid_ctx()):
             raise InvalidChessGameError("Invalid grid")
+
+        self.turn_state = ChessValidator.get_board_state(self.grid_ctx())
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
         """TODO
