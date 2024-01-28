@@ -25,16 +25,18 @@ class ChessGame():
 
     grid: Grid
     data: ChessGameData
+    validate: bool = True
     turn_state: TurnState = field(init=False)
 
     def __post_init__(self) -> None:
-        if not ChessValidator.is_valid_initial_grid():
-            raise InvalidChessGameError("Invalid Initial Grid Constructor")
-        valid_history, mov_grid_ctx = ChessValidator.is_valid_history(self.data.move_history)
-        if not valid_history:
-            raise InvalidChessGameError("Invalid move history")
-        if not ChessValidator.grid_matches_history(mov_grid_ctx, self.grid_ctx()):
-            raise InvalidChessGameError("Invalid grid")
+        if self.validate:
+            if not ChessValidator.is_valid_initial_grid():
+                raise InvalidChessGameError("Invalid Initial Grid Constructor")
+            valid_history, mov_grid_ctx = self.validate_history()
+            if not valid_history:
+                raise InvalidChessGameError("Invalid move history")
+            if not self.validate_grid(mov_grid_ctx):
+                raise InvalidChessGameError("Invalid grid")
 
         self.turn_state = ChessValidator.get_board_state(self.grid_ctx())
 
@@ -123,6 +125,32 @@ class ChessGame():
         if self.turn_state == TurnState.STALEMATE:
             self.data.state = GameState.TIE
 
+    def validate_history(self) -> tuple[bool, GridContext]:
+        """TODO
+        """
+        grid = Grid.get_start_grid()
+        game_data = ChessGameData.get_new_data()
+        game_copy = ChessGame(grid, game_data, validate=False)
+        for mov in self.data.move_history:
+            origin = mov[0].coord
+            destination = mov[1] if isinstance(mov[1], Coord) else mov[1].coord
+            mov_status = game_copy.attempt_move(origin, destination)
+
+            if mov_status == MoveStatus.INVALID:
+                return False, game_copy.grid_ctx()
+            if mov_status == MoveStatus.REQUIRE_PROMOTION:
+                dest = cast(Piece, mov[1])
+                prom_status = game_copy.attempt_promotion(origin, destination, dest.type)
+                if prom_status != MoveStatus.PERFORMED:
+                    return False, game_copy.grid_ctx()
+
+        return True, game_copy.grid_ctx()
+
+    def validate_grid(self, mov_grid_ctx: GridContext) -> bool:
+        """TODO
+        """
+        return mov_grid_ctx[0] == self.data.turn and mov_grid_ctx[1] == self.grid
+
     def grid_ctx(self) -> GridContext:
         """TODO
         """
@@ -142,4 +170,13 @@ class ChessGame():
         """
         grid = Grid.get_start_grid()
         game_data = ChessGameData.get_new_data()
+        return ChessGame(grid, game_data)
+
+    @classmethod
+    def load_game(cls, grid: Grid, game_data: ChessGameData) -> ChessGame:
+        """Returns a ChessGame from the provided data
+
+        Returns:
+            ChessGame: ChessGame
+        """
         return ChessGame(grid, game_data)

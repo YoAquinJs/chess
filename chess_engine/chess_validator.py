@@ -14,7 +14,6 @@ from chess_engine.structs import CastlingState, Coord
 from utils.exceptions import StaticClassInstanceError
 from utils.utils import opponent
 
-
 GridContext = tuple[SideColor, Grid]
 class ChessValidator:
     """TODO
@@ -28,35 +27,6 @@ class ChessValidator:
         PieceType.QUEEN : 1,
         PieceType.KING : 1
     }
-
-    @classmethod
-    def grid_matches_history(cls, mov_grid_ctx: GridContext, grid_ctx: GridContext) -> bool:
-        """TODO
-        """
-        return mov_grid_ctx[0] == grid_ctx[0] and mov_grid_ctx[1] == grid_ctx[1]
-
-    @classmethod
-    def is_valid_history(cls, move_history: list[Movement]) -> tuple[bool, GridContext]:
-        """TODO
-        """
-        grid = Grid.get_start_grid()
-        turn = SideColor.WHITE
-        last_move = None
-        for piece, dest in move_history:
-            origin = piece.coord
-            destination = dest if isinstance(dest, Coord) else dest.coord
-            if not cls.is_valid_move(origin, destination, (turn, grid)):
-                return False, (turn, grid)
-
-            if cls.is_pawn_promotion(piece, destination, grid):
-                grid.set_at(origin, None)
-                grid.set_at(destination, cast(Piece, dest))
-            else:
-                grid.swap_pieces(origin, destination)
-
-            turn = opponent(turn)
-            last_move = (piece, dest)
-        return True, (turn, grid)
 
     @classmethod
     def is_valid_initial_grid(cls) -> bool:
