@@ -3,13 +3,13 @@
 # Import external libraries
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Optional, cast
 from copy import copy
+from dataclasses import dataclass, field
+from typing import Optional, cast
 
 from chess_engine.chess_game_data import ChessGameData, GameState
 from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
+from chess_engine.enums import MoveStatus
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
 # Import Internal modules
@@ -17,14 +17,6 @@ from chess_engine.structs import Coord
 from utils.exceptions import InvalidChessGameError
 from utils.utils import opponent
 
-
-class MoveStatus(Enum):
-    """TODO
-    """
-    PERFORMED = auto()
-    GAME_ENDED = auto()
-    INVALID = auto()
-    REQUIRE_PROMOTION = auto()
 
 @dataclass
 class ChessGame():
@@ -85,7 +77,7 @@ class ChessGame():
 
     def _is_valid_move(self, origin: Coord, destination: Coord) -> Optional[MoveStatus]:
         if self.data.state != GameState.PENDING:
-            return MoveStatus.GAME_ENDED
+            return MoveStatus.GAME_ALREADY_ENDED
 
         last_mov = self.data.move_history[-1]
         if not ChessValidator.is_valid_move(origin, destination, last_mov, self.grid_ctx()):

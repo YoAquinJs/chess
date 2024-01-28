@@ -4,26 +4,16 @@ from __future__ import annotations
 
 from asyncio import run
 from copy import deepcopy
-from enum import Enum, auto
 from typing import Any, Optional, cast
 
 from chess_engine.chess_game_data import Movement
+from chess_engine.enums import TurnState
 from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
-from chess_engine.structs import Coord
+from chess_engine.structs import CastlingState, Coord
 from utils.exceptions import StaticClassInstanceError
-from utils.parseable_enum import ParseableEnum
 from utils.utils import opponent
 
-
-
-class TurnState(Enum, metaclass=ParseableEnum):
-    """Enum for states in a chess game
-    """
-    MOVE_TURN = auto()
-    CHECK = auto()
-    CHECKMATE = auto()
-    STALEMATE = auto()
 
 GridContext = tuple[SideColor, Grid]
 class ChessValidator:

@@ -3,22 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum, auto
 from typing import Any, Optional, cast
+from chess_engine.enums import GameState
 
 from chess_engine.piece import Piece, SerPiece, SideColor
 from chess_engine.structs import CastlingState, Coord
 from serialization.serializable import Serializable
-from utils.parseable_enum import ParseableEnum
 
-
-class GameState(Enum, metaclass=ParseableEnum):
-    """Enum for states in a chess game
-    """
-    PENDING = auto()
-    WHITE_WIN = auto()
-    BLACK_WIN = auto()
-    TIE = auto()
 
 Movement = tuple[Piece, Piece | Coord]
 SerMovement = tuple[SerPiece, SerPiece | tuple[int,int]]

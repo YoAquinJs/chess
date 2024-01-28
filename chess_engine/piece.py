@@ -3,37 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import Optional, cast
+from chess_engine.enums import MovSpecialCase, PieceType, SideColor
 
 from chess_engine.structs import Coord, Dir
 from utils.exceptions import EnumParseError
-from utils.parseable_enum import ParseableEnum
 
-
-class SideColor(Enum, metaclass=ParseableEnum):
-    """Enum for piece color
-    """
-    WHITE = 'w'
-    BLACK = 'b'
-
-class PieceType(Enum, metaclass=ParseableEnum):
-    """Enum for each type of piece
-    """
-    PAWN = 'P'
-    BISHOP = 'B'
-    KNIGTH = 'K'
-    ROOK = 'R'
-    QUEEN = 'Q'
-    KING = '@'
-
-class MovSpecialCase(Enum):
-    """Enum for each type of piece
-    """
-    NONE = auto()
-    CASTLE = auto()
-    DOUBLE_PAWN_MOVE = auto()
-    IS_EMPTY = auto()
 
 BLACK_MOV_DIR = 1
 WHITE_MOV_DIR = -1
