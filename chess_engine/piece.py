@@ -66,19 +66,15 @@ class Piece():
         return piece_str
 
     def __hash__(self) -> int:
+        """Hash depends on properties and coordinate"""
         return hash((self.type, self.color, self.coord.row, self.coord.column))
 
     def __eq__(self, other: object) -> bool:
+        """Equality only depends on properties, not coordinate"""
         if not isinstance(other, Piece):
             return False
 
-        if self.type != other.type:
-            return False
-        if self.color != other.color:
-            return False
-        if self.coord != other.coord:
-            return False
-        return True
+        return self.type == other.type and self.color == other.color
 
     @staticmethod
     def get_extendability(piece_type: PieceType) -> bool:
