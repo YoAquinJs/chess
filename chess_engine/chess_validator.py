@@ -5,16 +5,23 @@ from __future__ import annotations
 from asyncio import run
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from chess_engine.chess_game_data import Movement
-from chess_engine.grid import COLUMNS, ROWS, Grid
+from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import Coord
 from utils.parseable_enum import ParseableEnum
 from utils.utils import opponent
 
-GridContext = tuple[SideColor, Grid]
+INITIAL_PIECE_COUNT = {
+    PieceType.PAWN : 8,
+    PieceType.BISHOP : 2,
+    PieceType.KNIGTH : 2,
+    PieceType.ROOK : 2,
+    PieceType.QUEEN : 1,
+    PieceType.KING : 1
+}
 
 class TurnState(Enum, metaclass=ParseableEnum):
     """Enum for states in a chess game
@@ -24,6 +31,7 @@ class TurnState(Enum, metaclass=ParseableEnum):
     CHECKMATE = auto()
     STALEMATE = auto()
 
+GridContext = tuple[SideColor, Grid]
 class ChessValidator:
     """TODO
     """
@@ -61,19 +69,52 @@ class ChessValidator:
         self.get_posible_turn_movements()
         self.set_game_state(afterMoveCheck)
 
-    def is_valid_grid(self, grid_ctx: GridContext) -> bool:
+    def grid_matches_history(self, mov_grid_ctx: GridContext, grid_ctx: GridContext) -> bool:
         """TODO
         """
-        raise NotImplementedError()
+        return mov_grid_ctx[0] == grid_ctx[0] and mov_grid_ctx[1] == grid_ctx[1]
 
-    def is_valid_history(self, move_history: list[Movement], grid_ctx: GridContext) -> bool:
+    def is_valid_history(self, move_history: list[Movement]) -> tuple[bool, GridContext]:
         """TODO
         """
-        raise NotImplementedError()
+        grid = Grid.get_start_grid()
+        turn = SideColor.WHITE
+        last_move = None
+        for piece, dest in move_history:
+            origin = piece.coord
+            destination = dest if isinstance(dest, Coord) else dest.coord
+            if not self.is_valid_move(origin, destination, last_move, (turn, grid)):
+                return False, (turn, grid)
 
+            if self.is_pawn_promotion(piece, destination, grid):
+                grid.set_at(origin, None)
+                grid.set_at(destination, cast(Piece, dest))
+            else:
+                grid.swap_pieces(origin, destination)
 
-    def is_valid_move(self, origin: Coord, dest: Coord,
-                      last_mov: Movement, grid_ctx: GridContext) -> bool:
+            turn = opponent(turn)
+            last_move = (piece, dest)
+        return True, (turn, grid)
+
+    def is_valid_initial_grid(self) -> bool:
+        """TODO
+        """
+        grid = Grid.get_start_grid()
+
+        white_pieces = {piece_type: 0 for piece_type in PieceType}
+        for piece in grid.white_pieces:
+            white_pieces[piece.type] += 1
+        black_pieces = {piece_type: 0 for piece_type in PieceType}
+        for piece in grid.black_pieces:
+            black_pieces[piece.type] += 1
+
+        for piece_type, ideal_count in INITIAL_PIECE_COUNT.items():
+            if white_pieces[piece_type] != ideal_count or black_pieces[piece_type] != ideal_count:
+                return False
+        return True
+
+    def is_valid_move(self, origin: Coord, dest: Coord, last_mov: Optional[Movement],
+                      grid_ctx: GridContext) -> bool:
         """TODO
         """
         raise NotImplementedError()

@@ -1,8 +1,8 @@
 """This module contains the grid class for handling the boards piece grid"""
 
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from chess_engine.piece import PIECE_STR_LENGTH, Piece, SideColor
@@ -75,18 +75,15 @@ class Grid(Serializable):
         return prev_piece
 
     def _set_piece_lists(self) -> None:
-        def add_possible(piece: Optional[Piece]) -> None:
-            if not isinstance(piece, Piece):
-                return
-            if piece.color == SideColor.WHITE:
-                self.white_pieces.add(piece)
-            if piece.color == SideColor.BLACK:
-                self.black_pieces.add(piece)
-
         self.white_pieces = set()
         self.black_pieces = set()
         for piece, _ in GridIter(self):
-            add_possible(piece)
+            if not isinstance(piece, Piece):
+                continue
+            if piece.color == SideColor.WHITE:
+                self.white_pieces.add(piece)
+            else:
+                self.black_pieces.add(piece)
 
     def swap_pieces(self, coord1: Coord, coord2: Coord) -> None:
         """Swaps the pieces in the given coordinates

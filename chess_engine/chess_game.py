@@ -6,13 +6,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Optional, cast
+from copy import copy
 
 from chess_engine.chess_game_data import ChessGameData, GameState
-# Import Internal modules
-from chess_engine.structs import Coord
+from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
-from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
+# Import Internal modules
+from chess_engine.structs import Coord
 from utils.exceptions import InvalidChessGameError
 from utils.utils import opponent
 
@@ -37,10 +38,13 @@ class ChessGame():
 
     def __post_init__(self) -> None:
         self.turn_state = self.validator.get_board_state(self.grid_ctx())
-        if not self.validator.is_valid_grid(self.grid_ctx()):
-            raise InvalidChessGameError("Invalid grid")
-        if not self.validator.is_valid_history(self.data.move_history, self.grid_ctx()):
+        if not self.validator.is_valid_initial_grid():
+            raise InvalidChessGameError("Invalid Initial Grid Constructor")
+        valid_history, mov_grid_ctx = self.validator.is_valid_history(self.data.move_history)
+        if not valid_history:
             raise InvalidChessGameError("Invalid move history")
+        if not self.validator.grid_matches_history(mov_grid_ctx, self.grid_ctx()):
+            raise InvalidChessGameError("Invalid grid")
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
         """TODO
@@ -70,7 +74,7 @@ class ChessGame():
         prom_piece = Piece(piece_type, self.data.turn, destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
-        self._perform_move((origin, destination, o_piece, prom_piece))
+        self._perform_promotion((origin, destination, o_piece, prom_piece))
 
         # Next turn state
         self.turn_state = self.validator.get_board_state(self.opponent_grid_ctx())
@@ -91,14 +95,14 @@ class ChessGame():
 
     def _perform_move(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
         origin, destination, o_piece, d_piece = context
+        self.data.append_move(copy(o_piece), destination if d_piece is None else copy(d_piece))
         self.grid.swap_pieces(origin, destination)
-        self.data.append_move(o_piece, destination if d_piece is None else d_piece)
 
     def _perform_promotion(self, context: tuple[Coord, Coord, Piece, Piece]) -> None:
         origin, destination, o_piece, prom_piece = context
+        self.data.append_move(copy(o_piece), copy(prom_piece))
         self.grid.set_at(origin, None)
         self.grid.set_at(destination, prom_piece)
-        self.data.append_move(o_piece, prom_piece)
 
     def check_for_endgame(self) -> None:
         """TODO
