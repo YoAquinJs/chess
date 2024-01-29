@@ -50,6 +50,10 @@ class ChessGame():
         o_piece, d_piece = self.grid.get_at(origin), self.grid.get_at(destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
+        # Next turn state
+        self.turn_state = ChessValidator.get_board_state(self.opponent_grid_ctx())
+        self.check_for_endgame()
+
         self._perform_move((origin, destination, o_piece, d_piece))
         return MoveStatus.PERFORMED
 

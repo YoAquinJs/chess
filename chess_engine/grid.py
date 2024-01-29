@@ -124,7 +124,7 @@ class Grid(Serializable):
         """TODO
         """
         if len(text_grid) != len(ROWS) or len(text_grid[0]) != len(COLUMNS):
-            raise ValueError("Text grid must have the same lengths as the \
+            raise InvalidGridError("Text grid must have the same lengths as the \
                             'ROWS' and 'COLUMNS' constants")
 
         grid: list[list[Optional[Piece]]] = []
