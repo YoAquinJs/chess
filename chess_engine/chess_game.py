@@ -7,13 +7,13 @@ from copy import copy
 from dataclasses import dataclass, field
 from typing import Optional, cast
 
-from chess_engine.chess_game_data import ChessGameData, GameState
+from chess_engine.chess_game_data import ChessGameData, GameState, Movement
 from chess_engine.chess_validator import ChessValidator, GridContext, TurnState
-from chess_engine.enums import MoveStatus, ValidationStatus
+from chess_engine.enums import MoveStatus
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
 # Import Internal modules
-from chess_engine.structs import Coord
+from chess_engine.structs import CastlingState, Coord
 from utils.exceptions import InvalidChessGameError
 from utils.utils import opponent
 
@@ -32,13 +32,13 @@ class ChessGame():
         if self.validate:
             if not ChessValidator.is_valid_initial_grid():
                 raise InvalidChessGameError("Invalid Initial Grid Constructor")
-            valid_history, mov_grid_ctx = self.validate_history()
+            valid_history, mov_grid_ctx = self._validate_history()
             if not valid_history:
                 raise InvalidChessGameError("Invalid move history")
-            if not self.validate_grid(mov_grid_ctx):
+            if not self._validate_grid(mov_grid_ctx):
                 raise InvalidChessGameError("Invalid grid")
 
-        self.turn_state = ChessValidator.get_board_state(self.grid_ctx())
+        self._set_turn_state()
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
         """TODO
@@ -51,8 +51,8 @@ class ChessGame():
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
         # Next turn state
-        self.turn_state = ChessValidator.get_board_state(self.opponent_grid_ctx())
-        self.check_for_endgame()
+        self._set_turn_state()
+        self._check_for_endgame()
 
         self._perform_move((origin, destination, o_piece, d_piece))
         return MoveStatus.PERFORMED
@@ -72,8 +72,8 @@ class ChessGame():
         self._perform_promotion((origin, destination, o_piece, prom_piece))
 
         # Next turn state
-        self.turn_state = ChessValidator.get_board_state(self.opponent_grid_ctx())
-        self.check_for_endgame()
+        self._set_turn_state()
+        self._check_for_endgame()
 
         self.data.turn = opponent(self.data.turn)
         return MoveStatus.PERFORMED
@@ -82,26 +82,10 @@ class ChessGame():
         if self.data.state != GameState.PENDING:
             return MoveStatus.GAME_ALREADY_ENDED
 
-        validation = ChessValidator.is_valid_move(origin, destination, self.grid_ctx())
-        match validation:
-            case ValidationStatus.INVALID:
-                return MoveStatus.INVALID
-            case ValidationStatus.NEED_LAST_MOVE:
-                last_mov = self.data.move_history[-1] if len(self.data.move_history) > 0 else None
-                context = (origin, destination, last_mov, self.grid_ctx())
-                is_valid = ChessValidator.is_valid_enpassant(*context)
-                return None if is_valid else MoveStatus.INVALID
-            case ValidationStatus.NEED_CASTLING_STATE:
-                w_castle, b_castle = self.data.white_castle, self.data.black_castle
-                castling_state = w_castle if self.data.turn == SideColor.WHITE else b_castle
-                context = (origin, destination, castling_state, self.grid_ctx())
-                is_valid, new_castling = ChessValidator.is_valid_castle(*context)
-                castling_state = new_castling
-                return None if is_valid else MoveStatus.INVALID
-            case ValidationStatus.NEED_PROMOTION_PIECE:
-                return MoveStatus.REQUIRE_PROMOTION
-            case _:
-                return None
+        last_mov = self._get_last_move()
+        castling_state = self._get_castling_state()
+        context = (origin, destination, last_mov, castling_state, self.grid_ctx())
+        return ChessValidator.is_valid_move(*context)
 
     def _perform_move(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
         origin, destination, o_piece, d_piece = context
@@ -114,14 +98,13 @@ class ChessGame():
         self.grid.set_at(origin, None)
         self.grid.set_at(destination, prom_piece)
 
-    def check_for_endgame(self) -> None:
-        """TODO
-        """
-        if self.turn_state == TurnState.CHECK:
-            self.turn_state = ChessValidator.is_checkmate(self.opponent_grid_ctx())
-        else:
-            self.turn_state = ChessValidator.is_stalemate(self.opponent_grid_ctx())
+    def _set_turn_state(self) -> None:
+        last_mov = self._get_last_move()
+        castling_state = self._get_castling_state()
+        context = (last_mov, castling_state, self.opponent_grid_ctx())
+        self.turn_state = ChessValidator.get_board_state(*context)
 
+    def _check_for_endgame(self) -> None:
         if self.turn_state == TurnState.CHECKMATE:
             is_black_turn = self.data.turn == SideColor.BLACK
             player_won = GameState.BLACK_WIN if is_black_turn else GameState.WHITE_WIN
@@ -130,9 +113,7 @@ class ChessGame():
         if self.turn_state == TurnState.STALEMATE:
             self.data.state = GameState.TIE
 
-    def validate_history(self) -> tuple[bool, GridContext]:
-        """TODO
-        """
+    def _validate_history(self) -> tuple[bool, GridContext]:
         grid = Grid.get_start_grid()
         game_data = ChessGameData.get_new_data()
         game_copy = ChessGame(grid, game_data, validate=False)
@@ -141,7 +122,7 @@ class ChessGame():
             destination = mov[1] if isinstance(mov[1], Coord) else mov[1].coord
             mov_status = game_copy.attempt_move(origin, destination)
 
-            if mov_status == MoveStatus.INVALID:
+            if mov_status in (MoveStatus.INVALID, MoveStatus.GAME_ALREADY_ENDED):
                 return False, game_copy.grid_ctx()
             if mov_status == MoveStatus.REQUIRE_PROMOTION:
                 dest = cast(Piece, mov[1])
@@ -151,10 +132,15 @@ class ChessGame():
 
         return True, game_copy.grid_ctx()
 
-    def validate_grid(self, mov_grid_ctx: GridContext) -> bool:
-        """TODO
-        """
+    def _validate_grid(self, mov_grid_ctx: GridContext) -> bool:
         return mov_grid_ctx[0] == self.data.turn and mov_grid_ctx[1] == self.grid
+
+    def _get_last_move(self) -> Optional[Movement]:
+        return self.data.move_history[-1] if len(self.data.move_history) > 0 else None
+
+    def _get_castling_state(self) -> CastlingState:
+        w_castle, b_castle = self.data.white_castle, self.data.black_castle
+        return w_castle if self.data.turn == SideColor.WHITE else b_castle
 
     def grid_ctx(self) -> GridContext:
         """TODO

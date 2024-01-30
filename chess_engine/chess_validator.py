@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import Any, Optional, cast
 
 from chess_engine.chess_game_data import Movement
-from chess_engine.enums import TurnState, ValidationStatus
+from chess_engine.enums import MoveStatus, TurnState, ValidationStatus
 from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import CastlingState, Coord
@@ -47,20 +47,42 @@ class ChessValidator:
         return True
 
     @classmethod
-    def is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
+    def is_valid_move(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
+                      castling_state: CastlingState, grid_ctx: GridContext) -> Optional[MoveStatus]:
         """TODO
         """
+        validation = cls._is_valid_move(origin, dest, grid_ctx)
+        match validation:
+            case ValidationStatus.INVALID:
+                return MoveStatus.INVALID
+            case ValidationStatus.NEED_LAST_MOVE:
+                context = (origin, dest, last_mov, grid_ctx)
+                is_valid = cls._is_valid_enpassant(*context)
+                return None if is_valid else MoveStatus.INVALID
+            case ValidationStatus.NEED_CASTLING_STATE:
+                context = (origin, dest, castling_state, grid_ctx)
+                is_valid, new_castling = cls._is_valid_castle(*context)
+                castling_state = new_castling
+                return None if is_valid else MoveStatus.INVALID
+            case ValidationStatus.NEED_PROMOTION_PIECE:
+                return MoveStatus.REQUIRE_PROMOTION
+            case _:
+                return None
+
+    @classmethod
+    def _is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
+
         raise NotImplementedError()
 
     @classmethod
-    def is_valid_enpassant(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
+    def _is_valid_enpassant(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
                            grid_ctx: GridContext) -> bool:
         """TODO
         """
         raise NotImplementedError()
 
     @classmethod
-    def is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
+    def _is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
                            grid_ctx: GridContext) -> tuple[bool, CastlingState]:
         """TODO
         """
@@ -73,22 +95,19 @@ class ChessValidator:
         raise NotImplementedError()
 
     @classmethod
-    def get_board_state(cls, grid_ctx: GridContext) -> TurnState:
+    def get_board_state(cls, last_mov: Optional[Movement], castling_state: CastlingState,
+                        grid_ctx: GridContext) -> TurnState:
         """TODO
         """
-        raise NotImplementedError()
-
-    @classmethod
-    def is_checkmate(cls, grid_ctx: GridContext) -> TurnState:
-        """TODO
-        """
-        raise NotImplementedError()
-
-    @classmethod
-    def is_stalemate(cls, grid_ctx: GridContext) -> TurnState:
-        """TODO
-        """
-        raise NotImplementedError()
+        any_valid_move: bool
+        is_in_check: bool
+        if is_in_check:
+            if not any_valid_move:
+                return TurnState.CHECKMATE
+            return TurnState.CHECK
+        if not any_valid_move:
+            return TurnState.STALEMATE
+        return TurnState.MOVE_TURN
 
     def is_opponent(self, row: int, column: int, playerColor: SideColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not
