@@ -99,8 +99,15 @@ class ChessValidator:
                         grid_ctx: GridContext) -> TurnState:
         """TODO
         """
-        any_valid_move: bool
-        is_in_check: bool
+        turn, grid = grid_ctx
+        context = (last_mov, castling_state, grid_ctx)
+
+        pieces = grid.white_pieces if turn == SideColor.WHITE else grid.black_pieces
+        opponent_pieces = grid.white_pieces if turn == SideColor.BLACK else grid.black_pieces
+        king = [p for p in pieces if p.type == PieceType.KING][0]
+
+        any_valid_move = any(cls._has_any_valid_move(context, p) for p in pieces)
+        is_in_check = any(cls._attacks_coord(context, p, king) for p in opponent_pieces)
         if is_in_check:
             if not any_valid_move:
                 return TurnState.CHECKMATE
@@ -108,6 +115,16 @@ class ChessValidator:
         if not any_valid_move:
             return TurnState.STALEMATE
         return TurnState.MOVE_TURN
+
+    @classmethod
+    def _attacks_coord(cls, context: tuple[Optional[Movement], CastlingState, GridContext],
+                            piece: Piece, attacked_p: Piece) -> bool:
+        raise NotImplementedError()
+
+    @classmethod
+    def _has_any_valid_move(cls, context: tuple[Optional[Movement], CastlingState, GridContext],
+                            piece: Piece) -> bool:
+        raise NotImplementedError()
 
     def is_opponent(self, row: int, column: int, playerColor: SideColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not
