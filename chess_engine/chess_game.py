@@ -95,7 +95,8 @@ class ChessGame():
                 w_castle, b_castle = self.data.white_castle, self.data.black_castle
                 castling_state = w_castle if self.data.turn == SideColor.WHITE else b_castle
                 context = (origin, destination, castling_state, self.grid_ctx())
-                is_valid = ChessValidator.is_valid_castle(*context)
+                is_valid, new_castling = ChessValidator.is_valid_castle(*context)
+                castling_state = new_castling
                 return None if is_valid else MoveStatus.INVALID
             case ValidationStatus.NEED_PROMOTION_PIECE:
                 return MoveStatus.REQUIRE_PROMOTION

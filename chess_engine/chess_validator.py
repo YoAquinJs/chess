@@ -61,7 +61,7 @@ class ChessValidator:
 
     @classmethod
     def is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
-                           grid_ctx: GridContext) -> bool:
+                           grid_ctx: GridContext) -> tuple[bool, CastlingState]:
         """TODO
         """
         raise NotImplementedError()
