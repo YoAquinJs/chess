@@ -61,6 +61,8 @@ class ChessGame():
                           piece_type: PieceType) -> MoveStatus:
         """TODO
         """
+        if piece_type in (PieceType.PAWN, PieceType.KING):
+            return MoveStatus.INVALID
         invalid = self._is_valid_move(origin, destination)
         if invalid is not None and invalid != MoveStatus.REQUIRE_PROMOTION:
             return invalid
