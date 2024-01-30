@@ -1,4 +1,8 @@
 """TODO"""
 
+from utils.exceptions import StaticClassInstanceError
+
+
 class InputManager():
-    pass
+    def __init__(self) -> None:
+        raise StaticClassInstanceError(InputManager)

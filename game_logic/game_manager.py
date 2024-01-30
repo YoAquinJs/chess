@@ -8,6 +8,7 @@ import pygame
 from chess_engine.chess_game import ChessGame
 from ui.scene import Scene, SceneBaseData
 from ui.font import Font
+from utils.exceptions import StaticClassInstanceError
 
 
 class GameManager():
@@ -52,3 +53,6 @@ class GameManager():
         """Get's out of the game loop
         """
         cls.running = False
+
+    def __init__(self) -> None:
+        raise StaticClassInstanceError(GameManager)

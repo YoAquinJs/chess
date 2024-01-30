@@ -420,4 +420,4 @@ class ChessValidator:
         }
 
     def __init__(self) -> None:
-        raise StaticClassInstanceError("Validator is a static class")
+        raise StaticClassInstanceError(ChessValidator)
