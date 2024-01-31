@@ -38,6 +38,7 @@ class ChessGame():
             if not self._validate_grid(mov_grid_ctx):
                 raise InvalidChessGameError("Invalid grid")
 
+        ChessValidator.clean_cache(self.grid_ctx())
         self._set_turn_state()
 
     def attempt_move(self, origin: Coord, destination: Coord) -> MoveStatus:
@@ -51,6 +52,7 @@ class ChessGame():
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
         self._perform_move((origin, destination, o_piece, d_piece))
+        ChessValidator.clean_cache(self.opponent_grid_ctx())
 
         # Next turn state
         self._set_turn_state()
@@ -63,17 +65,18 @@ class ChessGame():
                           piece_type: PieceType) -> MoveStatus:
         """TODO
         """
-        if piece_type in (PieceType.PAWN, PieceType.KING):
-            return MoveStatus.INVALID
         invalid = self._is_valid_move(origin, destination)
         if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
             return invalid
+        if not ChessValidator.is_valid_promotion_type(piece_type):
+            return MoveStatus.INVALID
 
         o_piece = self.grid.get_at(origin)
         prom_piece = Piece(piece_type, self.data.turn, destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
         self._perform_promotion((origin, destination, o_piece, prom_piece))
+        ChessValidator.clean_cache(self.opponent_grid_ctx())
 
         # Next turn state
         self._set_turn_state()

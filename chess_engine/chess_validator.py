@@ -28,6 +28,23 @@ class ChessValidator:
         PieceType.KING : 1
     }
 
+    _cached_grid_ctx: GridContext
+    _cached_movements: dict[tuple[Coord, Coord], ValidationStatus] = {}
+
+    @classmethod
+    def clean_cache(cls, new_grid_ctx: GridContext) -> None:
+        """TODO
+        """
+        cls._cached_grid_ctx = new_grid_ctx
+        cls._cached_movements = {}
+
+    @classmethod
+    def _access_cache(cls, mov: tuple[Coord, Coord],
+                      grid_ctx: GridContext) -> Optional[ValidationStatus]:
+        if cls._cached_grid_ctx == grid_ctx:
+            return cls._cached_movements[mov]
+        return None
+
     @classmethod
     def is_valid_initial_grid(cls) -> bool:
         """TODO
@@ -47,11 +64,19 @@ class ChessValidator:
         return True
 
     @classmethod
+    def is_valid_promotion_type(cls, piece_type: PieceType) -> bool:
+        """TODO
+        """
+        return piece_type not in (PieceType.PAWN, PieceType.KING)
+
+    @classmethod
     def is_valid_move(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
                       castling_state: CastlingState, grid_ctx: GridContext) -> Optional[MoveStatus]:
         """TODO
         """
-        validation = cls._is_valid_move(origin, dest, grid_ctx)
+        validation = cls._access_cache((origin, dest), grid_ctx)
+        if validation is None:
+            validation = cls._is_valid_move(origin, dest, grid_ctx)
         match validation:
             case ValidationStatus.INVALID:
                 return MoveStatus.INVALID
