@@ -55,6 +55,8 @@ class ChessValidator:
         match validation:
             case ValidationStatus.INVALID:
                 return MoveStatus.INVALID
+            case ValidationStatus.CHECKS_KING:
+                return MoveStatus.INVALID
             case ValidationStatus.NEED_LAST_MOVE:
                 context = (origin, dest, last_mov, grid_ctx)
                 is_valid = cls._is_valid_enpassant(*context)
@@ -107,7 +109,7 @@ class ChessValidator:
         king = [p for p in pieces if p.type == PieceType.KING][0]
 
         any_valid_move = any(cls._has_any_valid_move(context, p) for p in pieces)
-        is_in_check = any(cls._attacks_coord(context, p, king) for p in opponent_pieces)
+        is_in_check = any(cls._attacks_coord(p, king, grid_ctx) for p in opponent_pieces)
         if is_in_check:
             if not any_valid_move:
                 return TurnState.CHECKMATE
@@ -117,14 +119,22 @@ class ChessValidator:
         return TurnState.MOVE_TURN
 
     @classmethod
-    def _attacks_coord(cls, context: tuple[Optional[Movement], CastlingState, GridContext],
-                            piece: Piece, attacked_p: Piece) -> bool:
-        raise NotImplementedError()
+    def _attacks_coord(cls, piece: Piece, attacked_p: Piece, grid_ctx: GridContext) -> bool:
+        origin = piece.coord
+        destination = attacked_p.coord
+        validation = cls._is_valid_move(origin, destination, grid_ctx)
+        return validation in (ValidationStatus.VALID, ValidationStatus.CHECKS_KING)
 
     @classmethod
     def _has_any_valid_move(cls, context: tuple[Optional[Movement], CastlingState, GridContext],
                             piece: Piece) -> bool:
-        raise NotImplementedError()
+        for possible_mov in piece.movements:
+            origin = piece.coord
+            destination = Coord(origin.row-possible_mov.y, origin.column+possible_mov.x)
+            invalid = cls.is_valid_move(origin, destination, *context)
+            if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
+                return False
+        return True
 
     def is_opponent(self, row: int, column: int, playerColor: SideColor) -> bool:
         """Returns whether the square is ocuppied by an opponent piece or not

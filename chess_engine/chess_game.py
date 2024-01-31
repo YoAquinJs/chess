@@ -64,7 +64,7 @@ class ChessGame():
         if piece_type in (PieceType.PAWN, PieceType.KING):
             return MoveStatus.INVALID
         invalid = self._is_valid_move(origin, destination)
-        if invalid is not None and invalid != MoveStatus.REQUIRE_PROMOTION:
+        if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
             return invalid
 
         o_piece = self.grid.get_at(origin)

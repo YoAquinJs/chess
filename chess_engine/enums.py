@@ -33,6 +33,7 @@ class ValidationStatus(Enum):
     """TODO
     """
     VALID = auto()
+    CHECKS_KING = auto()
     INVALID = auto()
     NEED_LAST_MOVE = auto()
     NEED_CASTLING_STATE = auto()
