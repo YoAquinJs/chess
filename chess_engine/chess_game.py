@@ -50,11 +50,13 @@ class ChessGame():
         o_piece, d_piece = self.grid.get_at(origin), self.grid.get_at(destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
+        self._perform_move((origin, destination, o_piece, d_piece))
+
         # Next turn state
         self._set_turn_state()
         self._check_for_endgame()
 
-        self._perform_move((origin, destination, o_piece, d_piece))
+        self.data.turn = opponent(self.data.turn)
         return MoveStatus.PERFORMED
 
     def attempt_promotion(self, origin: Coord, destination: Coord,
