@@ -204,34 +204,6 @@ class ChessValidator:
                 return False
         return True
 
-    def is_opponent(self, row: int, column: int, playerColor: SideColor) -> bool:
-        """Returns whether the square is ocuppied by an opponent piece or not
-
-        Args:
-            row (int): Row.
-            column (int): Column.
-            playerColor(PlayerColor): The player color.
-
-        Returns:
-            bool: Ocuppied or not
-        """
-        
-        return self.__grid[row][column].color == opponent(playerColor)
-
-    def is_player(self, row: int, column: int, playerColor: SideColor) -> bool:
-        """Returns whether the square is ocuppied by a piece of the player or not
-
-        Args:
-            row (int): Row
-            column (int): Column
-            playerColor(PlayerColor): The player which is checking for it's color
-
-        Returns:
-            bool: Ocuppied or not
-        """
-        
-        return self.__grid[row][column].color == playerColor
-
     def get_max_extendable_movements(self, piece: Piece, direction: tuple[int, int], maxIterations: int) -> int:
         """Given a piece and direction, returns the number of movements it can perform without colliding, before reaching a given limit
 
@@ -263,93 +235,6 @@ class ChessValidator:
             i +=1
             
         return i
-
-    def in_check_after_mov(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
-        """Determines if after this movement is executed the player is left in check or not
-
-        Args:
-            originRow (int): Origin row
-            originColumn (int): Origin column
-            destinationRow (int): Destination row
-            destinationColumn (int): Destination column
-
-        Returns:
-            bool: Whether the player is left in check or not
-        """
-        
-        piece = self.__grid[originRow][originColumn]
-        
-        # Get the eaten piece to remove it for calculations, and add it after the calculations are performed
-        eatenPiece = None
-        if self.__grid[destinationRow][destinationColumn].type != PieceType.EMPTY:
-            eatenPiece = self.__grid[destinationRow][destinationColumn]
-
-        # If move was enPassant
-        enPassant = piece.type == PieceType.PAWN and self.possibleEnPassant != None and self.possibleEnPassant[0] == destinationRow and self.possibleEnPassant[1] == destinationColumn
-        if enPassant:
-            eatenPiece = self.__grid[destinationRow-piece.moving_dir][destinationColumn]
-
-        if eatenPiece != None:
-            self.remove_piece(eatenPiece.row, eatenPiece.column)
-            
-        # Perform the movement, create a new board with this new grid, and in that board determine if the player is in check after the movement, then undo the movement
-        self.swap_pieces(originRow, originColumn, destinationRow, destinationColumn)
-        hipothetycalBoard = ChessValidator(deepcopy(self.__grid), self.turn, True)
-        self.swap_pieces(destinationRow, destinationColumn, originRow, originColumn)
-        
-        # Add the eaten piece if there's one
-        if eatenPiece != None:
-            self.add_piece(destinationRow if not enPassant else destinationRow-piece.moving_dir, destinationColumn, eatenPiece)
-
-        return hipothetycalBoard.boardState == TurnState.CHECK or hipothetycalBoard.boardState == TurnState.CHECKMATE
-
-    def get_valid_movements(self, piece: Piece, countPawnAttacks: bool = False) -> list[tuple[int, int]]:
-        """Return all the valid movements of a piece
-
-        Args:
-            piece (Piece): Piece to move
-            countPawnAttacks (bool, optional): Determine whether to count the possible pawn attacks (used for the attacked squares calculation). Defaults to False.
-
-        Returns:
-            list[tuple[int, int]]: list of the valid movements
-        """
-        
-        validMovements = []
-
-        # Iterate trougth the posible movement os each piece
-        for direction, specialCase in piece.movements.items():
-            for i in range(1,self.get_max_extendable_movements(piece, direction, piece.max_extend)+1):
-                movement = (piece.row + (direction[0]*i), piece.column + (direction[1]*i))
-                
-                # Check for pawn special cases
-                if piece.type == PieceType.PAWN:
-                    # Verify pawn in it's initial row, and that it's path is empty, for double pawn move
-                    if specialCase == MovSpecialCase.DOUBLE_PAWN_MOVE and\
-                        ((piece.row == 1 and piece.color == SideColor.BLACK) or (piece.row == 6 and piece.color == SideColor.WHITE))\
-                        and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
-                        validMovements.append(movement)
-                    # Verify that pawn's path is empty in normal movement
-                    elif specialCase == MovSpecialCase.REQUIRES_EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
-                        validMovements.append(movement)
-                    # Verify that the attacking square is either an enemy, enpassant or countPawnAttacks set to true
-                    elif specialCase == None and (countPawnAttacks or self.is_opponent(movement[0], movement[1], piece.color) or movement == self.possibleEnPassant):
-                        validMovements.append(movement)
-                # Verify castling is available, path is empty and not attacked, and king not in check
-                elif specialCase == MovSpecialCase.CASTLE and not self.is_attacked(piece.row, piece.column + (direction[1]//2),opponent(piece))\
-                    and self.__grid[piece.row][ piece.column + (direction[1]//2)].type == PieceType.EMPTY\
-                    and self.__grid[piece.row][ piece.column + (direction[1])].type == PieceType.EMPTY\
-                    and (self.canCastleLeft if direction[1] < 0 else self.canCastleRigth) and self.boardState != TurnState.CHECK:
-                    if direction[1] < 0:
-                        if self.canCastleLeft and self.__grid[piece.row][ piece.column + (direction[1]) - 1].type == PieceType.EMPTY:
-                            validMovements.append(movement)
-                    else:
-                        if self.canCastleLeft:
-                            validMovements.append(movement)
-                # Not any special cases
-                elif specialCase == None:
-                    validMovements.append(movement)
-
-        return validMovements
 
     def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Determines whether the piece movement is valid or not
