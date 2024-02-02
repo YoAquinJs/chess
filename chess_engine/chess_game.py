@@ -94,8 +94,8 @@ class ChessGame():
 
         last_mov = self._get_last_move()
         castling_state = self._get_castling_state()
-        context = (origin, destination, last_mov, castling_state, self.grid_ctx())
-        return ChessValidator.is_valid_move(*context)
+        context = (last_mov, self.turn_state, castling_state, self.grid_ctx())
+        return ChessValidator.is_valid_move(origin, destination, context)
 
     def _perform_move(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
         origin, destination, o_piece, d_piece = context

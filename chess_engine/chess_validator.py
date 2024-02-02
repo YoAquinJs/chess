@@ -83,10 +83,12 @@ class ChessValidator:
         return piece_type not in (PieceType.PAWN, PieceType.KING)
 
     @classmethod
-    def is_valid_move(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
-                      castling_state: CastlingState, grid_ctx: GridContext) -> ValidationResult:
+    def is_valid_move(cls, origin: Coord, dest: Coord,
+                      context: tuple[Optional[Movement], TurnState, CastlingState, GridContext]
+                      ) -> ValidationResult:
         """TODO
         """
+        last_mov, turn_state, castling_state, grid_ctx = context
         validation = cls._access_cache((origin, dest), grid_ctx)
         if validation is None:
             validation = cls._is_valid_move(origin, dest, grid_ctx)
@@ -96,12 +98,12 @@ class ChessValidator:
             case ValidationStatus.CHECKS_KING:
                 return MoveStatus.INVALID, None
             case ValidationStatus.NEED_LAST_MOVE:
-                context = (origin, dest, last_mov, grid_ctx)
-                is_valid = cls._is_valid_enpassant(*context)
+                ctx = (last_mov, grid_ctx)
+                is_valid = cls._is_valid_enpassant(origin, dest, ctx)
                 return None if is_valid else MoveStatus.INVALID, None
             case ValidationStatus.NEED_CASTLING_STATE:
-                context = (origin, dest, castling_state, grid_ctx)
-                is_valid, new_castling = cls._is_valid_castle(*context)
+                ctx = (turn_state, castling_state, grid_ctx)
+                is_valid, new_castling = cls._is_valid_castle(origin, dest, ctx)
                 return None if is_valid else MoveStatus.INVALID, new_castling
             case ValidationStatus.NEED_PROMOTION_PIECE:
                 return MoveStatus.REQUIRE_PROMOTION, None
@@ -181,13 +183,14 @@ class ChessValidator:
         return True
 
     @classmethod
-    def _is_valid_enpassant(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
-                           grid_ctx: GridContext) -> bool:
+    def _is_valid_enpassant(cls, origin: Coord, dest: Coord,
+                           context: tuple[Optional[Movement],GridContext]) -> bool:
         raise NotImplementedError()
 
     @classmethod
-    def _is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
-                           grid_ctx: GridContext) -> tuple[bool, CastlingState]:
+    def _is_valid_castle(cls, origin: Coord, dest: Coord,
+                         context: tuple[TurnState, CastlingState, GridContext]
+                         ) -> tuple[bool, CastlingState]:
         raise NotImplementedError()
 
     @classmethod
@@ -196,21 +199,21 @@ class ChessValidator:
         """TODO
         """
         turn, grid = grid_ctx
-        context = (last_mov, castling_state, grid_ctx)
 
         pieces = grid.white_pieces if turn == SideColor.WHITE else grid.black_pieces
         opponent_pieces = grid.white_pieces if turn == SideColor.BLACK else grid.black_pieces
         king = [p for p in pieces if p.type == PieceType.KING][0]
 
-        any_valid_move = any(cls._has_any_valid_move(context, p) for p in pieces)
         is_in_check = any(cls._attacks_coord(p, king, grid_ctx) for p in opponent_pieces)
-        if is_in_check:
-            if not any_valid_move:
-                return TurnState.CHECKMATE
-            return TurnState.CHECK
+        temp_state = TurnState.CHECK if is_in_check else TurnState.MOVE_TURN
+        context = (last_mov, temp_state, castling_state, grid_ctx)
+        any_valid_move = any(cls._any_valid_move(p, context) for p in pieces)
+
         if not any_valid_move:
+            if is_in_check:
+                return TurnState.CHECKMATE
             return TurnState.STALEMATE
-        return TurnState.MOVE_TURN
+        return temp_state
 
     @classmethod
     def _attacks_coord(cls, piece: Piece, attacked_p: Piece, grid_ctx: GridContext) -> bool:
@@ -220,47 +223,16 @@ class ChessValidator:
         return validation in (ValidationStatus.VALID, ValidationStatus.CHECKS_KING)
 
     @classmethod
-    def _has_any_valid_move(cls, context: tuple[Optional[Movement], CastlingState, GridContext],
-                            piece: Piece) -> bool:
+    def _any_valid_move(cls, piece: Piece,
+                            context: tuple[Optional[Movement],TurnState,CastlingState,GridContext]
+                            ) -> bool:
         for possible_mov in piece.movements:
             origin = piece.coord
             destination = Coord(origin.row-possible_mov.column, origin.column+possible_mov.row)
-            invalid, _ = cls.is_valid_move(origin, destination, *context)
+            invalid, _ = cls.is_valid_move(origin, destination, context)
             if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
                 return False
         return True
-
-    def get_max_extendable_movements(self, piece: Piece, direction: tuple[int, int], maxIterations: int) -> int:
-        """Given a piece and direction, returns the number of movements it can perform without colliding, before reaching a given limit
-
-        Args:
-            piece (Piece): Piece to move.
-            direction (tuple[int, int]): Direction of the extenable movement.
-            maxIterations(int, optional): Maximum distance from piece origin.
-            
-        Returns:
-           Int: Maximun number of movements in that direction.
-        """
-        
-        i = 0
-        row = piece.row
-        column = piece.column
-
-        while (row > -1 and row < 8) and (column > -1 and column < 8) and i < maxIterations:
-            row += direction[0]
-            column += direction[1]
-            
-            #If square is off board limits, or collided with a player piece return the previous square
-            if row < 0 or row > 7 or column < 0  or column > 7 or self.is_player(row, column, piece.color):
-                return i
-
-            # If square is opponent return until this square
-            if self.is_opponent(row, column, piece.color):
-                return i+1
-            
-            i +=1
-            
-        return i
 
     def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Determines whether the piece movement is valid or not
