@@ -27,6 +27,10 @@ class ChessValidator:
         PieceType.QUEEN : 1,
         PieceType.KING : 1
     }
+    white_initial_column = 1
+    white_pawn_initial_column = 2
+    black_initial_column = 8
+    black_pawn_initial_column = 7
 
     _cached_grid_ctx: GridContext
     _cached_movements: dict[tuple[Coord, Coord], ValidationStatus] = {}
@@ -54,9 +58,17 @@ class ChessValidator:
         white_pieces = {piece_type: 0 for piece_type in PieceType}
         for piece in grid.white_pieces:
             white_pieces[piece.type] += 1
+            if piece.type == PieceType.PAWN and piece.coord.column != cls.white_pawn_initial_column:
+                return False
+            if piece.type != PieceType.PAWN and piece.coord.column != cls.white_initial_column:
+                return False
         black_pieces = {piece_type: 0 for piece_type in PieceType}
         for piece in grid.black_pieces:
             black_pieces[piece.type] += 1
+            if piece.type == PieceType.PAWN and piece.coord.column != cls.black_pawn_initial_column:
+                return False
+            if piece.type != PieceType.PAWN and piece.coord.column != cls.black_initial_column:
+                return False
 
         for piece_type, ideal_count in cls.initial_piece_count.items():
             if white_pieces[piece_type] != ideal_count or black_pieces[piece_type] != ideal_count:
@@ -115,13 +127,25 @@ class ChessValidator:
         mov_case = o_piece.movements.get(direction, None)
         if mov_case is None:
             return ValidationStatus.INVALID
+
+        #missing data status
         if mov_case is MovSpecialCase.CASTLE:
             return ValidationStatus.NEED_CASTLING_STATE
         if cls._is_enpassant(o_piece, dest, mov_case, grid):
             return ValidationStatus.NEED_LAST_MOVE
 
-        #has clear path if not KNIGTH_JUMP
         #pawn special cases
+        if mov_case is MovSpecialCase.DOUBLE_PAWN_MOVE:
+            if not cls._has_clear_path(origin, dest, grid) or d_piece is not None:
+                return ValidationStatus.INVALID
+        elif mov_case is MovSpecialCase.REQUIRES_OPPONENT and d_piece is None:
+            return ValidationStatus.INVALID
+        elif mov_case is MovSpecialCase.REQUIRES_EMPTY and d_piece is not None:
+            return ValidationStatus.INVALID
+
+        if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, grid):
+            return ValidationStatus.INVALID
+
         #movement does not leaves player in check
 
         # From here the move is valid
@@ -148,6 +172,12 @@ class ChessValidator:
         #    return False
         #if grid.get_at(dest) is not None:
         #    return False
+        raise NotImplementedError()
+
+    @classmethod
+    def _has_clear_path(cls, origin: Coord, dest: Coord, grid: Grid) -> bool:
+        """TODO
+        """
         raise NotImplementedError()
 
     @classmethod
