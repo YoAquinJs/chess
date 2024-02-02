@@ -72,6 +72,8 @@ class Grid(Serializable):
     def _set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
         prev_piece = self.__grid[coord.row][coord.column]
         self.__grid[coord.row][coord.column] = piece
+        if piece is not None:
+            piece.coord = coord
         return prev_piece
 
     def _set_piece_lists(self) -> None:
