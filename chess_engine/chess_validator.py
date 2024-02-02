@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from asyncio import run
 from copy import deepcopy
-from typing import Any, Optional, cast
+from typing import Optional
 
 from chess_engine.chess_game_data import Movement
 from chess_engine.enums import MoveStatus, TurnState, ValidationStatus
@@ -174,11 +174,11 @@ class ChessValidator:
     @classmethod
     def _has_clear_path(cls, origin: Coord, dest: Coord, direction: Dir, grid: Grid) -> bool:
         _coord = origin
-        _dest = Coord(dest.row-direction.row, dest.column-direction.column)
+        _dest = dest.dir(direction, -1)
         while _coord != _dest:
             if grid.get_at(_coord) is not None:
                 return False
-            _coord = Coord(_coord.row+direction.row, _coord.column+direction.column)
+            _coord = _coord.dir(direction)
 
         return True
 
@@ -224,15 +224,30 @@ class ChessValidator:
 
     @classmethod
     def _any_valid_move(cls, piece: Piece,
-                            context: tuple[Optional[Movement],TurnState,CastlingState,GridContext]
-                            ) -> bool:
-        for possible_mov in piece.movements:
-            origin = piece.coord
-            destination = Coord(origin.row-possible_mov.column, origin.column+possible_mov.row)
-            invalid, _ = cls.is_valid_move(origin, destination, context)
-            if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
-                return False
-        return True
+                        context: tuple[Optional[Movement], TurnState, CastlingState, GridContext]
+                        ) -> bool:
+        origin = piece.coord
+        def extend_validation(direction: Dir) -> bool:
+            i = 1
+            dest = origin.dir(direction, i)
+            while 0 < dest.row < len(ROWS) and 0 < dest.column < len(COLUMNS):
+                validation, _ = cls.is_valid_move(origin, dest, context)
+                if validation in (None, MoveStatus.REQUIRE_PROMOTION):
+                    return True
+                i += 1
+                dest = origin.dir(direction, i)
+            return False
+
+        def non_extend_validation(direction: Dir) -> bool:
+            dest = origin.dir(direction)
+            validation, _ = cls.is_valid_move(origin, dest, context)
+            return validation in (None, MoveStatus.REQUIRE_PROMOTION)
+
+        validate_direction = extend_validation if piece.extendable_mov else non_extend_validation
+        for possible_dir in piece.movements:
+            if validate_direction(possible_dir):
+                return True
+        return False
 
     def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
         """Determines whether the piece movement is valid or not
