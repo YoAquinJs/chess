@@ -27,6 +27,11 @@ class Coord(NamedTuple):
         """
         return Dir(other.row-self.row, other.column-self.column)
 
+    def dir(self, direction: Dir, factor: int=1) -> Coord:
+        """TODO
+        """
+        return Coord(self.row+(direction.row*factor), self.column+(direction.column*factor))
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Coord):
             return False
