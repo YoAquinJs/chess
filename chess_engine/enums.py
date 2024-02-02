@@ -27,8 +27,8 @@ class MovSpecialCase(Enum):
     NONE = auto()
     CASTLE = auto()
     DOUBLE_PAWN_MOVE = auto()
-    REQUIRES_OPPONENT = auto()
-    REQUIRES_EMPTY = auto()
+    PAWN_ATTACK = auto()
+    PAWN_MOVE = auto()
 
 class ValidationStatus(Enum):
     """TODO

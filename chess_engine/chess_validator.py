@@ -10,7 +10,7 @@ from chess_engine.chess_game_data import Movement
 from chess_engine.enums import MoveStatus, TurnState, ValidationStatus
 from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
-from chess_engine.structs import CastlingState, Coord
+from chess_engine.structs import CastlingState, Coord, Dir
 from utils.exceptions import StaticClassInstanceError
 from utils.utils import opponent
 
@@ -128,22 +128,19 @@ class ChessValidator:
         if mov_case is None:
             return ValidationStatus.INVALID
 
-        #missing data status
         if mov_case is MovSpecialCase.CASTLE:
             return ValidationStatus.NEED_CASTLING_STATE
-        if cls._is_enpassant(o_piece, dest, mov_case, grid):
-            return ValidationStatus.NEED_LAST_MOVE
 
         #pawn special cases
         if mov_case is MovSpecialCase.DOUBLE_PAWN_MOVE:
-            if not cls._has_clear_path(origin, dest, grid) or d_piece is not None:
+            if not cls._has_clear_path(origin, dest, direction, grid) or d_piece is not None:
                 return ValidationStatus.INVALID
-        elif mov_case is MovSpecialCase.REQUIRES_OPPONENT and d_piece is None:
-            return ValidationStatus.INVALID
-        elif mov_case is MovSpecialCase.REQUIRES_EMPTY and d_piece is not None:
+        elif mov_case is MovSpecialCase.PAWN_ATTACK and d_piece is None: #possible en passant move
+            return ValidationStatus.NEED_LAST_MOVE
+        elif mov_case is MovSpecialCase.PAWN_MOVE and d_piece is not None:
             return ValidationStatus.INVALID
 
-        if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, grid):
+        if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, direction, grid):
             return ValidationStatus.INVALID
 
         #movement does not leaves player in check
@@ -162,47 +159,35 @@ class ChessValidator:
         if d_piece is not None and d_piece.type == PieceType.KING:
             return ValidationStatus.CHECKS_KING
 
-        if cls._is_promotion(o_piece, dest, grid):
+        if cls._is_promotion(o_piece, dest):
             return ValidationStatus.NEED_PROMOTION_PIECE
 
         return ValidationStatus.VALID
 
     @classmethod
-    def _is_enpassant(cls, o_piece: Piece, dest: Coord, mov_case: MovSpecialCase,
-                      grid: Grid) -> bool:
-        """TODO
-        """
-        raise NotImplementedError()
+    def _is_promotion(cls, piece: Piece, dest: Coord) -> bool:
+        p_row = cls.black_initial_row if piece.color == SideColor.WHITE else cls.white_initial_row
+        return piece.type == PieceType.PAWN and p_row == dest.row
 
     @classmethod
-    def _is_promotion(cls, piece: Piece, dest: Coord, grid: Grid) -> bool:
-        """TODO
-        """
-        #if piece.type != PieceType.PAWN:
-        #    return False
-        #p_row = cls.black_initial_row if piece.color == SideColor.WHITE else cls.white_initial_row
-        #if p_row != dest.row:
-        #    return False
-        raise NotImplementedError()
+    def _has_clear_path(cls, origin: Coord, dest: Coord, direction: Dir, grid: Grid) -> bool:
+        _coord = origin
+        _dest = Coord(dest.row-direction.row, dest.column-direction.column)
+        while _coord != _dest:
+            if grid.get_at(_coord) is not None:
+                return False
+            _coord = Coord(_coord.row+direction.row, _coord.column+direction.column)
 
-    @classmethod
-    def _has_clear_path(cls, origin: Coord, dest: Coord, grid: Grid) -> bool:
-        """TODO
-        """
-        raise NotImplementedError()
+        return True
 
     @classmethod
     def _is_valid_enpassant(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
                            grid_ctx: GridContext) -> bool:
-        """TODO
-        """
         raise NotImplementedError()
 
     @classmethod
     def _is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
                            grid_ctx: GridContext) -> tuple[bool, CastlingState]:
-        """TODO
-        """
         raise NotImplementedError()
 
     @classmethod

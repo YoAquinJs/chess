@@ -76,9 +76,9 @@ class Piece():
         match piece_type:
             case PieceType.PAWN:
                 return {
-                Dir(1 * mov_dir,0)  : MovSpecialCase.REQUIRES_EMPTY,
-                Dir(1 * mov_dir,-1) : MovSpecialCase.REQUIRES_OPPONENT,
-                Dir(1 * mov_dir,1)  : MovSpecialCase.REQUIRES_OPPONENT,
+                Dir(1 * mov_dir,0)  : MovSpecialCase.PAWN_MOVE,
+                Dir(1 * mov_dir,-1) : MovSpecialCase.PAWN_ATTACK,
+                Dir(1 * mov_dir,1)  : MovSpecialCase.PAWN_ATTACK,
                 Dir(2 * mov_dir,0)  : MovSpecialCase.DOUBLE_PAWN_MOVE
                 }
             case PieceType.BISHOP:
