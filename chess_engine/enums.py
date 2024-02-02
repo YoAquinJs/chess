@@ -27,7 +27,7 @@ class MovSpecialCase(Enum):
     NONE = auto()
     CASTLE = auto()
     DOUBLE_PAWN_MOVE = auto()
-    IS_EMPTY = auto()
+    EMPTY_SQUARE = auto()
 
 class ValidationStatus(Enum):
     """TODO

@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Optional, cast
-from chess_engine.enums import MovSpecialCase, PieceType, SideColor
 
+from chess_engine.enums import MovSpecialCase, PieceType, SideColor
 from chess_engine.structs import Coord, Dir
 from utils.exceptions import EnumParseError
-
 
 BLACK_MOV_DIR = 1
 WHITE_MOV_DIR = -1
@@ -77,7 +76,7 @@ class Piece():
         match piece_type:
             case PieceType.PAWN:
                 return {
-                Dir(1 * mov_dir,0)  : MovSpecialCase.IS_EMPTY,
+                Dir(1 * mov_dir,0)  : MovSpecialCase.EMPTY_SQUARE,
                 Dir(1 * mov_dir,-1) : MovSpecialCase.NONE,
                 Dir(1 * mov_dir,1)  : MovSpecialCase.NONE,
                 Dir(2 * mov_dir,0)  : MovSpecialCase.DOUBLE_PAWN_MOVE

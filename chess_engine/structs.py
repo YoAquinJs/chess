@@ -1,5 +1,8 @@
 """This module contains the coordinate class representation"""
 
+from __future__ import annotations
+
+from math import copysign
 from typing import NamedTuple
 
 
@@ -19,6 +22,11 @@ class Coord(NamedTuple):
         """
         return (self.row, self.column)
 
+    def get_dir_to(self, other: Coord) -> Dir:
+        """TODO
+        """
+        return Dir(other.row-self.row, other.column-self.column)
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Coord):
             return False
@@ -32,13 +40,22 @@ class Dir(NamedTuple):
         y (int): Y.
     """
 
-    x: int
-    y: int
+    row: int
+    column: int
+
+    def normalized(self) -> Dir:
+        """TODO
+        """
+        if self.row != 0 and self.column != 0 and self.row != self.column:
+            return self
+        row = 0 if self.row == 0 else int(copysign(1, self.row))
+        column = 0 if self.column == 0 else int(copysign(1, self.column))
+        return Dir(row, column)
 
     def to_tupple(self) -> tuple[int, int]:
         """TODO
         """
-        return (self.x, self.y)
+        return (self.row, self.column)
 
 class CastlingState(NamedTuple):
     """Represents the castling state of a player
