@@ -147,7 +147,16 @@ class ChessValidator:
             return ValidationStatus.INVALID
 
         #movement does not leaves player in check
-
+        grid_copy = deepcopy(grid)
+        if d_piece is not None:
+            grid_copy.set_at(dest, None)
+        grid_copy.swap_pieces(origin, dest)
+        pieces = grid.white_pieces if turn == SideColor.WHITE else grid.black_pieces
+        opponent_pieces = grid.white_pieces if turn == SideColor.BLACK else grid.black_pieces
+        king = [p for p in pieces if p.type == PieceType.KING][0]
+        is_in_check = any(cls._attacks_coord(p, king, (turn, grid_copy)) for p in opponent_pieces)
+        if is_in_check:
+            return ValidationStatus.INVALID
 
         # From here the move is valid
         if d_piece is not None and d_piece.type == PieceType.KING:
@@ -166,12 +175,13 @@ class ChessValidator:
         raise NotImplementedError()
 
     @classmethod
-    def _is_promotion(cls, o_piece: Piece, dest: Coord, grid: Grid) -> bool:
+    def _is_promotion(cls, piece: Piece, dest: Coord, grid: Grid) -> bool:
         """TODO
         """
-        #if o_piece.type != PieceType.PAWN:
+        #if piece.type != PieceType.PAWN:
         #    return False
-        #if grid.get_at(dest) is not None:
+        #p_row = cls.black_initial_row if piece.color == SideColor.WHITE else cls.white_initial_row
+        #if p_row != dest.row:
         #    return False
         raise NotImplementedError()
 
@@ -230,7 +240,7 @@ class ChessValidator:
         for possible_mov in piece.movements:
             origin = piece.coord
             destination = Coord(origin.row-possible_mov.column, origin.column+possible_mov.row)
-            invalid = cls.is_valid_move(origin, destination, *context)
+            invalid, _ = cls.is_valid_move(origin, destination, *context)
             if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
                 return False
         return True
