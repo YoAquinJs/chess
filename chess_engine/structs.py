@@ -57,6 +57,14 @@ class Dir(NamedTuple):
         """
         return (self.row, self.column)
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Dir):
+            return False
+        return self.row == other.row and self.column == other.column
+
+    def __hash__(self) -> int:
+        return hash((self.row, self.column))
+
 class CastlingState(NamedTuple):
     """Represents the castling state of a player
 
