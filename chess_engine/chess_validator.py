@@ -11,6 +11,7 @@ from chess_engine.grid import COLUMNS, ROWS, Grid
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import CastlingState, Coord, Dir
 from utils.exceptions import StaticClassInstanceError
+from utils.utils import opponent
 
 GridContext = tuple[SideColor, Grid]
 ValidationResult = tuple[Optional[MoveStatus], Optional[CastlingState]]
@@ -151,10 +152,10 @@ class ChessValidator:
         if d_piece is not None:
             grid_copy.set_at(dest, None)
         grid_copy.swap_pieces(origin, dest)
-        pieces = grid.white_pieces if turn == SideColor.WHITE else grid.black_pieces
-        opponent_pieces = grid.white_pieces if turn == SideColor.BLACK else grid.black_pieces
+        pieces = grid_copy.white_pieces if turn == SideColor.WHITE else grid_copy.black_pieces
         king = [p for p in pieces if p.type == PieceType.KING][0]
-        is_in_check = any(cls._attacks_coord(p, king, (turn, grid_copy)) for p in opponent_pieces)
+        is_in_check = cls._is_coord_attacked(king.coord, (turn, grid_copy))
+
         if is_in_check:
             return ValidationStatus.INVALID
 
@@ -202,10 +203,9 @@ class ChessValidator:
         turn, grid = grid_ctx
 
         pieces = grid.white_pieces if turn == SideColor.WHITE else grid.black_pieces
-        opponent_pieces = grid.white_pieces if turn == SideColor.BLACK else grid.black_pieces
         king = [p for p in pieces if p.type == PieceType.KING][0]
+        is_in_check = cls._is_coord_attacked(king.coord, grid_ctx)
 
-        is_in_check = any(cls._attacks_coord(p, king, grid_ctx) for p in opponent_pieces)
         temp_state = TurnState.CHECK if is_in_check else TurnState.MOVE_TURN
         context = (last_mov, temp_state, castling_state, grid_ctx)
         any_valid_move = any(cls._any_valid_move(p, context) for p in pieces)
@@ -217,10 +217,16 @@ class ChessValidator:
         return temp_state
 
     @classmethod
-    def _attacks_coord(cls, piece: Piece, attacked_p: Piece, grid_ctx: GridContext) -> bool:
+    def _is_coord_attacked(cls, coord: Coord, grid_ctx: GridContext) -> bool:
+        turn, grid = grid_ctx
+        attacker = opponent(turn)
+        attacker_pieces = grid.white_pieces if attacker == SideColor.WHITE else grid.black_pieces
+        return any(cls._attacks_coord(p, coord, grid_ctx) for p in attacker_pieces)
+
+    @classmethod
+    def _attacks_coord(cls, piece: Piece, coord: Coord, grid_ctx: GridContext) -> bool:
         origin = piece.coord
-        destination = attacked_p.coord
-        validation = cls._is_valid_move(origin, destination, grid_ctx)
+        validation = cls._is_valid_move(origin, coord, grid_ctx)
         return validation in (ValidationStatus.VALID, ValidationStatus.CHECKS_KING)
 
     @classmethod
