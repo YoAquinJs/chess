@@ -15,6 +15,7 @@ from utils.exceptions import StaticClassInstanceError
 from utils.utils import opponent
 
 GridContext = tuple[SideColor, Grid]
+ValidationResult = tuple[Optional[MoveStatus], Optional[CastlingState]]
 class ChessValidator:
     """TODO
     """
@@ -27,10 +28,10 @@ class ChessValidator:
         PieceType.QUEEN : 1,
         PieceType.KING : 1
     }
-    white_initial_column = 1
-    white_pawn_initial_column = 2
-    black_initial_column = 8
-    black_pawn_initial_column = 7
+    white_initial_row = 1
+    white_pawn_initial_row = 2
+    black_initial_row = 8
+    black_pawn_initial_row = 7
 
     _cached_grid_ctx: GridContext
     _cached_movements: dict[tuple[Coord, Coord], ValidationStatus] = {}
@@ -58,16 +59,16 @@ class ChessValidator:
         white_pieces = {piece_type: 0 for piece_type in PieceType}
         for piece in grid.white_pieces:
             white_pieces[piece.type] += 1
-            if piece.type == PieceType.PAWN and piece.coord.column != cls.white_pawn_initial_column:
+            if piece.type == PieceType.PAWN and piece.coord.column != cls.white_pawn_initial_row:
                 return False
-            if piece.type != PieceType.PAWN and piece.coord.column != cls.white_initial_column:
+            if piece.type != PieceType.PAWN and piece.coord.column != cls.white_initial_row:
                 return False
         black_pieces = {piece_type: 0 for piece_type in PieceType}
         for piece in grid.black_pieces:
             black_pieces[piece.type] += 1
-            if piece.type == PieceType.PAWN and piece.coord.column != cls.black_pawn_initial_column:
+            if piece.type == PieceType.PAWN and piece.coord.column != cls.black_pawn_initial_row:
                 return False
-            if piece.type != PieceType.PAWN and piece.coord.column != cls.black_initial_column:
+            if piece.type != PieceType.PAWN and piece.coord.column != cls.black_initial_row:
                 return False
 
         for piece_type, ideal_count in cls.initial_piece_count.items():
@@ -83,7 +84,7 @@ class ChessValidator:
 
     @classmethod
     def is_valid_move(cls, origin: Coord, dest: Coord, last_mov: Optional[Movement],
-                      castling_state: CastlingState, grid_ctx: GridContext) -> Optional[MoveStatus]:
+                      castling_state: CastlingState, grid_ctx: GridContext) -> ValidationResult:
         """TODO
         """
         validation = cls._access_cache((origin, dest), grid_ctx)
@@ -91,22 +92,21 @@ class ChessValidator:
             validation = cls._is_valid_move(origin, dest, grid_ctx)
         match validation:
             case ValidationStatus.INVALID:
-                return MoveStatus.INVALID
+                return MoveStatus.INVALID, None
             case ValidationStatus.CHECKS_KING:
-                return MoveStatus.INVALID
+                return MoveStatus.INVALID, None
             case ValidationStatus.NEED_LAST_MOVE:
                 context = (origin, dest, last_mov, grid_ctx)
                 is_valid = cls._is_valid_enpassant(*context)
-                return None if is_valid else MoveStatus.INVALID
+                return None if is_valid else MoveStatus.INVALID, None
             case ValidationStatus.NEED_CASTLING_STATE:
                 context = (origin, dest, castling_state, grid_ctx)
                 is_valid, new_castling = cls._is_valid_castle(*context)
-                castling_state = new_castling
-                return None if is_valid else MoveStatus.INVALID
+                return None if is_valid else MoveStatus.INVALID, new_castling
             case ValidationStatus.NEED_PROMOTION_PIECE:
-                return MoveStatus.REQUIRE_PROMOTION
+                return MoveStatus.REQUIRE_PROMOTION, None
             case _:
-                return None
+                return None, None
 
     @classmethod
     def _is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
@@ -147,6 +147,7 @@ class ChessValidator:
             return ValidationStatus.INVALID
 
         #movement does not leaves player in check
+
 
         # From here the move is valid
         if d_piece is not None and d_piece.type == PieceType.KING:
