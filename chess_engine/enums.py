@@ -29,6 +29,7 @@ class MovSpecialCase(Enum):
     DOUBLE_PAWN_MOVE = auto()
     REQUIRES_OPPONENT = auto()
     REQUIRES_EMPTY = auto()
+    KNIGTH_JUMP = auto()
 
 class ValidationStatus(Enum):
     """TODO

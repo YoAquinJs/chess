@@ -98,7 +98,56 @@ class ChessValidator:
 
     @classmethod
     def _is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
+        turn, grid = grid_ctx
 
+        o_piece = grid.get_at(origin)
+        if o_piece is None or o_piece.color != turn:
+            return ValidationStatus.INVALID
+
+        direction = origin.get_dir_to(dest)
+        if o_piece.extendable_mov:
+            direction = direction.normalized()
+
+        d_piece = grid.get_at(dest)
+        if d_piece is not None and d_piece.color == o_piece.color:
+            return ValidationStatus.INVALID
+
+        mov_case = o_piece.movements.get(direction, None)
+        if mov_case is None:
+            return ValidationStatus.INVALID
+        if mov_case is MovSpecialCase.CASTLE:
+            return ValidationStatus.NEED_CASTLING_STATE
+        if cls._is_enpassant(o_piece, dest, mov_case, grid):
+            return ValidationStatus.NEED_LAST_MOVE
+
+        #has clear path if not KNIGTH_JUMP
+        #pawn special cases
+        #movement does not leaves player in check
+
+        # From here the move is valid
+        if d_piece is not None and d_piece.type == PieceType.KING:
+            return ValidationStatus.CHECKS_KING
+
+        if cls._is_promotion(o_piece, dest, grid):
+            return ValidationStatus.NEED_PROMOTION_PIECE
+
+        return ValidationStatus.VALID
+
+    @classmethod
+    def _is_enpassant(cls, o_piece: Piece, dest: Coord, mov_case: MovSpecialCase,
+                      grid: Grid) -> bool:
+        """TODO
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def _is_promotion(cls, o_piece: Piece, dest: Coord, grid: Grid) -> bool:
+        """TODO
+        """
+        #if o_piece.type != PieceType.PAWN:
+        #    return False
+        #if grid.get_at(dest) is not None:
+        #    return False
         raise NotImplementedError()
 
     @classmethod
@@ -111,12 +160,6 @@ class ChessValidator:
     @classmethod
     def _is_valid_castle(cls, origin: Coord, dest: Coord, castling_state: CastlingState,
                            grid_ctx: GridContext) -> tuple[bool, CastlingState]:
-        """TODO
-        """
-        raise NotImplementedError()
-
-    @classmethod
-    def is_pawn_promotion(cls, piece: Piece, dest: Coord, grid: Grid) -> bool:
         """TODO
         """
         raise NotImplementedError()
@@ -155,7 +198,7 @@ class ChessValidator:
                             piece: Piece) -> bool:
         for possible_mov in piece.movements:
             origin = piece.coord
-            destination = Coord(origin.row-possible_mov.y, origin.column+possible_mov.x)
+            destination = Coord(origin.row-possible_mov.column, origin.column+possible_mov.row)
             invalid = cls.is_valid_move(origin, destination, *context)
             if invalid not in (None, MoveStatus.REQUIRE_PROMOTION):
                 return False
@@ -286,7 +329,7 @@ class ChessValidator:
                         and self.__grid[piece.row + int(direction[0]//2)][movement[1]].type == PieceType.EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that pawn's path is empty in normal movement
-                    elif specialCase == MovSpecialCase.IS_EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
+                    elif specialCase == MovSpecialCase.REQUIRES_EMPTY and self.__grid[movement[0]][movement[1]].type == PieceType.EMPTY:
                         validMovements.append(movement)
                     # Verify that the attacking square is either an enemy, enpassant or countPawnAttacks set to true
                     elif specialCase == None and (countPawnAttacks or self.is_opponent(movement[0], movement[1], piece.color) or movement == self.possibleEnPassant):

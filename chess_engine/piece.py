@@ -90,14 +90,14 @@ class Piece():
                 }
             case PieceType.KNIGTH:
                 return {
-                Dir(1, 2)  : MovSpecialCase.NONE,
-                Dir(2, 1)  : MovSpecialCase.NONE,
-                Dir(2, -1) : MovSpecialCase.NONE,
-                Dir(1, -2) : MovSpecialCase.NONE,
-                Dir(-1,-2) : MovSpecialCase.NONE,
-                Dir(-2,-1) : MovSpecialCase.NONE,
-                Dir(-2,1)  : MovSpecialCase.NONE,
-                Dir(-1,2)  : MovSpecialCase.NONE,
+                Dir(1, 2)  : MovSpecialCase.KNIGTH_JUMP,
+                Dir(2, 1)  : MovSpecialCase.KNIGTH_JUMP,
+                Dir(2, -1) : MovSpecialCase.KNIGTH_JUMP,
+                Dir(1, -2) : MovSpecialCase.KNIGTH_JUMP,
+                Dir(-1,-2) : MovSpecialCase.KNIGTH_JUMP,
+                Dir(-2,-1) : MovSpecialCase.KNIGTH_JUMP,
+                Dir(-2,1)  : MovSpecialCase.KNIGTH_JUMP,
+                Dir(-1,2)  : MovSpecialCase.KNIGTH_JUMP,
                 }
             case PieceType.ROOK:
                 return {
