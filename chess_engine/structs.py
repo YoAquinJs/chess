@@ -32,6 +32,11 @@ class Coord(NamedTuple):
             return False
         return self.row == other.row and self.column == other.column
 
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Coord):
+            return True
+        return self.row != other.row or self.column != other.column
+
 class Dir(NamedTuple):
     """Represents a direction
 
@@ -61,6 +66,11 @@ class Dir(NamedTuple):
         if not isinstance(other, Dir):
             return False
         return self.row == other.row and self.column == other.column
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Dir):
+            return True
+        return self.row != other.row or self.column != other.column
 
     def __hash__(self) -> int:
         return hash((self.row, self.column))
