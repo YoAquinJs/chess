@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-from asyncio import run
 from copy import deepcopy
 from typing import Optional
 
 from chess_engine.chess_game_data import Movement
 from chess_engine.enums import MoveStatus, TurnState, ValidationStatus
-from chess_engine.grid import COLUMNS, ROWS, Grid, GridIter
+from chess_engine.grid import COLUMNS, ROWS, Grid
 from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
 from chess_engine.structs import CastlingState, Coord, Dir
 from utils.exceptions import StaticClassInstanceError
-from utils.utils import opponent
 
 GridContext = tuple[SideColor, Grid]
 ValidationResult = tuple[Optional[MoveStatus], Optional[CastlingState]]
@@ -113,6 +111,9 @@ class ChessValidator:
     @classmethod
     def _is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
         turn, grid = grid_ctx
+
+        if origin == dest:
+            return ValidationStatus.INVALID
 
         o_piece = grid.get_at(origin)
         if o_piece is None or o_piece.color != turn:
@@ -248,102 +249,6 @@ class ChessValidator:
             if validate_direction(possible_dir):
                 return True
         return False
-
-    def is_valid_movement(self, originRow: int, originColumn: int, destinationRow: int, destinationColumn: int) -> bool:
-        """Determines whether the piece movement is valid or not
-
-        Args:
-            originRow (int): Origin row
-            originColumn (int): Origin column
-            destinationRow (int): Destination row
-            destinationColumn (int): Destination column
-
-        Returns:
-            bool: Whether the movement is valid or not.
-        """
-
-        piece = self.__grid[originRow][originColumn]
-
-        # If you try to move an empty square
-        if piece.type == PieceType.EMPTY:
-            return False
-
-        # If you try to move an opponent square
-        if self.is_opponent(originRow, originColumn, self.turn):
-            return False
-
-        # If the movement is an ilegal movement
-        movement = (destinationRow, destinationColumn)
-        playerPieces = self.whitePieces if self.turn == SideColor.WHITE else self.blackPieces
-        if (movement not in self.get_valid_movements(piece)) if piece.type == PieceType.KING else (movement not in playerPieces[piece]):
-            return False
-
-        # If the movement leave you in check
-        if self.in_check_after_mov(originRow, originColumn, destinationRow, destinationColumn):
-            return False
-        
-        return True
-
-    def attempt_move(self, origin_row: int, origin_column: int, destination_row: int, destination_column: int) -> tuple[bool, Optional[dict[str, Optional[Piece]]]]:
-        """TODO
-        """
-
-        # Validat this movement
-        if not self.is_valid_movement(origin_row,origin_column,destination_row,destination_column):
-            return False, None
-
-        eat_piece = self.__grid[destination_row][destination_column]
-
-        # Perform movement
-        piece = self.__grid[origin_row][origin_column]
-        self.swap_pieces(origin_row,origin_column,destination_row,destination_column)        
-
-        # Check for pawn special cases
-        possible_en_passant = None
-        if piece.type == PieceType.PAWN:
-            # If move was enPassant
-            if self.possibleEnPassant != None and self.possibleEnPassant[0] == destination_row and self.possibleEnPassant[1] == destination_column:
-                eat_piece = self.__grid[destination_row-piece.moving_dir][destination_column]
-            # If pawn performed doublemove, save it for en passant
-            elif abs(destination_row-origin_row) == 2:
-                possible_en_passant = (destination_row - piece.moving_dir, destination_column)
-            # If pawn reached the last square it can move, promote it
-            elif piece.row + piece.moving_dir == len(ROWS) or piece.row + piece.moving_dir == -1:
-                self.remove_piece(piece.row, piece.column)
-
-                if self.get_promotion_piece is None:
-                    raise NotImplementedError("getPromotionPiece function not yet defined for board")
-
-                new_piece = run(self.get_promotion_piece(piece.color, piece.row + piece.moving_dir, piece.column))
-                new_piece.row = piece.row
-                new_piece.column = piece.column
-                self.add_piece(new_piece.row,new_piece.column, new_piece)
-
-        elif piece.type == PieceType.KING:
-            self.canCastleLeft = False
-            self.canCastleRigth = False
-
-            # If move was castle
-            if abs(destination_column-origin_column) == 2:
-                direction = (destination_column-origin_column)//abs(destination_column-origin_column)
-                self.swap_pieces(origin_row, 0 if direction == -1 else 7, origin_row, destination_column - direction)
-
-        self.possibleEnPassant = possible_en_passant
-
-        # Eat opponent piece if it's eat move
-        if eat_piece.type != PieceType.EMPTY:
-            self.empty_square(eat_piece.row, eat_piece.column)
-
-        # Pass turn and calculate new board conditions for next player
-        self.turn = opponent(self.turn)
-        self.squares_under_attack(opponent(self.turn))
-        self.get_posible_turn_movements()
-        self.set_game_state()
-
-        return True, {
-            'piece': piece,
-            'eatPiece': eat_piece if eat_piece.type !=PieceType.EMPTY else None
-        }
 
     def __init__(self) -> None:
         raise StaticClassInstanceError(ChessValidator)
