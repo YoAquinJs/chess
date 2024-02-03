@@ -105,7 +105,7 @@ class ChessValidator:
             case ValidationStatus.NEED_CASTLING_STATE:
                 ctx = (turn_state, castling_state, grid_ctx)
                 is_valid, new_castling = cls._is_valid_castle(origin, dest, ctx)
-                return None if is_valid else MoveStatus.INVALID, new_castling
+                return MoveStatus.PERFORM_CASTLING if is_valid else MoveStatus.INVALID, new_castling
             case ValidationStatus.NEED_PROMOTION_PIECE:
                 return MoveStatus.REQUIRE_PROMOTION, None
             case _:
@@ -139,14 +139,14 @@ class ChessValidator:
 
         #pawn special cases
         if mov_case is MovSpecialCase.DOUBLE_PAWN_MOVE:
-            if not cls._has_clear_path(origin, dest, direction, grid) or d_piece is not None:
+            if not cls._has_clear_path(origin, dest, grid) or d_piece is not None:
                 return ValidationStatus.INVALID
         elif mov_case is MovSpecialCase.PAWN_ATTACK and d_piece is None: #possible en passant move
             return ValidationStatus.NEED_LAST_MOVE
         elif mov_case is MovSpecialCase.PAWN_MOVE and d_piece is not None:
             return ValidationStatus.INVALID
 
-        if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, direction, grid):
+        if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, grid):
             return ValidationStatus.INVALID
 
         if cls._validate_check((origin, dest, d_piece, grid_ctx)):
@@ -167,8 +167,9 @@ class ChessValidator:
         return piece.type == PieceType.PAWN and p_row == dest.row
 
     @classmethod
-    def _has_clear_path(cls, origin: Coord, dest: Coord, direction: Dir, grid: Grid) -> bool:
+    def _has_clear_path(cls, origin: Coord, dest: Coord, grid: Grid) -> bool:
         _coord = origin
+        direction = origin.get_dir_to(dest).normalized()
         _dest = dest.dir(direction, -1)
         while _coord != _dest:
             if grid.get_at(_coord) is not None:
@@ -200,7 +201,32 @@ class ChessValidator:
     def _is_valid_castle(cls, origin: Coord, dest: Coord,
                          context: tuple[TurnState, CastlingState, GridContext]
                          ) -> tuple[bool, CastlingState]:
-        raise NotImplementedError()
+        turn_state, castling_state, grid_ctx = context
+        _, grid = grid_ctx
+        if turn_state != TurnState.MOVE_TURN:
+            return False, castling_state
+
+        king_column_in_path = origin.get_dir_to(dest).normalized().column
+        is_left_dir = king_column_in_path < 0
+        if (is_left_dir and not castling_state.left) or \
+            (not is_left_dir and not castling_state.right):
+            return False, castling_state
+
+        rook_coord = Coord(origin.row, 0 if is_left_dir else 7)
+        rook__dest_coord = Coord(origin.row, 3 if is_left_dir else 5)
+        if not cls._has_clear_path(rook_coord, rook__dest_coord, grid):
+            return False, castling_state
+        if not cls._has_clear_path(origin, dest, grid):
+            return False, castling_state
+
+        path_coord = Coord(origin.row, king_column_in_path)
+        if cls._is_coord_attacked(path_coord, grid_ctx):
+            return False, castling_state
+
+        if cls._validate_check((origin, dest, None, grid_ctx)):
+            return False, castling_state
+
+        return True, castling_state
 
     @classmethod
     def _validate_check(cls, context: tuple[Coord, Coord, Optional[Piece], GridContext]) -> bool:

@@ -45,6 +45,7 @@ class MoveStatus(Enum):
     """
     PERFORMED = auto()
     INVALID = auto()
+    PERFORM_CASTLING = auto()
     REQUIRE_PROMOTION = auto()
     GAME_ALREADY_ENDED = auto()
 
