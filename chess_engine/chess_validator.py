@@ -97,6 +97,8 @@ class ChessValidator:
             case ValidationStatus.CHECKS_KING:
                 return MoveStatus.INVALID, None
             case ValidationStatus.NEED_LAST_MOVE:
+                if last_mov is None:
+                    return MoveStatus.INVALID, None
                 ctx = (last_mov, grid_ctx)
                 is_valid = cls._is_valid_enpassant(origin, dest, ctx)
                 return None if is_valid else MoveStatus.INVALID, None
@@ -147,16 +149,7 @@ class ChessValidator:
         if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, direction, grid):
             return ValidationStatus.INVALID
 
-        #movement does not leaves player in check
-        grid_copy = deepcopy(grid)
-        if d_piece is not None:
-            grid_copy.set_at(dest, None)
-        grid_copy.swap_pieces(origin, dest)
-        pieces = grid_copy.white_pieces if turn == SideColor.WHITE else grid_copy.black_pieces
-        king = [p for p in pieces if p.type == PieceType.KING][0]
-        is_in_check = cls._is_coord_attacked(king.coord, (turn, grid_copy))
-
-        if is_in_check:
+        if cls._validate_check((origin, dest, d_piece, grid_ctx)):
             return ValidationStatus.INVALID
 
         # From here the move is valid
@@ -186,14 +179,40 @@ class ChessValidator:
 
     @classmethod
     def _is_valid_enpassant(cls, origin: Coord, dest: Coord,
-                           context: tuple[Optional[Movement],GridContext]) -> bool:
-        raise NotImplementedError()
+                            context: tuple[Movement, GridContext]) -> bool:
+        last_mov, grid_ctx = context
+
+        l_piece, l_dest = last_mov
+        if l_piece.type != PieceType.PAWN or not isinstance(l_dest, Coord):
+            return False
+        l_piece_dir = l_piece.coord.get_dir_to(l_dest)
+        if l_piece.movements[l_piece_dir] != MovSpecialCase.DOUBLE_PAWN_MOVE:
+            return False
+        l_mov_dir = l_piece_dir.normalized().row
+        if l_dest.column != dest.column or l_dest.row-l_mov_dir != dest.row:
+            return False
+
+        if cls._validate_check((origin, dest, None, grid_ctx)):
+            return False
+        return True
 
     @classmethod
     def _is_valid_castle(cls, origin: Coord, dest: Coord,
                          context: tuple[TurnState, CastlingState, GridContext]
                          ) -> tuple[bool, CastlingState]:
         raise NotImplementedError()
+
+    @classmethod
+    def _validate_check(cls, context: tuple[Coord, Coord, Optional[Piece], GridContext]) -> bool:
+        origin, dest, d_piece, grid_ctx = context
+        turn, grid = grid_ctx
+        grid_copy = deepcopy(grid)
+        if d_piece is not None:
+            grid_copy.set_at(dest, None)
+        grid_copy.swap_pieces(origin, dest)
+        pieces = grid_copy.white_pieces if turn == SideColor.WHITE else grid_copy.black_pieces
+        king = [p for p in pieces if p.type == PieceType.KING][0]
+        return cls._is_coord_attacked(king.coord, (turn, grid_copy))
 
     @classmethod
     def get_board_state(cls, last_mov: Optional[Movement], castling_state: CastlingState,
@@ -208,7 +227,7 @@ class ChessValidator:
 
         temp_state = TurnState.CHECK if is_in_check else TurnState.MOVE_TURN
         context = (last_mov, temp_state, castling_state, grid_ctx)
-        any_valid_move = any(cls._any_valid_move(p, context) for p in pieces)
+        any_valid_move = any(cls._any_valid_move(context, p) for p in pieces)
 
         if not any_valid_move:
             if is_in_check:
@@ -230,9 +249,8 @@ class ChessValidator:
         return validation in (ValidationStatus.VALID, ValidationStatus.CHECKS_KING)
 
     @classmethod
-    def _any_valid_move(cls, piece: Piece,
-                        context: tuple[Optional[Movement], TurnState, CastlingState, GridContext]
-                        ) -> bool:
+    def _any_valid_move(cls, context: tuple[Optional[Movement],TurnState,CastlingState,GridContext],
+                        piece: Piece) -> bool:
         origin = piece.coord
         def extend_validation(direction: Dir) -> bool:
             i = 1
