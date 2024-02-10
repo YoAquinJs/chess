@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional
+from typing import Optional, cast
 
 from chess_engine.chess_game_data import Movement
 from chess_engine.enums import MoveStatus, TurnState, ValidationStatus
@@ -99,6 +99,9 @@ class ChessValidator:
 
         validation_result: ValidationResult
         match validation:
+            case ValidationStatus.VALID:
+                new_castling = cls._get_castling_state(origin, grid_ctx[1], castling_state)
+                validation_result =  (None, new_castling, False)
             case ValidationStatus.INVALID:
                 validation_result = (MoveStatus.INVALID, None, False)
             case ValidationStatus.CHECKS_KING:
@@ -117,8 +120,6 @@ class ChessValidator:
                 validation_result = (state, new_castling, True)
             case ValidationStatus.NEED_PROMOTION_PIECE:
                 validation_result = (MoveStatus.REQUIRE_PROMOTION, None, True)
-            case _:
-                validation_result = (MoveStatus.INVALID, None, False)
         return validation_result
 
     @classmethod
@@ -159,7 +160,7 @@ class ChessValidator:
         if o_piece.extendable_mov and not cls._has_clear_path(origin, dest, grid):
             return ValidationStatus.INVALID
 
-        if cls._validate_check((origin, dest, d_piece, grid_ctx)):
+        if cls._is_left_in_check((origin, dest, d_piece, grid_ctx)):
             return ValidationStatus.INVALID
 
         # From here the move is valid
@@ -203,43 +204,43 @@ class ChessValidator:
         if l_dest.column != dest.column or l_dest.row-l_mov_dir != dest.row:
             return False
 
-        if cls._validate_check((origin, dest, None, grid_ctx)):
+        if cls._is_left_in_check((origin, dest, None, grid_ctx)):
             return False
         return True
 
     @classmethod
     def _is_valid_castle(cls, origin: Coord, dest: Coord,
                          context: tuple[TurnState, CastlingState, GridContext]
-                         ) -> tuple[bool, CastlingState]:
+                         ) -> tuple[bool, Optional[CastlingState]]:
         turn_state, castling_state, grid_ctx = context
         _, grid = grid_ctx
         if turn_state != TurnState.MOVE_TURN:
-            return False, castling_state
+            return False, None
 
         king_column_in_path = origin.get_dir_to(dest).normalized().column
         is_left_dir = king_column_in_path < 0
         if (is_left_dir and not castling_state.left) or \
             (not is_left_dir and not castling_state.right):
-            return False, castling_state
+            return False, None
 
         rook_coord = Coord(origin.row, 0 if is_left_dir else 7)
         rook__dest_coord = Coord(origin.row, 3 if is_left_dir else 5)
         if not cls._has_clear_path(rook_coord, rook__dest_coord, grid):
-            return False, castling_state
+            return False, None
         if not cls._has_clear_path(origin, dest, grid):
-            return False, castling_state
+            return False, None
 
         path_coord = Coord(origin.row, king_column_in_path)
         if cls._is_coord_attacked(path_coord, grid_ctx):
-            return False, castling_state
+            return False, None
 
-        if cls._validate_check((origin, dest, None, grid_ctx)):
-            return False, castling_state
+        if cls._is_left_in_check((origin, dest, None, grid_ctx)):
+            return False, None
 
         return True, CastlingState(False, False)
 
     @classmethod
-    def _validate_check(cls, context: tuple[Coord, Coord, Optional[Piece], GridContext]) -> bool:
+    def _is_left_in_check(cls, context: tuple[Coord, Coord, Optional[Piece], GridContext]) -> bool:
         origin, dest, d_piece, grid_ctx = context
         turn, grid = grid_ctx
         grid_copy = deepcopy(grid)
@@ -249,6 +250,20 @@ class ChessValidator:
         pieces = grid_copy.white_pieces if turn == SideColor.WHITE else grid_copy.black_pieces
         king = [p for p in pieces if p.type == PieceType.KING][0]
         return cls._is_coord_attacked(king.coord, (turn, grid_copy))
+
+    @classmethod
+    def _get_castling_state(cls, origin: Coord, grid: Grid,
+                            castling_state: CastlingState) -> Optional[CastlingState]:
+        piece = cast(Piece, grid.get_at(origin))
+        if piece.type == PieceType.KING:
+            return CastlingState(False, False)
+        if piece.type == PieceType.ROOK:
+            rook_pos = origin.get_dir_to(Coord(0, 4)).column
+            if castling_state.left and rook_pos < 0:
+                return CastlingState(False, castling_state.right)
+            if castling_state.right and rook_pos > 0:
+                return CastlingState(castling_state.left, False)
+        return None
 
     @classmethod
     def get_board_state(cls, last_mov: Optional[Movement], castling_state: CastlingState,
