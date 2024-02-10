@@ -13,7 +13,7 @@ from chess_engine.chess_validator import (ChessValidator, GridContext,
 from chess_engine.enums import MoveStatus, TurnState
 from chess_engine.grid import Grid
 from chess_engine.piece import Piece, PieceType, SideColor
-from chess_engine.structs import CastlingState, Coord, Dir
+from chess_engine.structs import CastlingState, Coord
 from utils.exceptions import InvalidChessGameError
 from utils.utils import opponent
 
@@ -51,10 +51,11 @@ class ChessGame():
         o_piece, d_piece = self.grid.get_at(origin), self.grid.get_at(destination)
         o_piece = cast(Piece, o_piece)# Already validated origin indeed exists
 
+        ctx = (origin, destination, o_piece, d_piece)
         if perform_castle:
-            self._perform_castle(origin.get_dir_to(destination))
+            self._perform_castle(ctx)
         else:
-            self._perform_move((origin, destination, o_piece, d_piece))
+            self._perform_move(ctx)
 
         ChessValidator.clean_cache(self.opponent_grid_ctx())
 
@@ -104,9 +105,12 @@ class ChessGame():
         self.data.append_move(copy(o_piece), destination if d_piece is None else copy(d_piece))
         self.grid.swap_pieces(origin, destination)
 
-    def _perform_castle(self, direction: Dir) -> None:
+    def _perform_castle(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
+        origin, destination, _, _ = context
+        self._perform_move(context)
         w_row, b_row = ChessValidator.white_initial_row, ChessValidator.black_initial_row
         row = w_row if self.data.turn == SideColor.WHITE else b_row
+        direction = origin.get_dir_to(destination)
         if direction.column < 0:
             self.grid.swap_pieces(Coord(row, 0), Coord(row, 3))
         else:
