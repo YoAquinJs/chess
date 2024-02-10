@@ -60,7 +60,8 @@ class ChessGame():
         ChessValidator.clean_cache(self.opponent_grid_ctx())
 
         # Next turn state
-        self._set_castling(new_castling)
+        if new_castling is not None:
+            self._set_castling(new_castling)
         self._set_turn_state()
         self._check_for_endgame()
 

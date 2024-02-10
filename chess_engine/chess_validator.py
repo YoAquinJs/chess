@@ -14,7 +14,7 @@ from utils.exceptions import StaticClassInstanceError
 from utils.utils import opponent
 
 GridContext = tuple[SideColor, Grid]
-ValidationResult = tuple[Optional[MoveStatus], Optional[CastlingState]]
+ValidationResult = tuple[Optional[MoveStatus], Optional[CastlingState], bool]
 class ChessValidator:
     """TODO
     """
@@ -48,6 +48,10 @@ class ChessValidator:
         if cls._cached_grid_ctx == grid_ctx:
             return cls._cached_movements[mov]
         return None
+
+    @classmethod
+    def _save_to_cache(cls, mov: tuple[Coord, Coord], status: ValidationStatus) -> None:
+        cls._cached_movements[mov] = status
 
     @classmethod
     def is_valid_initial_grid(cls) -> bool:
@@ -91,25 +95,31 @@ class ChessValidator:
         validation = cls._access_cache((origin, dest), grid_ctx)
         if validation is None:
             validation = cls._is_valid_move(origin, dest, grid_ctx)
+            cls._save_to_cache((origin, dest), validation)
+
+        validation_result: ValidationResult
         match validation:
             case ValidationStatus.INVALID:
-                return MoveStatus.INVALID, None
+                validation_result = (MoveStatus.INVALID, None, False)
             case ValidationStatus.CHECKS_KING:
-                return MoveStatus.INVALID, None
+                validation_result = (MoveStatus.INVALID, None, False)
             case ValidationStatus.NEED_LAST_MOVE:
                 if last_mov is None:
-                    return MoveStatus.INVALID, None
-                ctx = (last_mov, grid_ctx)
-                is_valid = cls._is_valid_enpassant(origin, dest, ctx)
-                return None if is_valid else MoveStatus.INVALID, None
+                    validation_result = (MoveStatus.INVALID, None, False)
+                else:
+                    ctx = (last_mov, grid_ctx)
+                    is_valid = cls._is_valid_enpassant(origin, dest, ctx)
+                    validation_result = (None if is_valid else MoveStatus.INVALID, None, False)
             case ValidationStatus.NEED_CASTLING_STATE:
                 ctx = (turn_state, castling_state, grid_ctx)
                 is_valid, new_castling = cls._is_valid_castle(origin, dest, ctx)
-                return MoveStatus.PERFORM_CASTLING if is_valid else MoveStatus.INVALID, new_castling
+                state = None if is_valid else MoveStatus.INVALID
+                validation_result = (state, new_castling, True)
             case ValidationStatus.NEED_PROMOTION_PIECE:
-                return MoveStatus.REQUIRE_PROMOTION, None
+                validation_result = (MoveStatus.REQUIRE_PROMOTION, None, True)
             case _:
-                return None, None
+                validation_result = (MoveStatus.INVALID, None, False)
+        return validation_result
 
     @classmethod
     def _is_valid_move(cls, origin: Coord, dest: Coord, grid_ctx: GridContext) -> ValidationStatus:
@@ -226,7 +236,7 @@ class ChessValidator:
         if cls._validate_check((origin, dest, None, grid_ctx)):
             return False, castling_state
 
-        return True, castling_state
+        return True, CastlingState(False, False)
 
     @classmethod
     def _validate_check(cls, context: tuple[Coord, Coord, Optional[Piece], GridContext]) -> bool:
@@ -282,7 +292,7 @@ class ChessValidator:
             i = 1
             dest = origin.dir(direction, i)
             while 0 < dest.row < len(ROWS) and 0 < dest.column < len(COLUMNS):
-                validation, _ = cls.is_valid_move(origin, dest, context)
+                validation, _, _ = cls.is_valid_move(origin, dest, context)
                 if validation in (None, MoveStatus.REQUIRE_PROMOTION):
                     return True
                 i += 1
@@ -291,7 +301,7 @@ class ChessValidator:
 
         def non_extend_validation(direction: Dir) -> bool:
             dest = origin.dir(direction)
-            validation, _ = cls.is_valid_move(origin, dest, context)
+            validation, _, _ = cls.is_valid_move(origin, dest, context)
             return validation in (None, MoveStatus.REQUIRE_PROMOTION)
 
         validate_direction = extend_validation if piece.extendable_mov else non_extend_validation
