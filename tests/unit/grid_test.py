@@ -3,8 +3,8 @@
 from typing import Optional
 
 import pytest
-
 from chess_engine.enums import PieceType, SideColor
+
 from chess_engine.grid import BOARD_START, Grid
 from chess_engine.piece import Piece
 from chess_engine.structs import Coord
@@ -13,7 +13,30 @@ from chess_engine.structs import Coord
 def test_grid_initialization() -> None:
     """TODO
     """
-    pass
+    pawn = Piece(PieceType.PAWN, SideColor.WHITE, Coord(0,0))
+    list_grid = [
+        [pawn,None,None,None,None,None,None,pawn],
+        [None,pawn,None,None,None,None,pawn,None],
+        [None,None,pawn,None,None,pawn,pawn,pawn],
+        [None,None,None,pawn,pawn,None,None,None],
+        [None,None,None,pawn,pawn,None,None,None],
+        [None,None,pawn,None,None,pawn,None,None],
+        [None,pawn,None,None,None,None,pawn,pawn],
+        [pawn,None,None,None,None,None,None,pawn],
+    ]
+    str_list_grid = [
+        ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  ', '  '],
+        ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
+        ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
+        ['wR', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
+        ['  ', 'wP', 'bP', '  ', 'w@', '  ', '  ', '  '],
+        ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
+        ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+        ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']
+    ]
+    Grid(list_grid)
+    Grid.from_str_grid(str_list_grid)
+    Grid.get_start_grid()
 
 def test_grid_boundaries() -> None:
     """TODO
