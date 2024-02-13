@@ -90,14 +90,14 @@ def test_grid_boundaries(grid: list[list[str]], valid: bool) -> None:
         assert _valid == valid
 
 @pytest.mark.parametrize("grid, valid", [
-    (Coord(0,0), True),
-    (Coord(7,7), True),
-    (Coord(-1,0), False),
-    (Coord(8,0), False),
-    (Coord(0,-1), False),
-    (Coord(0,8), False),
+    (Coord(0,0),   True),
+    (Coord(7,7),   True),
+    (Coord(-1,0),  False),
+    (Coord(8,0),   False),
+    (Coord(0,-1),  False),
+    (Coord(0,8),   False),
     (Coord(-1,-1), False),
-    (Coord(8,8), False),
+    (Coord(8,8),   False),
 ])
 def test_grid_get_boundaries(coord: Coord, valid: bool) -> None:
     """TODO
@@ -111,17 +111,28 @@ def test_grid_get_boundaries(coord: Coord, valid: bool) -> None:
     finally:
         assert _valid == valid
 
-def test_grid_get(grid: Grid, coord: Coord, expected: Optional[Piece]) -> None:
+@pytest.mark.parametrize("coord, expected", [
+    (Coord(0,0), Piece(PieceType.ROOK, SideColor.BLACK, Coord(0,0))),
+    (Coord(1,0), Piece(PieceType.PAWN, SideColor.BLACK, Coord(1,0))),
+    (Coord(2,0), None),
+    (Coord(5,4), None),
+    (Coord(4,7), None),
+    (Coord(7,4), Piece(PieceType.KING, SideColor.WHITE, Coord(7,4))),
+    (Coord(6,4), Piece(PieceType.PAWN, SideColor.WHITE, Coord(6,4))),
+    (Coord(7,7), Piece(PieceType.ROOK, SideColor.WHITE, Coord(7,7))),
+])
+def test_grid_get(coord: Coord, expected: Optional[Piece]) -> None:
+    """TODO
+    """
+    grid = Grid.get_start_grid()
+    assert grid.get_at(coord) == expected
+
+def test_grid_set(coord: Coord, piece: Optional[Piece]) -> None:
     """TODO
     """
     pass
 
-def test_grid_set(grid: Grid, coord: Coord, piece: Optional[Piece]) -> None:
-    """TODO
-    """
-    pass
-
-def test_grid_swap(grid: Grid, coord1: Coord, coord2: Coord) -> None:
+def test_grid_swap(coord1: Coord, coord2: Coord) -> None:
     """TODO
     """
     pass
