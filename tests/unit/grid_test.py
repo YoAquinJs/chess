@@ -127,10 +127,32 @@ def test_grid_get(coord: Coord, expected: Optional[Piece]) -> None:
     grid = Grid.get_start_grid()
     assert grid.get_at(coord) == expected
 
+@pytest.mark.parametrize("coord, piece", [
+    (Coord(0,0), Piece(PieceType.ROOK, SideColor.BLACK, Coord(0,0))),
+    (Coord(1,0), Piece(PieceType.PAWN, SideColor.BLACK, Coord(1,0))),
+    (Coord(2,0), None),
+    (Coord(5,4), None),
+    (Coord(4,7), None),
+    (Coord(7,4), Piece(PieceType.KING, SideColor.WHITE, Coord(7,4))),
+    (Coord(6,4), Piece(PieceType.PAWN, SideColor.WHITE, Coord(6,4))),
+    (Coord(7,7), Piece(PieceType.ROOK, SideColor.WHITE, Coord(7,7))),
+])
 def test_grid_set(coord: Coord, piece: Optional[Piece]) -> None:
     """TODO
     """
-    pass
+    empty_grid = [
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+    ]
+    grid = Grid.from_str_grid(empty_grid)
+    grid.set_at(coord, piece)
+    assert grid.get_at(coord) == piece
 
 def test_grid_swap(coord1: Coord, coord2: Coord) -> None:
     """TODO
