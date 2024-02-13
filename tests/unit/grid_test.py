@@ -1,5 +1,6 @@
 """TODO"""
 
+from copy import copy
 from typing import Optional
 
 import pytest
@@ -154,10 +155,24 @@ def test_grid_set(coord: Coord, piece: Optional[Piece]) -> None:
     grid.set_at(coord, piece)
     assert grid.get_at(coord) == piece
 
+@pytest.mark.parametrize("coord1, coord2", [
+    (Coord(0,0), Coord(4,3)),
+    (Coord(1,0), Coord(1,6)),
+    (Coord(2,0), Coord(2,2)),
+    (Coord(5,4), Coord(4,4)),
+    (Coord(4,7), Coord(2,7)),
+    (Coord(7,4), Coord(0,4)),
+    (Coord(6,4), Coord(4,6)),
+    (Coord(7,7), Coord(0,0)),
+])
 def test_grid_swap(coord1: Coord, coord2: Coord) -> None:
     """TODO
     """
-    pass
+    grid = Grid.get_start_grid()
+    piece1 = copy(grid.get_at(coord1))
+    piece2 = copy(grid.get_at(coord2))
+    grid.swap_pieces(coord1, coord2)
+    assert grid.get_at(coord1) == piece2 and grid.get_at(coord2) == piece1
 
 @pytest.mark.parametrize("grid1, grid2, equal", [
     (BOARD_START,
@@ -250,6 +265,7 @@ def test_grid_swap(coord1: Coord, coord2: Coord) -> None:
      False),
 ])
 def test_grid_equality(grid1: list[list[str]], grid2: list[list[str]], equal: bool) -> None:
+    
     """TODO
     """
     assert (Grid.from_str_grid(grid1) == Grid.from_str_grid(grid2)) == equal
