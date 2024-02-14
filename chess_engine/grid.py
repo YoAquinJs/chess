@@ -176,6 +176,6 @@ class GridIter:
             self.row += 1
             self.col = 0
             return next(self)
-        self.col += 1
         coord = Coord(self.row, self.col)
+        self.col += 1
         return self.grid.get_at(coord), coord

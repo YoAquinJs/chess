@@ -6,7 +6,7 @@ from typing import Optional
 import pytest
 
 from chess_engine.enums import PieceType, SideColor
-from chess_engine.grid import BOARD_START, Grid
+from chess_engine.grid import BOARD_START, COLUMNS, ROWS, Grid, GridIter
 from chess_engine.piece import Piece
 from chess_engine.structs import Coord
 from utils.exceptions import InvalidGridError
@@ -265,20 +265,58 @@ def test_grid_swap(coord1: Coord, coord2: Coord) -> None:
      False),
 ])
 def test_grid_equality(grid1: list[list[str]], grid2: list[list[str]], equal: bool) -> None:
-    
     """TODO
     """
     assert (Grid.from_str_grid(grid1) == Grid.from_str_grid(grid2)) == equal
 
-def test_grid_iterator(grid: Grid) -> None:
+@pytest.mark.parametrize("start", [
+    (Coord(0,0)),
+    (Coord(1,0)),
+    (Coord(2,0)),
+    (Coord(5,4)),
+    (Coord(4,7)),
+    (Coord(7,4)),
+    (Coord(6,4)),
+    (Coord(7,7)),
+])
+def test_grid_iterator(start: Coord) -> None:
     """TODO
     """
-    pass
+    grid = Grid.get_start_grid()
+    pieces: list[Optional[Piece]] = []
+    for r in range(start.row, len(ROWS)):
+        for c in range(start.column, len(COLUMNS)):
+            pieces.append(Piece.parse_from_str(BOARD_START[r][c], Coord(r,c)))
+    iter_pieces = list(GridIter(grid))
+    assert iter_pieces == pieces
 
-def test_grid_piece_lists(grid: Grid, expected: tuple[list[Piece], list[Piece]]) -> None:
+W = SideColor.WHITE
+B = SideColor.BLACK
+P = PieceType.PAWN
+@pytest.mark.parametrize("str_grid, expected", [
+    (BOARD_START,
+     ([Piece(P,W,Coord(6,0)),Piece(P,W,Coord(6,1)),Piece(P,W,Coord(6,2)),
+       Piece(P,W,Coord(6,3)),Piece(P,W,Coord(6,4)),Piece(P,W,Coord(6,5)),
+       Piece(P,W,Coord(6,6)),Piece(P,W,Coord(6,7)),
+       ],[])),
+    ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  ', '  '],
+      ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
+      ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
+      ['wR', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
+      ['  ', 'wP', 'bP', '  ', 'w@', '  ', '  ', '  '],
+      ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
+      ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+      ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']],
+     ([],[])),
+])
+def test_grid_piece_lists(str_grid: list[list[str]],
+                          expected: tuple[list[Piece], list[Piece]]) -> None:
     """TODO
     """
-    pass
+    grid = Grid.from_str_grid(str_grid)
+    w_pieces, b_pieces = expected
+    assert grid.white_pieces == w_pieces
+    assert grid.black_pieces == b_pieces
 
 def test_grid_serialization(grid: Grid) -> None:
     """TODO
