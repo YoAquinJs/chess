@@ -293,12 +293,25 @@ def test_grid_iterator(start: Coord) -> None:
 W = SideColor.WHITE
 B = SideColor.BLACK
 P = PieceType.PAWN
+BS = PieceType.BISHOP
+K = PieceType.KNIGTH
+R = PieceType.ROOK
 @pytest.mark.parametrize("str_grid, expected", [
     (BOARD_START,
-     ([Piece(P,W,Coord(6,0)),Piece(P,W,Coord(6,1)),Piece(P,W,Coord(6,2)),
+    ({Piece(P,W,Coord(6,0)),Piece(P,W,Coord(6,1)),Piece(P,W,Coord(6,2)),
        Piece(P,W,Coord(6,3)),Piece(P,W,Coord(6,4)),Piece(P,W,Coord(6,5)),
-       Piece(P,W,Coord(6,6)),Piece(P,W,Coord(6,7)),
-       ],[])),
+       Piece(P,W,Coord(6,6)),Piece(P,W,Coord(6,7)),Piece(BS,W,Coord(7,2)),
+       Piece(BS,W,Coord(7,5)),Piece(K,W,Coord(7,1)),Piece(K,W,Coord(7,6)),
+       Piece(R,W,Coord(7,0)),Piece(R,W,Coord(7,7)),
+       Piece(PieceType.KING,W,Coord(7,4)),Piece(PieceType.QUEEN,W,Coord(7,3))
+    },
+    {Piece(P,B,Coord(1,0)),Piece(P,B,Coord(1,1)),Piece(P,B,Coord(1,2)),
+       Piece(P,B,Coord(1,3)),Piece(P,B,Coord(1,4)),Piece(P,B,Coord(1,5)),
+       Piece(P,B,Coord(1,6)),Piece(P,B,Coord(1,7)),Piece(BS,B,Coord(0,2)),
+       Piece(BS,B,Coord(0,5)),Piece(K,B,Coord(0,1)),Piece(K,B,Coord(0,6)),
+       Piece(R,B,Coord(0,0)),Piece(R,B,Coord(0,7)),
+       Piece(PieceType.KING,B,Coord(0,4)),Piece(PieceType.QUEEN,B,Coord(0,3))
+    })),
     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  ', '  '],
       ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
       ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
@@ -307,10 +320,23 @@ P = PieceType.PAWN
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
       ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
       ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']],
-     ([],[])),
+    ({Piece(P,W,Coord(6,0)),Piece(P,W,Coord(6,1)),Piece(P,W,Coord(6,2)),
+       Piece(P,W,Coord(6,3)),Piece(P,W,Coord(6,4)),Piece(P,W,Coord(6,5)),
+       Piece(P,W,Coord(6,6)),Piece(P,W,Coord(6,7)),Piece(BS,W,Coord(7,2)),
+       Piece(BS,W,Coord(7,5)),Piece(K,W,Coord(7,1)),Piece(K,W,Coord(7,6)),
+       Piece(R,W,Coord(7,0)),Piece(R,W,Coord(7,7)),
+       Piece(PieceType.KING,W,Coord(7,4)),Piece(PieceType.QUEEN,W,Coord(7,3))
+    },
+    {Piece(P,B,Coord(6,0)),Piece(P,B,Coord(6,1)),Piece(P,B,Coord(6,2)),
+       Piece(P,B,Coord(6,3)),Piece(P,B,Coord(6,4)),Piece(P,B,Coord(6,5)),
+       Piece(P,B,Coord(6,6)),Piece(P,B,Coord(6,7)),Piece(BS,B,Coord(7,2)),
+       Piece(BS,B,Coord(7,5)),Piece(K,B,Coord(7,1)),Piece(K,B,Coord(7,6)),
+       Piece(R,B,Coord(7,0)),Piece(R,B,Coord(7,7)),
+       Piece(PieceType.KING,B,Coord(7,4)),Piece(PieceType.QUEEN,B,Coord(7,3))
+    })),
 ])
 def test_grid_piece_lists(str_grid: list[list[str]],
-                          expected: tuple[list[Piece], list[Piece]]) -> None:
+                          expected: tuple[set[Piece], set[Piece]]) -> None:
     """TODO
     """
     grid = Grid.from_str_grid(str_grid)
