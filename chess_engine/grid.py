@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
-from chess_engine.piece import PIECE_STR_LENGTH, Piece, SideColor
+from chess_engine.piece import Piece, SideColor
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
 from utils.exceptions import InvalidGridError
@@ -38,7 +38,7 @@ class Grid(Serializable):
         self.__grid = grid
         self.white_pieces: set[Piece]
         self.black_pieces: set[Piece]
-        self._set_piece_lists()
+        self._categorize_lists()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Grid):
@@ -66,17 +66,17 @@ class Grid(Serializable):
             Optional[Piece]: Previous piece in the coordinate or None if it was empty
         """
         prev_piece = self._set_at(coord, piece)
-        self._set_piece_lists()
+        self._categorize_lists()
         return prev_piece
 
     def _set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
-        prev_piece = self.__grid[coord.row][coord.column]
+        prev_piece = self.get_at(coord)
         self.__grid[coord.row][coord.column] = piece
         if piece is not None:
             piece.coord = coord
         return prev_piece
 
-    def _set_piece_lists(self) -> None:
+    def _categorize_lists(self) -> None:
         self.white_pieces = set()
         self.black_pieces = set()
         for piece, _ in GridIter(self):
@@ -112,8 +112,16 @@ class Grid(Serializable):
 
         print()
         for piece, _ in GridIter(self, on_new_row=lambda r : print(ROWS[r])):
-            piece_str = " "*PIECE_STR_LENGTH if piece is None else str(piece)
-            print(f" {piece_str} ", end="")
+            print(f" {Piece.get_str(piece)} ", end="")
+
+    def get_str_grid(self) -> list[list[str]]:
+        """TODO
+        """
+        text_grid: list[list[str]] = []
+        for piece, coord in GridIter(self, lambda _: text_grid.append([])):
+            text_grid[coord.row].append(Piece.get_str(piece))
+
+        return text_grid
 
     @staticmethod
     def get_start_grid() -> Grid:
@@ -125,24 +133,23 @@ class Grid(Serializable):
     def from_str_grid(text_grid: list[list[str]]) -> Grid:
         """TODO
         """
-        if len(text_grid) != len(ROWS) or len(text_grid[0]) != len(COLUMNS):
-            raise InvalidGridError("Text grid must have the same lengths as the \
-                            'ROWS' and 'COLUMNS' constants")
+        invalid_msg = "Text grid must have the same lengths as the 'ROWS' and 'COLUMNS' constants"
+        if len(text_grid) != len(ROWS):
+            raise InvalidGridError(invalid_msg)
 
         grid: list[list[Optional[Piece]]] = []
         for r, row in enumerate(text_grid):
+            if len(row) != len(COLUMNS):
+                raise InvalidGridError(invalid_msg)
             grid.append([])
             for c, piece_str in enumerate(row):
                 grid[r].append(Piece.parse_from_str(piece_str, Coord(r, c)))
+
         return Grid(grid)
 
     def get_serialization_attrs(self) -> dict[str, Any]:
-        text_grid: list[list[str]] = []
-        for piece, coord in GridIter(self, lambda _: text_grid.append([])):
-            piece_str = " "*PIECE_STR_LENGTH if piece is None else str(piece)
-            text_grid[coord.row].append(piece_str)
         return {
-            "grid": text_grid
+            "grid": self.get_start_grid()
         }
 
     @classmethod
@@ -176,6 +183,7 @@ class GridIter:
             self.row += 1
             self.col = 0
             return next(self)
-        coord = Coord(self.row, self.col)
+
         self.col += 1
+        coord = Coord(self.row, self.col)
         return self.grid.get_at(coord), coord

@@ -155,3 +155,9 @@ class Piece():
             return Piece(piece_type, color, coord)
         except EnumParseError:
             return None
+
+    @staticmethod
+    def get_str(piece: Optional[Piece]) -> str:
+        """TODO
+        """
+        return " "*PIECE_STR_LENGTH if piece is None else str(piece)
