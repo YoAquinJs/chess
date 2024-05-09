@@ -1,5 +1,11 @@
 """This module is the run file for the app, initializes all other modules"""
 
+# Execute
+# py main.py
+
+# Run tests
+# py -m pytest
+
 # Import external libraries
 import pygame
 
