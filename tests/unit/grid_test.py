@@ -1,25 +1,36 @@
 """TODO"""
-# pylint: disable=undefined-variable
+# pylint: disable=undefined-variable unused-variable
 
 # from copy import copy
-from typing import Callable, Optional
+from typing import Callable
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
 from chess_engine.enums import PieceType, SideColor
-from chess_engine.grid import BOARD_START, COLUMNS, ROWS, Grid, GridIter
+from chess_engine.grid import BOARD_START, COLUMNS, ROWS, Grid  # , GridIter
 from chess_engine.piece import NULL_PIECE_STR, Piece
 from chess_engine.structs import Coord
 from utils.exceptions import InvalidGridError
 
 
-def grids[T](piece_st: st.SearchStrategy[T], size: int=len(ROWS)
+def grids[T](piece_st: st.SearchStrategy[T], rows: int=len(ROWS), cols: int=len(COLUMNS)
              ) -> st.SearchStrategy[list[list[T]]]:
     """TODO
     """
-    return st.lists(st.lists(piece_st,min_size=size,max_size=size),min_size=size,max_size=size)
+    return st.lists(st.lists(piece_st, min_size=cols, max_size=cols), min_size=rows, max_size=rows)
+
+@st.composite
+def out_of_bounds_grids[T](draw: st.DrawFn, piece_st: st.SearchStrategy[T]
+                           ) -> list[list[T]]:
+    """TODO
+    """
+    rows = draw(st.integers(min_value=7, max_value=9))
+    cols = draw(st.integers(min_value=0, max_value=10).filter(\
+        lambda x: x != len(COLUMNS) if rows == len(ROWS) else True))
+    grid = draw(grids(piece_st, rows, cols))
+    return grid
 
 def coords(min_val: int=0, max_val: int=len(ROWS)-1) -> st.SearchStrategy[Coord]:
     """TODO
@@ -37,86 +48,56 @@ def pieces(coords_st: st.SearchStrategy[Coord]) -> st.SearchStrategy[Piece]:
               color=st.sampled_from(SideColor),
               coord=coords_st
               )
-optional_pieces = st.one_of(st.none(), pieces(coords()))
-
+optional_pieces = st.none() | pieces(coords())
 piece_str_build: Callable[[SideColor, PieceType], str] = lambda col,typ: col.value+typ.value
 str_pieces = st.builds(piece_str_build,
                        st.sampled_from(SideColor),
                        st.sampled_from(PieceType)
                        )
-optional_str_pieces = st.one_of(st.just(NULL_PIECE_STR), str_pieces)
+optional_str_pieces = st.just(NULL_PIECE_STR) | str_pieces
 
+
+def test_start_grid_generation() -> None:
+    """Tests start grid generation, and assert it's value"""
+    assert Grid.get_start_grid() == Grid.from_str_grid(BOARD_START)
 
 @given(grids(optional_pieces))
-def test_grid_from_piece_list(grid: list[list[Optional[Piece | None]]]) -> None:
-    """Tests grid generation of piece grid"""
+def test_grid_piece_generation(grid: list[list[Piece | None]]) -> None:
+    """Tests grid generation of piece grid, for valid grids"""
     try:
         Grid(grid)
     except InvalidGridError:
         pytest.fail("Grid recognized valid grid as invalid")
 
 @given(grids(optional_str_pieces))
-def test_grid_from_str_list(grid: list[list[str]]) -> None:
-    """Tests grid generation of string grid"""
+def test_grid_str_generation(grid: list[list[str]]) -> None:
+    """Tests grid generation of string grid, for valid grids"""
     try:
         Grid.from_str_grid(grid)
     except InvalidGridError:
         pytest.fail("Grid recognized valid grid as invalid")
 
-def test_grid() -> None:
-    """Tests start grid generation"""
-    Grid.get_start_grid()
+@given(out_of_bounds_grids(optional_pieces))
+def test_grid_piece_generation_out_of_bounds(grid: list[list[Piece | None]]) -> None:
+    """TODO
+    """
+    with pytest.raises(InvalidGridError):
+        Grid(grid)
 
+@given(out_of_bounds_grids(optional_str_pieces))
+def test_grid_str_generation_out_of_bounds(grid: list[list[str]]) -> None:
+    """TODO
+    """
+    with pytest.raises(InvalidGridError):
+        Grid.from_str_grid(grid)
 
-# @pytest.mark.parametrize("grid, valid", [
-#     (BOARD_START,
-#      True),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  '],
-#       ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
-#       ['wR', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', 'wP', 'bP', '  ', 'w@', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
-#       ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']],
-#       False),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR', '  '],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#       False),
-#     ([['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP']],
-#       False),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#       False),
-# ])
-# def test_grid_boundaries(grid: list[list[str]], valid: bool) -> None:
+# @given(st.builds(grids, piece_st=pieces(coords()), size=st.integers().filter(lambda x: x != 8)))
+# def test_grid_piece_generation_out_of_bounds(grid: list[list[Piece | None]]) -> None:
 #     """TODO
 #     """
-#     _valid = True
-#     try:
-#         Grid.from_str_grid(grid)
-#     except InvalidGridError:
-#         _valid = False
-#     finally:
-#         assert _valid == valid
+#     with pytest.raises(InvalidGridError):
+#         Grid(grid)
+
 
 # @pytest.mark.parametrize("grid, valid", [
 #     (Coord(0,0),   True),
