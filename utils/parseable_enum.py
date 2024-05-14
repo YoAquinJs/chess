@@ -20,8 +20,8 @@ class ParseableEnum(EnumMeta):
         Returns:
             ParseableEnum: This enum
         """
-        if item not in cls.__members__.keys():
-            raise EnumParseError(f"No such value in {cls.__name__}: {item}")
+        for member_name, member in cls.__members__.items():
+            if item == getattr(cls, member_name).value:
+                return cast(ParseableEnum, member)
 
-        found = cls.__members__.get(item)
-        return cast(ParseableEnum, found)
+        raise EnumParseError(f"No such value in {cls.__name__}: {item}")

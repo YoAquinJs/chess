@@ -10,6 +10,9 @@ class InvalidChessGameError(Exception):
 class InvalidGridError(Exception):
     """Raise when a chess game it's initialized with invalid data"""
 
+class GridIndexError(Exception):
+    """Raise when accesing invalid grid positions"""
+
 class StaticClassInstanceError(Exception):
     """Raise when trying to instance a static class"""
     def __init__(self, callee_class: type):
