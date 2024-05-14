@@ -13,8 +13,10 @@ BLACK_MOV_DIR = 1
 WHITE_MOV_DIR = -1
 
 PIECE_STR_LENGTH = 2
+NULL_PIECE_STR = " "*PIECE_STR_LENGTH
 
 SerPiece = tuple[str, tuple[int,int]]
+
 @dataclass
 class Piece():
     """TODO
@@ -49,6 +51,14 @@ class Piece():
             return False
 
         return self.type == other.type and self.color == other.color and self.coord == other.coord
+
+    def same_piece(self, other: object) -> bool:
+        """TODO
+        """
+        if not isinstance(other, Piece):
+            return False
+
+        return self.type == other.type and self.color == other.color
 
     @staticmethod
     def get_extendability(piece_type: PieceType) -> bool:
@@ -160,4 +170,6 @@ class Piece():
     def get_str(piece: Optional[Piece]) -> str:
         """TODO
         """
-        return " "*PIECE_STR_LENGTH if piece is None else str(piece)
+        return NULL_PIECE_STR if piece is None else str(piece)
+
+OptPiece = Piece | None

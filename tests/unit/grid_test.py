@@ -2,7 +2,7 @@
 # pylint: disable=undefined-variable unused-variable
 
 import random
-# from copy import copy
+from copy import deepcopy
 from typing import Callable
 
 import pytest
@@ -13,25 +13,30 @@ from chess_engine.enums import PieceType, SideColor
 from chess_engine.grid import BOARD_START, COLUMNS, ROWS, Grid  # , GridIter
 from chess_engine.piece import NULL_PIECE_STR, Piece
 from chess_engine.structs import Coord
-from utils.exceptions import InvalidGridError
+from utils.exceptions import GridIndexError, InvalidGridError
 
 
-def grids[T](piece_st: st.SearchStrategy[T], rows: int=len(ROWS), cols: int=len(COLUMNS)
+def matrix_grids[T](piece_st: st.SearchStrategy[T], rows: int=len(ROWS), cols: int=len(COLUMNS)
              ) -> st.SearchStrategy[list[list[T]]]:
     """TODO
     """
     return st.lists(st.lists(piece_st, min_size=cols, max_size=cols), min_size=rows, max_size=rows)
 
 @st.composite
-def out_of_bounds_grids[T](draw: st.DrawFn, piece_st: st.SearchStrategy[T]
+def out_of_bounds_matrix_grids[T](draw: st.DrawFn, piece_st: st.SearchStrategy[T]
                            ) -> list[list[T]]:
     """TODO
     """
     rows = draw(st.integers(min_value=7, max_value=9))
-    cols = draw(st.integers(min_value=0, max_value=10).filter(\
+    cols = draw(st.integers(min_value=0, max_value=10).filter(
         lambda x: x != len(COLUMNS) if rows == len(ROWS) else True))
-    grid = draw(grids(piece_st, rows, cols))
+    grid = draw(matrix_grids(piece_st, rows, cols))
     return grid
+
+def grids[T](piece_st: st.SearchStrategy[T]) -> st.SearchStrategy[Grid]:
+    """TODO
+    """
+    return st.builds(Grid, matrix_grids(piece_st))
 
 def coords(min_val: int=0, max_val: int=len(ROWS)-1) -> st.SearchStrategy[Coord]:
     """TODO
@@ -40,6 +45,7 @@ def coords(min_val: int=0, max_val: int=len(ROWS)-1) -> st.SearchStrategy[Coord]
               row=st.integers(min_value=min_val, max_value=max_val),
               column=st.integers(min_value=min_val, max_value=max_val)
               )
+out_of_bounds_coords = st.one_of(coords(-11, -1), coords(8, 18))
 
 def pieces(coords_st: st.SearchStrategy[Coord]) -> st.SearchStrategy[Piece]:
     """TODO
@@ -50,6 +56,7 @@ def pieces(coords_st: st.SearchStrategy[Coord]) -> st.SearchStrategy[Piece]:
               coord=coords_st
               )
 optional_pieces = st.none() | pieces(coords())
+
 piece_str_build: Callable[[SideColor, PieceType], str] = lambda col,typ: col.value+typ.value
 str_pieces = st.builds(piece_str_build,
                        st.sampled_from(SideColor),
@@ -62,7 +69,7 @@ def test_start_grid_generation() -> None:
     """Tests start grid generation, and assert it's value"""
     assert Grid.get_start_grid() == Grid.from_str_grid(BOARD_START)
 
-@given(grids(optional_pieces))
+@given(matrix_grids(optional_pieces))
 def test_grid_piece_generation(grid: list[list[Piece | None]]) -> None:
     """Tests grid generation of piece grid, for valid grids"""
     try:
@@ -70,7 +77,7 @@ def test_grid_piece_generation(grid: list[list[Piece | None]]) -> None:
     except InvalidGridError:
         pytest.fail("Grid recognized valid grid as invalid")
 
-@given(grids(optional_str_pieces))
+@given(matrix_grids(optional_str_pieces))
 def test_grid_str_generation(grid: list[list[str]]) -> None:
     """Tests grid generation of string grid, for valid grids"""
     try:
@@ -78,22 +85,22 @@ def test_grid_str_generation(grid: list[list[str]]) -> None:
     except InvalidGridError:
         pytest.fail("Grid recognized valid grid as invalid")
 
-@given(out_of_bounds_grids(optional_pieces))
+@given(out_of_bounds_matrix_grids(optional_pieces))
 def test_grid_piece_generation_out_of_bounds(grid: list[list[Piece | None]]) -> None:
     """TODO
     """
     with pytest.raises(InvalidGridError):
         Grid(grid)
 
-@given(out_of_bounds_grids(optional_str_pieces))
+@given(out_of_bounds_matrix_grids(optional_str_pieces))
 def test_grid_str_generation_out_of_bounds(grid: list[list[str]]) -> None:
     """TODO
     """
     with pytest.raises(InvalidGridError):
         Grid.from_str_grid(grid)
 
-@given(grids(optional_pieces), st.sets(optional_pieces, min_size=8, max_size=16))
-def test_grid_equality(grid: list[list[Piece | None]], pieces_set: set[Piece | None]) -> None:
+@given(matrix_grids(optional_pieces), st.sets(optional_pieces, min_size=8, max_size=16))
+def test_grid_equality(grid: list[list[Piece | None]], given_pieces: set[Piece | None]) -> None:
     """TODO
     """
 
@@ -106,11 +113,61 @@ def test_grid_equality(grid: list[list[Piece | None]], pieces_set: set[Piece | N
                 coord = Coord(random.randint(0, 7), random.randint(0, 7))
             none_grid.set_at(coord, piece)
         return none_grid
-    assert gen_random_coord_grid(pieces_set, 1) != gen_random_coord_grid(pieces_set, 2)
+    assert gen_random_coord_grid(given_pieces, 1) != gen_random_coord_grid(given_pieces, 2)
 
     generated_grid = Grid(grid)
     assert generated_grid == Grid(grid)
     assert generated_grid != [[None]]
+
+@given(matrix_grids(optional_pieces), coords())
+def test_grid_get(grid: list[list[Piece | None]], given_coord: Coord) -> None:
+    """TODO
+    """
+    generated_grid = Grid(grid)
+    assert grid[given_coord.row][given_coord.column] == generated_grid.get_at(given_coord)
+
+@given(matrix_grids(optional_pieces), st.tuples(coords(), optional_pieces))
+def test_grid_set(grid: list[list[Piece | None]], coord_piece: tuple[Coord, Piece | None]) -> None:
+    """TODO
+    """
+    grid_copy = deepcopy(grid)
+    coord, piece = coord_piece
+    generated_grid = Grid(grid)
+
+    prev_piece = generated_grid.set_at(coord, piece)
+    assert prev_piece == grid_copy[coord.row][coord.column]
+    assert generated_grid.get_at(coord) == piece
+
+@given(matrix_grids(optional_pieces), coords(), coords())
+def test_grid_swap(grid: list[list[Piece | None]], coord1: Coord, coord2: Coord) -> None:
+    """TODO
+    """
+    generated_grid = Grid(grid)
+    if coord1 == coord2:
+        with pytest.raises(GridIndexError):
+            generated_grid.swap_pieces(coord1, coord2)
+        return
+
+    swaped1 = generated_grid.get_at(coord1)
+    swaped2 = generated_grid.get_at(coord2)
+
+    assert True if swaped1 is None else swaped1.coord == coord1
+    assert True if swaped2 is None else swaped2.coord == coord2
+
+@given(matrix_grids(optional_pieces), out_of_bounds_coords, out_of_bounds_coords)
+def test_grid_opt_bounds(grid: list[list[Piece | None]], coord1: Coord, coord2: Coord) -> None:
+    """TODO
+    """
+    generated_grid = Grid(grid)
+
+    with pytest.raises(GridIndexError):
+        generated_grid.get_at(coord1)
+
+    with pytest.raises(GridIndexError):
+        generated_grid.set_at(coord1, None)
+
+    with pytest.raises(GridIndexError):
+        generated_grid.swap_pieces(coord1, coord2)
 
 
 # @pytest.mark.parametrize("grid, valid", [
