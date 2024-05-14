@@ -1,6 +1,7 @@
 """TODO"""
 # pylint: disable=undefined-variable unused-variable
 
+import random
 # from copy import copy
 from typing import Callable
 
@@ -91,12 +92,25 @@ def test_grid_str_generation_out_of_bounds(grid: list[list[str]]) -> None:
     with pytest.raises(InvalidGridError):
         Grid.from_str_grid(grid)
 
-# @given(st.builds(grids, piece_st=pieces(coords()), size=st.integers().filter(lambda x: x != 8)))
-# def test_grid_piece_generation_out_of_bounds(grid: list[list[Piece | None]]) -> None:
-#     """TODO
-#     """
-#     with pytest.raises(InvalidGridError):
-#         Grid(grid)
+@given(grids(optional_pieces), st.sets(optional_pieces, min_size=8, max_size=16))
+def test_grid_equality(grid: list[list[Piece | None]], pieces_set: set[Piece | None]) -> None:
+    """TODO
+    """
+
+    def gen_random_coord_grid(pieces_set: set[Piece | None], seed: int) -> Grid:
+        random.seed(seed)
+        none_grid = Grid([[None for _ in range(len(COLUMNS))] for _ in range(len(ROWS))])
+        for piece in pieces_set:
+            coord = Coord(random.randint(0, 7), random.randint(0, 7))
+            while none_grid.get_at(coord) is not None:
+                coord = Coord(random.randint(0, 7), random.randint(0, 7))
+            none_grid.set_at(coord, piece)
+        return none_grid
+    assert gen_random_coord_grid(pieces_set, 1) != gen_random_coord_grid(pieces_set, 2)
+
+    generated_grid = Grid(grid)
+    assert generated_grid == Grid(grid)
+    assert generated_grid != [[None]]
 
 
 # @pytest.mark.parametrize("grid, valid", [
@@ -183,101 +197,6 @@ def test_grid_str_generation_out_of_bounds(grid: list[list[str]]) -> None:
 #     grid.swap_pieces(coord1, coord2)
 #     assert grid.get_at(coord1) == piece2 and grid.get_at(coord2) == piece1
 
-# @pytest.mark.parametrize("grid1, grid2, equal", [
-#     (BOARD_START,
-#      BOARD_START,
-#      True),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  ', '  '],
-#       ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
-#       ['wR', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', 'wP', 'bP', '  ', 'w@', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
-#       ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']],
-#      [['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  ', '  '],
-#       ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
-#       ['wR', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', 'wP', 'bP', '  ', 'w@', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
-#       ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']],
-#      True),
-#     ([['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP']],
-#      [['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP']],
-#      True),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#      [['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#      False),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#      [['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#      False),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']],
-#      [['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'],
-#       ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR']],
-#      False),
-# ])
-# def test_grid_equality(grid1: list[list[str]], grid2: list[list[str]], equal: bool) -> None:
-#     """TODO
-#     """
-#     assert (Grid.from_str_grid(grid1) == Grid.from_str_grid(grid2)) == equal
-
 # @pytest.mark.parametrize("start", [
 #     (Coord(0,0)),
 #     (Coord(1,0)),
@@ -298,60 +217,6 @@ def test_grid_str_generation_out_of_bounds(grid: list[list[str]]) -> None:
 #             pieces.append(Piece.parse_from_str(BOARD_START[r][c], Coord(r,c)))
 #     iter_pieces = list(GridIter(grid))
 #     assert iter_pieces == pieces
-
-# W = SideColor.WHITE
-# B = SideColor.BLACK
-# P = PieceType.PAWN
-# BS = PieceType.BISHOP
-# K = PieceType.KNIGTH
-# R = PieceType.ROOK
-# @pytest.mark.parametrize("str_grid, expected", [
-#     (BOARD_START,
-#     ({Piece(P,W,Coord(6,0)),Piece(P,W,Coord(6,1)),Piece(P,W,Coord(6,2)),
-#        Piece(P,W,Coord(6,3)),Piece(P,W,Coord(6,4)),Piece(P,W,Coord(6,5)),
-#        Piece(P,W,Coord(6,6)),Piece(P,W,Coord(6,7)),Piece(BS,W,Coord(7,2)),
-#        Piece(BS,W,Coord(7,5)),Piece(K,W,Coord(7,1)),Piece(K,W,Coord(7,6)),
-#        Piece(R,W,Coord(7,0)),Piece(R,W,Coord(7,7)),
-#        Piece(PieceType.KING,W,Coord(7,4)),Piece(PieceType.QUEEN,W,Coord(7,3))
-#     },
-#     {Piece(P,B,Coord(1,0)),Piece(P,B,Coord(1,1)),Piece(P,B,Coord(1,2)),
-#        Piece(P,B,Coord(1,3)),Piece(P,B,Coord(1,4)),Piece(P,B,Coord(1,5)),
-#        Piece(P,B,Coord(1,6)),Piece(P,B,Coord(1,7)),Piece(BS,B,Coord(0,2)),
-#        Piece(BS,B,Coord(0,5)),Piece(K,B,Coord(0,1)),Piece(K,B,Coord(0,6)),
-#        Piece(R,B,Coord(0,0)),Piece(R,B,Coord(0,7)),
-#        Piece(PieceType.KING,B,Coord(0,4)),Piece(PieceType.QUEEN,B,Coord(0,3))
-#     })),
-#     ([['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', '  ', '  '],
-#       ['bP', '  ', '  ', 'bP', 'bP', 'bP', 'bP', 'bP'],
-#       ['  ', 'bP', '  ', '  ', '  ', 'bK', '  ', '  '],
-#       ['wR', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
-#       ['  ', 'wP', 'bP', '  ', 'w@', '  ', '  ', '  '],
-#       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', 'bR'],
-#       ['wP', '  ', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
-#       ['  ', 'wK', 'wB', 'wQ', '  ', 'wB', 'wK', 'wR']],
-#     ({Piece(P,W,Coord(6,0)),Piece(P,W,Coord(6,1)),Piece(P,W,Coord(6,2)),
-#        Piece(P,W,Coord(6,3)),Piece(P,W,Coord(6,4)),Piece(P,W,Coord(6,5)),
-#        Piece(P,W,Coord(6,6)),Piece(P,W,Coord(6,7)),Piece(BS,W,Coord(7,2)),
-#        Piece(BS,W,Coord(7,5)),Piece(K,W,Coord(7,1)),Piece(K,W,Coord(7,6)),
-#        Piece(R,W,Coord(7,0)),Piece(R,W,Coord(7,7)),
-#        Piece(PieceType.KING,W,Coord(7,4)),Piece(PieceType.QUEEN,W,Coord(7,3))
-#     },
-#     {Piece(P,B,Coord(6,0)),Piece(P,B,Coord(6,1)),Piece(P,B,Coord(6,2)),
-#        Piece(P,B,Coord(6,3)),Piece(P,B,Coord(6,4)),Piece(P,B,Coord(6,5)),
-#        Piece(P,B,Coord(6,6)),Piece(P,B,Coord(6,7)),Piece(BS,B,Coord(7,2)),
-#        Piece(BS,B,Coord(7,5)),Piece(K,B,Coord(7,1)),Piece(K,B,Coord(7,6)),
-#        Piece(R,B,Coord(7,0)),Piece(R,B,Coord(7,7)),
-#        Piece(PieceType.KING,B,Coord(7,4)),Piece(PieceType.QUEEN,B,Coord(7,3))
-#     })),
-# ])
-# def test_grid_piece_lists(str_grid: list[list[str]],
-#                           expected: tuple[set[Piece], set[Piece]]) -> None:
-#     """TODO
-#     """
-#     grid = Grid.from_str_grid(str_grid)
-#     w_pieces, b_pieces = expected
-#     assert grid.white_pieces == w_pieces
-#     assert grid.black_pieces == b_pieces
 
 # def test_grid_serialization(grid: Grid) -> None:
 #     """TODO
