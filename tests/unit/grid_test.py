@@ -3,7 +3,7 @@
 
 import random
 from copy import deepcopy
-from typing import Callable
+from typing import Callable, Iterable
 
 import pytest
 from hypothesis import given
@@ -76,6 +76,20 @@ str_pieces = st.builds(piece_str_build,
                        )
 optional_str_pieces = st.just(NULL_PIECE_STR) | str_pieces
 
+def gen_random_coord_grid(pieces_set: Iterable[Piece | None], seed: int=42) -> Grid:
+    """TODO
+    """
+    random.seed(seed)
+
+    none_grid = Grid([[None for _ in range(L_COLUMNS)] for _ in range(L_ROWS)])
+    for piece in pieces_set:
+        coord = Coord(random.randint(0, 7), random.randint(0, 7))
+        while none_grid.get_at(coord) is not None:
+            coord = Coord(random.randint(0, 7), random.randint(0, 7))
+        none_grid.set_at(coord, piece)
+
+    return none_grid
+
 
 def test_start_grid_generation() -> None:
     """Tests start grid generation, and assert it's value"""
@@ -111,20 +125,10 @@ def test_grid_str_generation_out_of_bounds(grid: list[list[str]]) -> None:
     with pytest.raises(InvalidGridError):
         Grid.from_str_grid(grid)
 
-@given(matrix_grids(optional_pieces), st.sets(optional_pieces, min_size=8, max_size=16))
-def test_grid_equality(grid: list[list[Piece | None]], given_pieces: set[Piece | None]) -> None:
+@given(matrix_grids(optional_pieces), st.lists(optional_pieces, min_size=8, max_size=16))
+def test_grid_equality(grid: list[list[Piece | None]], given_pieces: list[Piece | None]) -> None:
     """TODO
     """
-
-    def gen_random_coord_grid(pieces_set: set[Piece | None], seed: int) -> Grid:
-        random.seed(seed)
-        none_grid = Grid([[None for _ in range(L_COLUMNS)] for _ in range(L_ROWS)])
-        for piece in pieces_set:
-            coord = Coord(random.randint(0, 7), random.randint(0, 7))
-            while none_grid.get_at(coord) is not None:
-                coord = Coord(random.randint(0, 7), random.randint(0, 7))
-            none_grid.set_at(coord, piece)
-        return none_grid
     assert gen_random_coord_grid(given_pieces, 1) != gen_random_coord_grid(given_pieces, 2)
 
     generated_grid = Grid(grid)
@@ -184,6 +188,17 @@ def test_grid_opt_bounds(grid: Grid, coord1: Coord, coord2: Coord) -> None:
 
     with pytest.raises(GridInvalidCoordError):
         grid.swap_pieces(coord1, coord2)
+
+@given(st.sets(optional_pieces, min_size=8, max_size=16))
+def test_grid_piece_sets(given_pieces: set[Piece | None]) -> None:
+    """TODO
+    """
+    grid = gen_random_coord_grid(given_pieces)
+    white_pieces = {p for p in given_pieces if p is not None and p.color == SideColor.WHITE}
+    black_pieces = {p for p in given_pieces if p is not None and p.color == SideColor.BLACK}
+
+    assert grid.white_pieces == white_pieces
+    assert grid.black_pieces == black_pieces
 
 
 # @pytest.mark.parametrize("grid, valid", [
