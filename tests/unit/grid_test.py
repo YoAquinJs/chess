@@ -153,17 +153,24 @@ def test_grid_set(grid: Grid, coord_piece: tuple[Coord, Piece | None]) -> None:
 def test_grid_swap(grid: Grid, coord1: Coord, coord2: Coord) -> None:
     """TODO
     """
+
+    grid_copy = deepcopy(grid)
     if coord1 == coord2:
         with pytest.raises(GridInvalidCoordError):
             grid.swap_pieces(coord1, coord2)
         return
 
     grid.swap_pieces(coord1, coord2)
-    swaped1 = grid.get_at(coord1)
-    swaped2 = grid.get_at(coord2)
 
-    assert True if swaped1 is None else swaped1.coord == coord1
-    assert True if swaped2 is None else swaped2.coord == coord2
+    swaped1 = grid.get_at(coord2)
+    swaped2 = grid.get_at(coord1)
+    prev1 = grid_copy.get_at(coord1)
+    prev2 = grid_copy.get_at(coord2)
+
+    assert prev1 is None if swaped1 is None else \
+        swaped1.coord == coord2 and swaped1.same_piece_as(prev1)
+    assert prev2 is None if swaped2 is None else \
+        swaped2.coord == coord1 and swaped2.same_piece_as(prev2)
 
 @given(grids(optional_pieces), out_of_bounds_coords, out_of_bounds_coords)
 def test_grid_opt_bounds(grid: Grid, coord1: Coord, coord2: Coord) -> None:
