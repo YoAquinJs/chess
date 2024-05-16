@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional, cast
-from chess_engine.enums import GameState
+from typing import Any, cast
 
-from chess_engine.piece import Piece, SerPiece, SideColor
+from chess_engine.enums import GameState
+from chess_engine.piece import OptPiece, Piece, SerPiece, SideColor
 from chess_engine.structs import CastlingState, Coord
 from serialization.serializable import Serializable
 
-
 Movement = tuple[Piece, Piece | Coord]
+OptMovement = Movement | None
 SerMovement = tuple[SerPiece, SerPiece | tuple[int,int]]
 @dataclass
 class ChessGameData(Serializable):
@@ -63,7 +63,7 @@ class ChessGameData(Serializable):
         """TODO
         """
         def _parse_move_history(ser_move_history: list[SerMovement]) -> list[Movement]:
-            def get_dest(ser_dest: SerPiece | tuple[int,int]) -> Optional[Piece] | Coord:
+            def get_dest(ser_dest: SerPiece | tuple[int,int]) -> OptPiece | Coord:
                 match ser_dest:
                     case (_, (_, _)):
                         return Piece.deserialize(ser_dest)

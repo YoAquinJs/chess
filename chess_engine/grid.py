@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
-from chess_engine.piece import Piece, SideColor
+from chess_engine.piece import Piece, SideColor, OptPiece
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
 from utils.exceptions import GridInvalidCoordError, InvalidGridError
@@ -30,7 +30,7 @@ class Grid(Serializable):
     """TODO
     """
 
-    def __init__(self, grid: list[list[Optional[Piece]]]) -> None:
+    def __init__(self, grid: list[list[OptPiece]]) -> None:
         if len(grid) != len(ROWS):
             raise InvalidGridError("Invalid row count")
         for column in grid:
@@ -58,28 +58,28 @@ class Grid(Serializable):
 
         return True
 
-    def get_at(self, coord: Coord) -> Optional[Piece]:
+    def get_at(self, coord: Coord) -> OptPiece:
         """TODO
         """
         if coord.row < 0 or coord.row >= L_ROWS or coord.column < 0 or coord.column >= L_COLUMNS:
             raise GridInvalidCoordError
         return self.__grid[coord.row][coord.column]
 
-    def set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
+    def set_at(self, coord: Coord, piece: OptPiece) -> OptPiece:
         """Sets the grid coordinate to the given piece, and return whatever was contained
 
         Args:
             coord (Coord): Coordinate
-            piece (Optional[Piece]): The piece to set or None for emptying the coordinate
+            piece (OptPiece): The piece to set or None for emptying the coordinate
 
         Returns:
-            Optional[Piece]: Previous piece in the coordinate or None if it was empty
+            OptPiece: Previous piece in the coordinate or None if it was empty
         """
         prev_piece = self._set_at(coord, piece)
         self._categorize_lists()
         return prev_piece
 
-    def _set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
+    def _set_at(self, coord: Coord, piece: OptPiece) -> OptPiece:
         if piece is not None:
             piece.coord = coord
         prev_piece = self.get_at(coord)
@@ -139,7 +139,7 @@ class Grid(Serializable):
         if len(str_grid) != len(ROWS):
             raise InvalidGridError("Invalid row count")
 
-        grid: list[list[Optional[Piece]]] = []
+        grid: list[list[OptPiece]] = []
         for r, row in enumerate(str_grid):
             if len(row) != len(COLUMNS):
                 raise InvalidGridError("Invalid column count")
@@ -180,7 +180,7 @@ class GridIter:
     def __iter__(self) -> GridIter:
         return self
 
-    def __next__(self) -> tuple[Optional[Piece], Coord]:
+    def __next__(self) -> tuple[OptPiece, Coord]:
         if self.coord_ptr.row >= L_ROWS:
             raise StopIteration
         if self.coord_ptr.column >= L_COLUMNS:

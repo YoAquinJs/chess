@@ -5,14 +5,14 @@ from __future__ import annotations
 
 from copy import copy
 from dataclasses import dataclass, field
-from typing import Optional, cast
+from typing import cast
 
-from chess_engine.chess_game_data import ChessGameData, GameState, Movement
+from chess_engine.chess_game_data import ChessGameData, GameState, OptMovement
 from chess_engine.chess_validator import (ChessValidator, GridContext,
                                           ValidationResult)
 from chess_engine.enums import MoveStatus, TurnState
 from chess_engine.grid import Grid
-from chess_engine.piece import Piece, PieceType, SideColor
+from chess_engine.piece import OptPiece, Piece, PieceType, SideColor
 from chess_engine.structs import CastlingState, Coord
 from utils.exceptions import InvalidChessGameError
 from utils.utils import opponent
@@ -101,12 +101,12 @@ class ChessGame():
         context = (last_mov, self.turn_state, castling_state, self.grid_ctx())
         return ChessValidator.is_valid_move(origin, destination, context)
 
-    def _perform_move(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
+    def _perform_move(self, context: tuple[Coord, Coord, Piece, OptPiece]) -> None:
         origin, destination, o_piece, d_piece = context
         self.data.append_move(copy(o_piece), destination if d_piece is None else copy(d_piece))
         self.grid.swap_pieces(origin, destination)
 
-    def _perform_castle(self, context: tuple[Coord, Coord, Piece, Optional[Piece]]) -> None:
+    def _perform_castle(self, context: tuple[Coord, Coord, Piece, OptPiece]) -> None:
         origin, destination, _, _ = context
         self._perform_move(context)
         w_row, b_row = ChessValidator.white_initial_row, ChessValidator.black_initial_row
@@ -166,7 +166,7 @@ class ChessGame():
     def _validate_grid(self, mov_grid_ctx: GridContext) -> bool:
         return mov_grid_ctx[0] == self.data.turn and mov_grid_ctx[1] == self.grid
 
-    def _get_last_move(self) -> Optional[Movement]:
+    def _get_last_move(self) -> OptMovement:
         return self.data.move_history[-1] if len(self.data.move_history) > 0 else None
 
     def _get_castling_state(self) -> CastlingState:

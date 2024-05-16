@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, cast
+from typing import cast
 
 from chess_engine.enums import MovSpecialCase, PieceType, SideColor
 from chess_engine.structs import Coord, Dir
@@ -74,14 +74,7 @@ class Piece():
 
     @staticmethod
     def get_type_movements(piece_type: PieceType, mov_dir: int=0) -> dict[Dir, MovSpecialCase]:
-        """Provides the corresponding movements to the piece type
-
-        Args:
-            piece_type (PieceType): Type to determine from
-            mov_dir (int, optional): Piece movement direction depending on color. Defaults to 0.
-
-        Returns:
-            dict[Dir, Optional[MovSpecialCase]]: Movements
+        """TODO
         """
         match piece_type:
             case PieceType.PAWN:
@@ -147,13 +140,13 @@ class Piece():
         return (str(self), self.coord.to_tupple())
 
     @staticmethod
-    def deserialize(ser: SerPiece) -> Optional[Piece]:
+    def deserialize(ser: SerPiece) -> OptPiece:
         """TODO
         """
         return Piece.parse_from_str(ser[0], Coord(*ser[1]))
 
     @staticmethod
-    def parse_from_str(piece_str: str, coord: Coord) -> Optional[Piece]:
+    def parse_from_str(piece_str: str, coord: Coord) -> OptPiece:
         """TODO
         """
         if len(piece_str) != PIECE_STR_LENGTH:
@@ -167,7 +160,7 @@ class Piece():
             return None
 
     @staticmethod
-    def get_str(piece: Optional[Piece]) -> str:
+    def get_str(piece: OptPiece) -> str:
         """TODO
         """
         return NULL_PIECE_STR if piece is None else str(piece)

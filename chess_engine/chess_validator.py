@@ -3,18 +3,19 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Optional, cast
+from typing import cast
 
-from chess_engine.chess_game_data import Movement
+from chess_engine.chess_game_data import Movement, OptMovement
 from chess_engine.enums import MoveStatus, TurnState, ValidationStatus
 from chess_engine.grid import COLUMNS, ROWS, Grid
-from chess_engine.piece import MovSpecialCase, Piece, PieceType, SideColor
+from chess_engine.piece import (MovSpecialCase, OptPiece, Piece, PieceType,
+                                SideColor)
 from chess_engine.structs import CastlingState, Coord, Dir
 from utils.exceptions import StaticClassInstanceError
 from utils.utils import opponent
 
 GridContext = tuple[SideColor, Grid]
-ValidationResult = tuple[Optional[MoveStatus], Optional[CastlingState], bool]
+ValidationResult = tuple[MoveStatus | None, CastlingState | None, bool]
 class ChessValidator:
     """TODO
     """
@@ -44,7 +45,7 @@ class ChessValidator:
 
     @classmethod
     def _access_cache(cls, mov: tuple[Coord, Coord],
-                      grid_ctx: GridContext) -> Optional[ValidationStatus]:
+                      grid_ctx: GridContext) -> ValidationStatus | None:
         if cls._cached_grid_ctx == grid_ctx:
             return cls._cached_movements[mov]
         return None
@@ -87,7 +88,7 @@ class ChessValidator:
 
     @classmethod
     def is_valid_move(cls, origin: Coord, dest: Coord,
-                      context: tuple[Optional[Movement], TurnState, CastlingState, GridContext]
+                      context: tuple[OptMovement, TurnState, CastlingState, GridContext]
                       ) -> ValidationResult:
         """TODO
         """
@@ -211,7 +212,7 @@ class ChessValidator:
     @classmethod
     def _is_valid_castle(cls, origin: Coord, dest: Coord,
                          context: tuple[TurnState, CastlingState, GridContext]
-                         ) -> tuple[bool, Optional[CastlingState]]:
+                         ) -> tuple[bool, CastlingState | None]:
         turn_state, castling_state, grid_ctx = context
         _, grid = grid_ctx
         if turn_state != TurnState.MOVE_TURN:
@@ -240,7 +241,7 @@ class ChessValidator:
         return True, CastlingState(False, False)
 
     @classmethod
-    def _is_left_in_check(cls, context: tuple[Coord, Coord, Optional[Piece], GridContext]) -> bool:
+    def _is_left_in_check(cls, context: tuple[Coord, Coord, OptPiece, GridContext]) -> bool:
         origin, dest, d_piece, grid_ctx = context
         turn, grid = grid_ctx
         grid_copy = deepcopy(grid)
@@ -253,7 +254,7 @@ class ChessValidator:
 
     @classmethod
     def _get_castling_state(cls, origin: Coord, grid: Grid,
-                            castling_state: CastlingState) -> Optional[CastlingState]:
+                            castling_state: CastlingState) -> CastlingState | None:
         piece = cast(Piece, grid.get_at(origin))
         if piece.type == PieceType.KING:
             return CastlingState(False, False)
@@ -266,7 +267,7 @@ class ChessValidator:
         return None
 
     @classmethod
-    def get_board_state(cls, last_mov: Optional[Movement], castling_state: CastlingState,
+    def get_board_state(cls, last_mov: OptMovement, castling_state: CastlingState,
                         grid_ctx: GridContext) -> TurnState:
         """TODO
         """
@@ -300,7 +301,7 @@ class ChessValidator:
         return validation in (ValidationStatus.VALID, ValidationStatus.CHECKS_KING)
 
     @classmethod
-    def _any_valid_move(cls, context: tuple[Optional[Movement],TurnState,CastlingState,GridContext],
+    def _any_valid_move(cls, context: tuple[OptMovement,TurnState,CastlingState,GridContext],
                         piece: Piece) -> bool:
         origin = piece.coord
         def extend_validation(direction: Dir) -> bool:
