@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from chess_engine.piece import Piece, SideColor, OptPiece
+from chess_engine.piece import OptPiece, Piece, SideColor
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
 from utils.exceptions import GridInvalidCoordError, InvalidGridError
@@ -146,7 +146,7 @@ class Grid(Serializable):
 
             grid.append([])
             for c, piece_str in enumerate(row):
-                grid[r].append(Piece.parse_from_str(piece_str, Coord(r, c)))
+                grid[r].append(Piece.from_str(piece_str, Coord(r, c)))
 
         return Grid(grid)
 

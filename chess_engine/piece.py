@@ -24,16 +24,11 @@ class Piece():
     type: PieceType
     color: SideColor
     coord: Coord
-    moving_dir: int = field(init=False)
-    extendable_mov: bool = field(init=False)
     movements: dict[Dir, MovSpecialCase]= field(init=False)
 
     def __post_init__(self) -> None:
-        self.moving_dir = WHITE_MOV_DIR if self.color == SideColor.WHITE else BLACK_MOV_DIR
-        if self.moving_dir not in (1, -1):
-            raise ValueError("The movement direction of the piece can only be 1 or -1")
-        self.extendable_mov = Piece.get_extendability(self.type)
-        self.movements = Piece.get_type_movements(self.type, self.moving_dir)
+        moving_dir = WHITE_MOV_DIR if self.color == SideColor.WHITE else BLACK_MOV_DIR
+        self.movements = Piece.get_type_movements(self.type, moving_dir)
 
     def __str__(self) -> str:
         piece_str = f"{self.color.value}{self.type.value}"
@@ -50,18 +45,20 @@ class Piece():
         if not isinstance(other, Piece):
             return False
 
-        return self.type == other.type and self.color == other.color and self.coord == other.coord
+        return hash(self) == hash(other)
 
-    def same_piece_as(self, other: object) -> bool:
+    def __ne__(self, other: object) -> bool:
+        return not self == other
+
+    def same_as(self, other: object) -> bool:
         """TODO
         """
         if not isinstance(other, Piece):
             return False
 
-        return self.type == other.type and self.color == other.color
+        return (self.type, self.color) == (other.type, other.color)
 
-    @staticmethod
-    def get_extendability(piece_type: PieceType) -> bool:
+    def can_extend(self) -> bool:
         """Get whether the piece has or not extendable movement
 
         Args:
@@ -70,7 +67,7 @@ class Piece():
         Returns:
             bool: Extendable
         """
-        return piece_type not in (PieceType.PAWN, PieceType.KING)
+        return self.type not in (PieceType.PAWN, PieceType.KING)
 
     @staticmethod
     def get_type_movements(piece_type: PieceType, mov_dir: int=0) -> dict[Dir, MovSpecialCase]:
@@ -79,74 +76,63 @@ class Piece():
         match piece_type:
             case PieceType.PAWN:
                 return {
-                Dir(1 * mov_dir,0)  : MovSpecialCase.PAWN_MOVE,
-                Dir(1 * mov_dir,-1) : MovSpecialCase.PAWN_ATTACK,
-                Dir(1 * mov_dir,1)  : MovSpecialCase.PAWN_ATTACK,
-                Dir(2 * mov_dir,0)  : MovSpecialCase.DOUBLE_PAWN_MOVE
+                    Dir(1 * mov_dir,0)  : MovSpecialCase.PAWN_MOVE,
+                    Dir(1 * mov_dir,-1) : MovSpecialCase.PAWN_ATTACK,
+                    Dir(1 * mov_dir,1)  : MovSpecialCase.PAWN_ATTACK,
+                    Dir(2 * mov_dir,0)  : MovSpecialCase.DOUBLE_PAWN_MOVE
                 }
             case PieceType.BISHOP:
                 return {
-                Dir(1,1)   : MovSpecialCase.NONE,
-                Dir(-1,1)  : MovSpecialCase.NONE,
-                Dir(1,-1)  : MovSpecialCase.NONE,
-                Dir(-1,-1) : MovSpecialCase.NONE,
+                    Dir(1,1)   : MovSpecialCase.NONE,
+                    Dir(-1,1)  : MovSpecialCase.NONE,
+                    Dir(1,-1)  : MovSpecialCase.NONE,
+                    Dir(-1,-1) : MovSpecialCase.NONE,
                 }
             case PieceType.KNIGTH:
                 return {
-                Dir(1, 2)  : MovSpecialCase.NONE,
-                Dir(2, 1)  : MovSpecialCase.NONE,
-                Dir(2, -1) : MovSpecialCase.NONE,
-                Dir(1, -2) : MovSpecialCase.NONE,
-                Dir(-1,-2) : MovSpecialCase.NONE,
-                Dir(-2,-1) : MovSpecialCase.NONE,
-                Dir(-2,1)  : MovSpecialCase.NONE,
-                Dir(-1,2)  : MovSpecialCase.NONE,
+                    Dir(1, 2)  : MovSpecialCase.NONE,
+                    Dir(2, 1)  : MovSpecialCase.NONE,
+                    Dir(2, -1) : MovSpecialCase.NONE,
+                    Dir(1, -2) : MovSpecialCase.NONE,
+                    Dir(-1,-2) : MovSpecialCase.NONE,
+                    Dir(-2,-1) : MovSpecialCase.NONE,
+                    Dir(-2,1)  : MovSpecialCase.NONE,
+                    Dir(-1,2)  : MovSpecialCase.NONE,
                 }
             case PieceType.ROOK:
                 return {
-                Dir(1,0)   : MovSpecialCase.NONE,
-                Dir(-1,0)  : MovSpecialCase.NONE,
-                Dir(0,1)   : MovSpecialCase.NONE,
-                Dir(0,-1)  : MovSpecialCase.NONE,
+                    Dir(1,0)   : MovSpecialCase.NONE,
+                    Dir(-1,0)  : MovSpecialCase.NONE,
+                    Dir(0,1)   : MovSpecialCase.NONE,
+                    Dir(0,-1)  : MovSpecialCase.NONE,
                 }
             case PieceType.QUEEN:
                 return {
-                Dir(1,1)   : MovSpecialCase.NONE,
-                Dir(-1,1)  : MovSpecialCase.NONE,
-                Dir(1, -1) : MovSpecialCase.NONE,
-                Dir(-1,-1) : MovSpecialCase.NONE,
-                Dir(1,0)   : MovSpecialCase.NONE,
-                Dir(-1,0)  : MovSpecialCase.NONE,
-                Dir(0,1)   : MovSpecialCase.NONE,
-                Dir(0,-1)  : MovSpecialCase.NONE,
+                    Dir(1,1)   : MovSpecialCase.NONE,
+                    Dir(-1,1)  : MovSpecialCase.NONE,
+                    Dir(1, -1) : MovSpecialCase.NONE,
+                    Dir(-1,-1) : MovSpecialCase.NONE,
+                    Dir(1,0)   : MovSpecialCase.NONE,
+                    Dir(-1,0)  : MovSpecialCase.NONE,
+                    Dir(0,1)   : MovSpecialCase.NONE,
+                    Dir(0,-1)  : MovSpecialCase.NONE,
                 }
             case PieceType.KING:
                 return {
-                Dir(1,0)   : MovSpecialCase.NONE,
-                Dir(-1,0)  : MovSpecialCase.NONE,
-                Dir(0,1)   : MovSpecialCase.NONE,
-                Dir(0,-1)  : MovSpecialCase.NONE,
-                Dir(-1, 1) : MovSpecialCase.NONE,
-                Dir(1,-1)  : MovSpecialCase.NONE,
-                Dir(1,1)   : MovSpecialCase.NONE,
-                Dir(-1,-1) : MovSpecialCase.NONE,
-                Dir(0,-2)  : MovSpecialCase.CASTLE,
-                Dir(0,2)   : MovSpecialCase.CASTLE
+                    Dir(1,0)   : MovSpecialCase.NONE,
+                    Dir(-1,0)  : MovSpecialCase.NONE,
+                    Dir(0,1)   : MovSpecialCase.NONE,
+                    Dir(0,-1)  : MovSpecialCase.NONE,
+                    Dir(-1, 1) : MovSpecialCase.NONE,
+                    Dir(1,-1)  : MovSpecialCase.NONE,
+                    Dir(1,1)   : MovSpecialCase.NONE,
+                    Dir(-1,-1) : MovSpecialCase.NONE,
+                    Dir(0,-2)  : MovSpecialCase.CASTLE,
+                    Dir(0,2)   : MovSpecialCase.CASTLE
                 }
 
-    def serialize(self) -> SerPiece:
-        """TODO
-        """
-        return (str(self), self.coord.to_tupple())
-
     @staticmethod
-    def deserialize(ser: SerPiece) -> OptPiece:
-        """TODO
-        """
-        return Piece.parse_from_str(ser[0], Coord(*ser[1]))
-
-    @staticmethod
-    def parse_from_str(piece_str: str, coord: Coord) -> OptPiece:
+    def from_str(piece_str: str, coord: Coord) -> OptPiece:
         """TODO
         """
         if len(piece_str) != PIECE_STR_LENGTH:
@@ -164,5 +150,17 @@ class Piece():
         """TODO
         """
         return NULL_PIECE_STR if piece is None else str(piece)
+
+    @staticmethod
+    def serialize(piece: Piece) -> SerPiece:
+        """TODO
+        """
+        return (str(piece), piece.coord.to_tupple())
+
+    @staticmethod
+    def deserialize(ser: SerPiece) -> OptPiece:
+        """TODO
+        """
+        return Piece.from_str(ser[0], Coord(*ser[1]))
 
 OptPiece = Piece | None

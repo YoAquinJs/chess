@@ -44,8 +44,8 @@ class ChessGameData(Serializable):
         def serializable_move_history(move_history: list[Movement]) -> list[SerMovement]:
             ser_move_history: list[SerMovement] = []
             for piece, dest in move_history:
-                ser_dest = (dest.row, dest.column) if isinstance(dest, Coord) else dest.serialize()
-                ser_move_history.append((piece.serialize(), ser_dest))
+                ser_dest = dest.to_tupple() if isinstance(dest, Coord) else Piece.serialize(dest)
+                ser_move_history.append((Piece.serialize(piece), ser_dest))
             return ser_move_history
 
         return {
