@@ -52,7 +52,7 @@ class Piece():
 
         return self.type == other.type and self.color == other.color and self.coord == other.coord
 
-    def same_piece(self, other: object) -> bool:
+    def same_piece_as(self, other: object) -> bool:
         """TODO
         """
         if not isinstance(other, Piece):

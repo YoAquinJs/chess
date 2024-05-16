@@ -10,7 +10,7 @@ class InvalidChessGameError(Exception):
 class InvalidGridError(Exception):
     """Raise when a chess game it's initialized with invalid data"""
 
-class GridIndexError(Exception):
+class GridInvalidCoordError(Exception):
     """Raise when accesing invalid grid positions"""
 
 class StaticClassInstanceError(Exception):

@@ -8,11 +8,13 @@ from typing import Any, Callable, Optional
 from chess_engine.piece import Piece, SideColor
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
-from utils.exceptions import InvalidGridError
+from utils.exceptions import GridInvalidCoordError, InvalidGridError
 
 # Constants for board
 ROWS    = ['8','7','6','5','4','3','2','1']
 COLUMNS = ['a','b','c','d','e','f','g','h']
+L_ROWS = len(ROWS)
+L_COLUMNS = len(COLUMNS)
 BOARD_START = [
     ['bR', 'bK', 'bB', 'bQ', 'b@', 'bB', 'bK', 'bR'], # 8
     ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'], # 7
@@ -36,6 +38,12 @@ class Grid(Serializable):
                 raise InvalidGridError("Invalid column count")
 
         self.__grid = grid
+
+        for piece, coord in GridIter(self):
+            if piece is not None and piece.coord != coord:
+                error_msg = f"Piece's coord does not match coord in grid, Piece: {piece}"
+                raise InvalidGridError(error_msg)
+
         self.white_pieces: set[Piece]
         self.black_pieces: set[Piece]
         self._categorize_lists()
@@ -53,6 +61,8 @@ class Grid(Serializable):
     def get_at(self, coord: Coord) -> Optional[Piece]:
         """TODO
         """
+        if coord.row < 0 or coord.row >= L_ROWS or coord.column < 0 or coord.column >= L_COLUMNS:
+            raise GridInvalidCoordError
         return self.__grid[coord.row][coord.column]
 
     def set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
@@ -70,11 +80,24 @@ class Grid(Serializable):
         return prev_piece
 
     def _set_at(self, coord: Coord, piece: Optional[Piece]) -> Optional[Piece]:
-        prev_piece = self.get_at(coord)
-        self.__grid[coord.row][coord.column] = piece
         if piece is not None:
             piece.coord = coord
+        prev_piece = self.get_at(coord)
+        self.__grid[coord.row][coord.column] = piece
         return prev_piece
+
+    def swap_pieces(self, coord1: Coord, coord2: Coord) -> None:
+        """Swaps the pieces in the given coordinates
+
+        Args:
+            coord1 (Coord): Coordinate 1
+            coord2 (Coord): Coordinate 2
+        """
+        if coord1 == coord2:
+            raise GridInvalidCoordError
+
+        piece1 = self._set_at(coord1, self.get_at(coord2))
+        self._set_at(coord2, piece1)
 
     def _categorize_lists(self) -> None:
         self.white_pieces = set()
@@ -87,41 +110,21 @@ class Grid(Serializable):
             else:
                 self.black_pieces.add(piece)
 
-    def swap_pieces(self, coord1: Coord, coord2: Coord) -> None:
-        """Swaps the pieces in the given coordinates
-
-        Args:
-            coord1 (Coord): Coordinate 1
-            coord2 (Coord): Coordinate 2
-        """
-        piece1 = self.get_at(coord1)
-        if piece1 is not None:
-            piece1.coord = coord2
-        piece2 = self.get_at(coord1)
-        if piece2 is not None:
-            piece2.coord = coord1
-
-        self.set_at(coord1, piece2)
-        self.set_at(coord2, piece1)
-
     def print_grid(self) -> None:
         """TODO
         """
-        for column in COLUMNS:
-            print(f"  {column}", end="")
-
-        print()
+        print(" " + "   ".join(COLUMNS))
         for piece, _ in GridIter(self, on_new_row=lambda r : print(ROWS[r])):
             print(f" {Piece.get_str(piece)} ", end="")
 
     def get_str_grid(self) -> list[list[str]]:
         """TODO
         """
-        text_grid: list[list[str]] = []
-        for piece, coord in GridIter(self, lambda _: text_grid.append([])):
-            text_grid[coord.row].append(Piece.get_str(piece))
+        str_grid: list[list[str]] = [[]]
+        for piece, coord in GridIter(self, on_new_row=lambda _: str_grid.append([])):
+            str_grid[coord.row].append(Piece.get_str(piece))
 
-        return text_grid
+        return str_grid
 
     @staticmethod
     def get_start_grid() -> Grid:
@@ -130,22 +133,23 @@ class Grid(Serializable):
         return Grid.from_str_grid(BOARD_START)
 
     @staticmethod
-    def from_str_grid(text_grid: list[list[str]]) -> Grid:
+    def from_str_grid(str_grid: list[list[str]]) -> Grid:
         """TODO
         """
-        invalid_msg = "Text grid must have the same lengths as the 'ROWS' and 'COLUMNS' constants"
-        if len(text_grid) != len(ROWS):
-            raise InvalidGridError(invalid_msg)
+        if len(str_grid) != len(ROWS):
+            raise InvalidGridError("Invalid row count")
 
         grid: list[list[Optional[Piece]]] = []
-        for r, row in enumerate(text_grid):
+        for r, row in enumerate(str_grid):
             if len(row) != len(COLUMNS):
-                raise InvalidGridError(invalid_msg)
+                raise InvalidGridError("Invalid column count")
+
             grid.append([])
             for c, piece_str in enumerate(row):
                 grid[r].append(Piece.parse_from_str(piece_str, Coord(r, c)))
 
         return Grid(grid)
+
 
     def get_serialization_attrs(self) -> dict[str, Any]:
         return {
@@ -165,25 +169,25 @@ class GridIter:
     """
 
     grid: Grid
-    row = 0
-    col = 0
+    coord_ptr: Coord = Coord(0, 0)
+    # Called on new row, with the current row value
     on_new_row: Callable[[int], None] = lambda _: None
 
     def __post_init__(self) -> None:
-        self.on_new_row(self.row)
+        #Check if initial coord_ptr raises GridInvalidCoordError
+        self.grid.get_at(self.coord_ptr)
 
     def __iter__(self) -> GridIter:
         return self
 
     def __next__(self) -> tuple[Optional[Piece], Coord]:
-        if self.row >= len(ROWS):
+        if self.coord_ptr.row >= L_ROWS:
             raise StopIteration
-        if self.col >= len(COLUMNS):
-            self.on_new_row(self.row)
-            self.row += 1
-            self.col = 0
+        if self.coord_ptr.column >= L_COLUMNS:
+            self.on_new_row(self.coord_ptr.row)
+            self.coord_ptr = Coord(self.coord_ptr.row+1, 0)
             return next(self)
 
-        self.col += 1
-        coord = Coord(self.row, self.col)
-        return self.grid.get_at(coord), coord
+        result = (self.grid.get_at(self.coord_ptr), self.coord_ptr)
+        self.coord_ptr = Coord(self.coord_ptr.row, self.coord_ptr.column+1)
+        return result
