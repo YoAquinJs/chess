@@ -128,9 +128,9 @@ def test_grid_swap(grid: Grid, coord1: Coord, coord2: Coord) -> None:
     prev2 = prev_grid.get_at(coord2)
 
     assert prev1 is None if swaped1 is None else \
-        swaped1.coord == coord2 and swaped1.same_piece_as(prev1)
+        swaped1.coord == coord2 and swaped1.same_as(prev1)
     assert prev2 is None if swaped2 is None else \
-        swaped2.coord == coord1 and swaped2.same_piece_as(prev2)
+        swaped2.coord == coord1 and swaped2.same_as(prev2)
     assert assert_grid_inmutability(grid, prev_grid, coord1, coord2)
 
 @given(grids(), out_of_bounds_coords, out_of_bounds_coords)
