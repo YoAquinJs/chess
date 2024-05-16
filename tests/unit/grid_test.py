@@ -45,11 +45,6 @@ def out_of_bounds_matrix_grids[T](draw: st.DrawFn, piece_st: st.SearchStrategy[T
     grid:list[list[T]] = draw(grid_st)
     return grid
 
-def grids(piece_st: st.SearchStrategy[str]) -> st.SearchStrategy[Grid]:
-    """TODO
-    """
-    return st.builds(Grid.from_str_grid, matrix_grids(piece_st))
-
 def coords(min_val: int=0, max_val: int=L_ROWS-1) -> st.SearchStrategy[Coord]:
     """TODO
     """
@@ -67,14 +62,19 @@ def pieces(coords_st: st.SearchStrategy[Coord]) -> st.SearchStrategy[Piece]:
               color=st.sampled_from(SideColor),
               coord=coords_st
               )
-optional_pieces = st.none() | pieces(coords())
+opt_pieces = st.none() | pieces(coords())
 
 piece_str_build: Callable[[SideColor, PieceType], str] = lambda col,typ: col.value+typ.value
 str_pieces = st.builds(piece_str_build,
                        st.sampled_from(SideColor),
                        st.sampled_from(PieceType)
                        )
-optional_str_pieces = st.just(NULL_PIECE_STR) | str_pieces
+opt_str_pieces = st.just(NULL_PIECE_STR) | str_pieces
+
+def grids(optional: bool=True) -> st.SearchStrategy[Grid]:
+    """TODO
+    """
+    return st.builds(Grid.from_str_grid, matrix_grids(opt_str_pieces if optional else str_pieces))
 
 def gen_random_coord_grid(pieces_set: Iterable[Piece | None], seed: int=42) -> Grid:
     """TODO
@@ -106,7 +106,7 @@ def test_start_grid_init() -> None:
     """Tests start grid generation, and assert it's value"""
     assert Grid.get_start_grid() == Grid.from_str_grid(BOARD_START)
 
-@given(matrix_grids(optional_pieces))
+@given(matrix_grids(opt_pieces))
 def test_grid_piece_init(grid: list[list[Piece | None]]) -> None:
     """Tests grid generation of piece grid, for valid grids"""
     try:
@@ -114,7 +114,7 @@ def test_grid_piece_init(grid: list[list[Piece | None]]) -> None:
     except InvalidGridError:
         pytest.fail("Valid grid recognized as invalid")
 
-@given(matrix_grids(optional_str_pieces))
+@given(matrix_grids(opt_str_pieces))
 def test_grid_str_init(grid: list[list[str]]) -> None:
     """Tests grid generation of string grid, for valid grids"""
     try:
@@ -122,21 +122,21 @@ def test_grid_str_init(grid: list[list[str]]) -> None:
     except InvalidGridError:
         pytest.fail("Valid grid recognized as invalid")
 
-@given(out_of_bounds_matrix_grids(optional_pieces))
+@given(out_of_bounds_matrix_grids(opt_pieces))
 def test_grid_piece_init_out_of_bounds(grid: list[list[Piece | None]]) -> None:
     """TODO
     """
     with pytest.raises(InvalidGridError):
         Grid(grid)
 
-@given(out_of_bounds_matrix_grids(optional_str_pieces))
+@given(out_of_bounds_matrix_grids(opt_str_pieces))
 def test_grid_str_init_out_of_bounds(grid: list[list[str]]) -> None:
     """TODO
     """
     with pytest.raises(InvalidGridError):
         Grid.from_str_grid(grid)
 
-@given(matrix_grids(optional_pieces), st.lists(pieces(coords()), min_size=8, max_size=16))
+@given(matrix_grids(opt_pieces), st.lists(pieces(coords()), min_size=8, max_size=16))
 def test_grid_equality(grid: list[list[Piece | None]], given_pieces: list[Piece | None]) -> None:
     """TODO
     """
@@ -146,7 +146,7 @@ def test_grid_equality(grid: list[list[Piece | None]], given_pieces: list[Piece 
     assert generated_grid == Grid(grid)
     assert generated_grid != [[None]]
 
-@given(matrix_grids(optional_pieces), coords())
+@given(matrix_grids(opt_pieces), coords())
 def test_grid_get(grid: list[list[Piece | None]], given_coord: Coord) -> None:
     """TODO
     """
@@ -154,7 +154,7 @@ def test_grid_get(grid: list[list[Piece | None]], given_coord: Coord) -> None:
     assert grid[given_coord.row][given_coord.column] == generated_grid.get_at(given_coord)
     assert assert_grid_inmutability(generated_grid, Grid(grid))
 
-@given(grids(optional_str_pieces), st.tuples(coords(), optional_pieces))
+@given(grids(), st.tuples(coords(), opt_pieces))
 def test_grid_set(grid: Grid, coord_piece: tuple[Coord, Piece | None]) -> None:
     """TODO
     """
@@ -166,7 +166,7 @@ def test_grid_set(grid: Grid, coord_piece: tuple[Coord, Piece | None]) -> None:
     assert grid.get_at(coord) == piece
     assert assert_grid_inmutability(grid, prev_grid, coord)
 
-@given(grids(optional_str_pieces), coords(), coords())
+@given(grids(), coords(), coords())
 def test_grid_swap(grid: Grid, coord1: Coord, coord2: Coord) -> None:
     """TODO
     """
@@ -190,7 +190,7 @@ def test_grid_swap(grid: Grid, coord1: Coord, coord2: Coord) -> None:
         swaped2.coord == coord1 and swaped2.same_piece_as(prev2)
     assert assert_grid_inmutability(grid, prev_grid, coord1, coord2)
 
-@given(grids(optional_str_pieces), out_of_bounds_coords, out_of_bounds_coords)
+@given(grids(), out_of_bounds_coords, out_of_bounds_coords)
 def test_grid_opt_bounds(grid: Grid, coord1: Coord, coord2: Coord) -> None:
     """TODO
     """
@@ -212,7 +212,7 @@ def test_grid_piece_sets(given_pieces: set[Piece]) -> None:
     assert grid.white_pieces == {p for p in given_pieces if p.color == SideColor.WHITE}
     assert grid.black_pieces == {p for p in given_pieces if p.color == SideColor.BLACK}
 
-@given(matrix_grids(optional_str_pieces))
+@given(matrix_grids(opt_str_pieces))
 def test_grid_get_str_grid(grid: list[list[str]]) -> None:
     """TODO
     """
@@ -221,15 +221,23 @@ def test_grid_get_str_grid(grid: list[list[str]]) -> None:
         for c, piece in enumerate(row):
             assert piece == Piece.get_str(generated_grid.get_at(Coord(r, c)))
 
-# @given(grids(optional_str_pieces))
-# def test_grid_iter(grid: Grid, coord1: Coord, coord2: Coord) -> None:
-#     """TODO
-#     """
-#     with pytest.raises(GridInvalidCoordError):
-#         grid.get_at(coord1)
+@given(grids(), coords())
+def test_grid_iter(grid: Grid, given_coord: Coord) -> None:
+    """TODO
+    """
+    expected_row = [given_coord.row]
+    def assert_on_new_row(row: int) -> None:
+        assert row == expected_row[0]
+        expected_row[0] += 1
 
-#     with pytest.raises(GridInvalidCoordError):
-#         grid.set_at(coord1, None)
+    for piece, coord in GridIter(grid, given_coord, assert_on_new_row):
+        assert grid.get_at(coord) == piece
 
-#     with pytest.raises(GridInvalidCoordError):
-#         grid.swap_pieces(coord1, coord2)
+    assert expected_row[0] == L_ROWS
+
+@given(grids(), out_of_bounds_coords)
+def test_grid_iter_bounds(grid: Grid, given_coord: Coord) -> None:
+    """TODO
+    """
+    with pytest.raises(GridInvalidCoordError):
+        GridIter(grid, given_coord)
