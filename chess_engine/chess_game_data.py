@@ -13,6 +13,7 @@ from serialization.serializable import Serializable
 Movement = tuple[Piece, Piece | Coord]
 OptMovement = Movement | None
 SerMovement = tuple[SerPiece, SerPiece | tuple[int,int]]
+
 @dataclass
 class ChessGameData(Serializable):
     """TODO

@@ -13,7 +13,7 @@ from chess_engine.enums import SideColor
 from chess_engine.grid import BOARD_START, L_COLUMNS, L_ROWS, Grid, GridIter
 from chess_engine.piece import Piece
 from chess_engine.structs import Coord
-from utils.exceptions import GridInvalidCoordError, InvalidGridError
+from utils.errors import GridInvalidCoordError, InvalidGridError
 from utils.test_strategies import (coords, grids, matrix_grids, opt_pieces,
                                    opt_str_pieces, out_of_bounds_coords,
                                    out_of_bounds_matrix_grids, pieces)

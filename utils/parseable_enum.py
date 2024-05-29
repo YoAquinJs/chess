@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import EnumMeta
 from typing import cast
 
-from utils.exceptions import EnumParseError
+from utils.errors import EnumParseError
 
 
 class ParseableEnum(EnumMeta):

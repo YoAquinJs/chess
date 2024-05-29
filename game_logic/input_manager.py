@@ -1,6 +1,6 @@
 """TODO"""
 
-from utils.exceptions import StaticClassInstanceError
+from utils.errors import StaticClassInstanceError
 
 
 class InputManager():

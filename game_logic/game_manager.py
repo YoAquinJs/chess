@@ -8,7 +8,7 @@ import pygame
 from chess_engine.chess_game import ChessGame
 from ui.scene import Scene, SceneBaseData
 from ui.font import Font
-from utils.exceptions import StaticClassInstanceError
+from utils.errors import StaticClassInstanceError
 
 
 class GameManager():

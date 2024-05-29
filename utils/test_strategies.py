@@ -71,7 +71,17 @@ def out_of_bounds_matrix_grids[T](draw: st.DrawFn, piece_st: st.SearchStrategy[T
     grid:list[list[T]] = draw(grid_st)
     return grid
 
-def grids(optional: bool=True) -> st.SearchStrategy[Grid]:
+def grids() -> st.SearchStrategy[Grid]:
     """TODO
     """
-    return st.builds(Grid.from_str_grid, matrix_grids(opt_str_pieces if optional else str_pieces))
+    return st.builds(Grid.from_str_grid, matrix_grids(opt_str_pieces))
+
+def grid_with(*given_pieces: tuple[int,int,str,str]) -> Grid:
+    """TODO
+    """
+    grid = Grid.get_empty_gid()
+    for row, col, typ, color in given_pieces:
+        p = Piece(PieceType[typ], SideColor[color], Coord(row, col)) # type: ignore
+        grid.set_at(p.coord, p)
+
+    return grid

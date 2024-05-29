@@ -14,7 +14,7 @@ from chess_engine.enums import MoveStatus, TurnState
 from chess_engine.grid import Grid
 from chess_engine.piece import OptPiece, Piece, PieceType, SideColor
 from chess_engine.structs import CastlingState, Coord
-from utils.exceptions import InvalidChessGameError
+from utils.errors import InvalidChessGameError
 from utils.utils import opponent
 
 

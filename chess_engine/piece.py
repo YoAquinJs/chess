@@ -7,7 +7,7 @@ from typing import cast
 
 from chess_engine.enums import MovSpecialCase, PieceType, SideColor
 from chess_engine.structs import Coord, Dir
-from utils.exceptions import EnumParseError
+from utils.errors import EnumParseError
 
 BLACK_MOV_DIR = 1
 WHITE_MOV_DIR = -1

@@ -11,7 +11,7 @@ from chess_engine.grid import COLUMNS, ROWS, Grid
 from chess_engine.piece import (MovSpecialCase, OptPiece, Piece, PieceType,
                                 SideColor)
 from chess_engine.structs import CastlingState, Coord, Dir
-from utils.exceptions import StaticClassInstanceError
+from utils.errors import StaticClassInstanceError
 from utils.utils import opponent
 
 GridContext = tuple[SideColor, Grid]

@@ -8,7 +8,7 @@ from typing import Any, Callable
 from chess_engine.piece import OptPiece, Piece, SideColor
 from chess_engine.structs import Coord
 from serialization.serializable import Serializable
-from utils.exceptions import GridInvalidCoordError, InvalidGridError
+from utils.errors import GridInvalidCoordError, InvalidGridError
 
 # Constants for board
 ROWS    = ['8','7','6','5','4','3','2','1']
@@ -25,6 +25,7 @@ BOARD_START = [
     ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'], # 2
     ['wR', 'wK', 'wB', 'wQ', 'w@', 'wB', 'wK', 'wR']  # 1
 ]#    a     b     c     d      e     f     g     h
+EMPTY_GRID = [['' for _ in range(L_COLUMNS)] for _ in range(L_ROWS)]
 
 class Grid(Serializable):
     """TODO
@@ -131,6 +132,12 @@ class Grid(Serializable):
         """TODO
         """
         return Grid.from_str_grid(BOARD_START)
+
+    @staticmethod
+    def get_empty_gid() -> Grid:
+        """TODO
+        """
+        return Grid.from_str_grid(EMPTY_GRID)
 
     @staticmethod
     def from_str_grid(str_grid: list[list[str]]) -> Grid:
