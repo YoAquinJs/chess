@@ -28,7 +28,7 @@ class GameObject(ABC):
     @x.setter
     def x(self, value: int) -> None:
         if self.drag_children:
-            self._drag_children(False, value)
+            self._drag_children_x(value)
         self._x = value
 
     @property
@@ -40,16 +40,18 @@ class GameObject(ABC):
     @y.setter
     def y(self, value: int) -> None:
         if self.drag_children:
-            self._drag_children(False, value)
+            self._drag_children_y(value)
         self._y = value
 
-    def _drag_children(self, x_or_y: bool, value: int) -> None:
-        delta = value - (self.x if x_or_y else self.y)
+    def _drag_children_x(self, value: int) -> None:
+        delta = value - self.x
         for child in self.children:
-            if x_or_y:
-                child.x += delta
-            else:
-                child.y += delta
+            child.x += delta
+
+    def _drag_children_y(self, value: int) -> None:
+        delta = value - self.y
+        for child in self.children:
+            child.y += delta
 
     def add_child(self, index: int, obj: GameObject) -> None:
         """Adds a children GameObject

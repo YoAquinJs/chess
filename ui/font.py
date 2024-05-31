@@ -69,7 +69,7 @@ class Font():
     def generate_text(self, text: Text, color: tuple[int, int, int]) -> None:
         """From the font object renders the text specified
         """
-        if len(text.character_imgs) != 0 or len(text.character_positions) != 0:
+        if len(text.character_imgs) != 0 or len(text.character_pos) != 0:
             raise ValueError("Passed text object had been already generated")
 
         x_offset = 0
@@ -81,13 +81,13 @@ class Font():
                 char_img.fill(color, special_flags=pygame.BLEND_RGBA_MULT)
 
                 text.character_imgs.append(char_img)
-                text.character_positions.append((x_offset, 0))
+                text.character_pos.append((x_offset, 0))
                 x_offset += floor((self.spacing*text.scale) + char_img.get_width())
 
     def render_text(self, x: int, y: int, text: Text, screen: pygame.Surface) -> None:
         """TODO
         """
-        for char_img, coord in zip(text.character_imgs, text.character_positions):
+        for char_img, coord in zip(text.character_imgs, text.character_pos):
             ix, iy = coord
             screen.blit(char_img, (x+ix, y+iy))
 
