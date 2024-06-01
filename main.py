@@ -49,6 +49,8 @@ def main() -> None:
             if event.type == pygame.QUIT:
                 GameManager.quit()
 
+            for game_event in GameManager
+
         # Game logic
         GameManager.update()
 
