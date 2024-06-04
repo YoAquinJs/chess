@@ -18,9 +18,9 @@ class GameManager():
     font: Font
     running = True
 
-    currentScene: Scene
-    currentGame: ChessGame
-    loadedGame: int = -1
+    current_scene: Scene
+    current_game: ChessGame
+    loaded_game: int = -1
 
     @classmethod
     def init_game(cls, screen: pygame.Surface, font: Font, intial_scene: Type[Scene]) -> None:
@@ -31,29 +31,22 @@ class GameManager():
         cls.load_screen(intial_scene)
 
     @classmethod
-    def run_events(cls) -> None:
-        """TODO
-        """
-        EventHandler.emit_events()
-
-    @classmethod
     def update(cls) -> None:
         """Runs the logic of the game based on the loaded screen
         """
-        cls.currentScene.update()
+        cls.current_scene.update()
 
     @classmethod
     def render(cls) -> None:
         """Runs the rendering of the game based on the loaded screen
         """
-        cls.currentScene.render()
+        cls.current_scene.render()
 
     @classmethod
     def load_screen(cls, scene_type: Type[Scene], **kwargs: Any) -> None:
         """Loads the specified scene
         """
-        cls.events = []
-        cls.currentScene = scene_type(cls.screen, **kwargs)
+        cls.current_scene = scene_type(cls.screen, **kwargs)
 
     @classmethod
     def quit(cls) -> None:

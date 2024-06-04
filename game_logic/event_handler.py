@@ -30,7 +30,7 @@ class EventHandler():
         cls._events[event].remove(callback)
 
     @classmethod
-    def emit_events(cls) -> None:
+    def emit_pygame_events(cls) -> None:
         """TODO
         """
         for event in pygame.event.get():
