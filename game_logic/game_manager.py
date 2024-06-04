@@ -5,11 +5,12 @@ from typing import Any, Type
 import pygame
 
 from chess_engine.chess_game import ChessGame
-from game_logic.event_handler import EventHandler
+from game_logic.events import Event
 from game_logic.scene import Scene
 from ui.font import Font
 from utils.errors import StaticClassInstanceError
 
+type Pyevent = pygame.event.Event
 
 class GameManager():
     """TODO
@@ -21,6 +22,12 @@ class GameManager():
     current_scene: Scene
     current_game: ChessGame
     loaded_game: int = -1
+    _events: dict[int, Event[Pyevent]] = {
+        pygame.QUIT : Event[Pyevent](),
+        pygame.MOUSEBUTTONDOWN : Event[Pyevent](),
+        pygame.MOUSEBUTTONUP : Event[Pyevent](),
+    }
+
 
     @classmethod
     def init_game(cls, screen: pygame.Surface, font: Font, intial_scene: Type[Scene]) -> None:
@@ -30,11 +37,22 @@ class GameManager():
         cls.screen = screen
         cls.load_screen(intial_scene)
 
+        cls._events[pygame.QUIT].subscript(lambda _: quit())
+
     @classmethod
     def update(cls) -> None:
         """Runs the logic of the game based on the loaded screen
         """
         cls.current_scene.update()
+
+    @classmethod
+    def emit_pygame_events(cls) -> None:
+        """TODO
+        """
+        for pyevent in pygame.event.get():
+            event = cls._events.get(pyevent.type)
+            if event is not None:
+                event.emit(pyevent)
 
     @classmethod
     def render(cls) -> None:

@@ -9,7 +9,6 @@
 import pygame
 
 from game_logic.consts import AssetType
-from game_logic.event_handler import EventHandler
 from game_logic.game_manager import GameManager
 from scenes.main_menu import MainMenuScene
 from ui.font import Font
@@ -49,7 +48,7 @@ def main() -> None:
         GameManager.update()
 
         # Events
-        EventHandler.emit_pygame_events()
+        GameManager.emit_pygame_events()
 
         # Rendering
         screen.fill((0,0,0))

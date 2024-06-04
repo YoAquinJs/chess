@@ -1,5 +1,1 @@
 pygame
-asyncio
-traceback
-copy
-json
