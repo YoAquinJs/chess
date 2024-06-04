@@ -45,14 +45,11 @@ def main() -> None:
 
     GameManager.init_game(screen, font, MainMenuScene)
     while GameManager.running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                GameManager.quit()
-
-            for game_event in GameManager
-
         # Game logic
         GameManager.update()
+
+        # Events
+        GameManager.run_events()
 
         # Rendering
         screen.fill((0,0,0))

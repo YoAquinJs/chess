@@ -1,12 +1,11 @@
 """TODO"""
 
-from typing import Any, Callable, Type
+from typing import Any, Type
 
 import pygame
 
-# Import internal modules
 from chess_engine.chess_game import ChessGame
-from game_logic.event import Event
+from game_logic.event_handler import EventHandler
 from ui.font import Font
 from ui.scene import Scene, SceneBaseData
 from utils.errors import StaticClassInstanceError
@@ -22,9 +21,6 @@ class GameManager():
     currentScene: Scene
     currentGame: ChessGame
     loadedGame: int = -1
-    events: list[Event[Any]] = [
-        Event(pygame.QUIT),
-    ]
 
     @classmethod
     def init_game(cls, screen: pygame.Surface, font: Font, intial_scene: Type[Scene]) -> None:
@@ -34,13 +30,11 @@ class GameManager():
         cls.screen = screen
         cls.load_screen(intial_scene)
 
-        events.su
-
     @classmethod
-    def run_events(cls, events: list[pygame.event.Event]) -> None:
+    def run_events(cls) -> None:
         """TODO
         """
-        pass
+        EventHandler.emit_events()
 
     @classmethod
     def update(cls) -> None:
