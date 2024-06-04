@@ -42,10 +42,3 @@ class EventHandler():
 
     def __init__(self) -> None:
         raise StaticClassInstanceError(EventHandler)
-
-class SceneEventRegister():
-    """TODO
-    """
-
-    def __init__(self) -> None:
-        pass

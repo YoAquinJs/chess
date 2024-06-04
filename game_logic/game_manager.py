@@ -6,8 +6,8 @@ import pygame
 
 from chess_engine.chess_game import ChessGame
 from game_logic.event_handler import EventHandler
+from game_logic.scene import Scene, SceneBaseData
 from ui.font import Font
-from ui.scene import Scene, SceneBaseData
 from utils.errors import StaticClassInstanceError
 
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pygame
 
-from ui.game_object import GameObject
+from game_logic.game_object import GameObject
 from utils.utils import tint_image
 
 

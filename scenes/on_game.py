@@ -3,7 +3,7 @@
 import pygame
 
 from game_logic.consts import AssetType
-from ui.scene import Scene, SceneBaseData
+from game_logic.scene import Scene, SceneBaseData
 from ui.elements.sprite import Sprite, SpriteInitData
 from utils.utils import get_asset_path, scale_img
 
