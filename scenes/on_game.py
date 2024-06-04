@@ -3,7 +3,7 @@
 import pygame
 
 from game_logic.consts import AssetType
-from game_logic.scene import Scene, SceneBaseData
+from game_logic.scene import Scene
 from ui.elements.sprite import Sprite, SpriteInitData
 from utils.utils import get_asset_path, scale_img
 
@@ -18,8 +18,8 @@ from utils.utils import get_asset_path, scale_img
 class OnGameScene(Scene):
     """TODO
     """
-    def __init__(self, baseData: SceneBaseData) -> None:
-        super().__init__(baseData)
+    def __init__(self, screen: pygame.Surface) -> None:
+        super().__init__(screen)
 
         # Background
         img = scale_img(pygame.image.load(get_asset_path(AssetType.SPRITE, "background.png")))

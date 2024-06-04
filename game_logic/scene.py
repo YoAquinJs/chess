@@ -1,27 +1,17 @@
 """TODO"""
 
 from abc import ABC
-from dataclasses import dataclass
 
 import pygame
 
 from game_logic.game_object import GameObject
-from ui.font import Font
 
-
-@dataclass
-class SceneBaseData:
-    """TODO
-    """
-    font: Font
-    screen: pygame.Surface
 
 class Scene(ABC):
     """TODO
     """
-    def __init__(self, base_data: SceneBaseData) -> None:
-        self.font = base_data.font
-        self.screen = base_data.screen
+    def __init__(self, screen: pygame.Surface) -> None:
+        self.screen = screen
         self.game_objects: list[GameObject] = []
 
     def register_obj(self, obj: GameObject) -> None:

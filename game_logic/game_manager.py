@@ -6,7 +6,7 @@ import pygame
 
 from chess_engine.chess_game import ChessGame
 from game_logic.event_handler import EventHandler
-from game_logic.scene import Scene, SceneBaseData
+from game_logic.scene import Scene
 from ui.font import Font
 from utils.errors import StaticClassInstanceError
 
@@ -53,7 +53,7 @@ class GameManager():
         """Loads the specified scene
         """
         cls.events = []
-        cls.currentScene = scene_type(SceneBaseData(cls.font, cls.screen), **kwargs)
+        cls.currentScene = scene_type(cls.screen, **kwargs)
 
     @classmethod
     def quit(cls) -> None:
