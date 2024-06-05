@@ -29,3 +29,18 @@ class Event[T]:
         """
         for callback in self._subscripted:
             callback(arg)
+
+class EventListener[T]:
+    """TODO
+    """
+
+    def __init__(self, *registries: tuple[Event[T], Callback[T]]) -> None:
+        self._registries: list[tuple[Event[T], Callback[T]]] = list(registries)
+        for registry in self._registries:
+            event, callback = registry
+            event.subscript(callback)
+
+    def __del__(self) -> None:
+        for registry in self._registries:
+            event, callback = registry
+            event.unsubscript(callback)

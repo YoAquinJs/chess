@@ -22,12 +22,11 @@ class GameManager():
     current_scene: Scene
     current_game: ChessGame
     loaded_game: int = -1
-    _events: dict[int, Event[Pyevent]] = {
+    events: dict[int, Event[Pyevent]] = {
         pygame.QUIT : Event[Pyevent](),
         pygame.MOUSEBUTTONDOWN : Event[Pyevent](),
         pygame.MOUSEBUTTONUP : Event[Pyevent](),
     }
-
 
     @classmethod
     def init_game(cls, screen: pygame.Surface, font: Font, intial_scene: Type[Scene]) -> None:
@@ -37,12 +36,13 @@ class GameManager():
         cls.screen = screen
         cls.load_screen(intial_scene)
 
-        cls._events[pygame.QUIT].subscript(lambda _: quit())
+        cls.events[pygame.QUIT].subscript(lambda _: cls.quit())
 
     @classmethod
     def update(cls) -> None:
         """Runs the logic of the game based on the loaded screen
         """
+        cls.current_scene.update()
         cls.current_scene.update()
 
     @classmethod
@@ -50,7 +50,7 @@ class GameManager():
         """TODO
         """
         for pyevent in pygame.event.get():
-            event = cls._events.get(pyevent.type)
+            event = cls.events.get(pyevent.type)
             if event is not None:
                 event.emit(pyevent)
 
