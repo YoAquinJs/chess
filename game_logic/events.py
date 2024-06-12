@@ -2,7 +2,10 @@
 
 from typing import Callable
 
+import pygame
+
 type Callback[T] = Callable[[T], None]
+type Pyevent = pygame.event.Event
 
 class Event[T]:
     """TODO
@@ -34,13 +37,10 @@ class EventListener[T]:
     """TODO
     """
 
-    def __init__(self, *registries: tuple[Event[T], Callback[T]]) -> None:
-        self._registries: list[tuple[Event[T], Callback[T]]] = list(registries)
-        for registry in self._registries:
-            event, callback = registry
-            event.subscript(callback)
+    def __init__(self, event: Event[T], callback: Callback[T]) -> None:
+        self.event = event
+        self.callback = callback
+        event.subscript(self.callback)
 
     def __del__(self) -> None:
-        for registry in self._registries:
-            event, callback = registry
-            event.unsubscript(callback)
+        self.event.unsubscript(self.callback)
