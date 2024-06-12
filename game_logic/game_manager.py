@@ -6,6 +6,7 @@ import pygame
 
 from chess_engine.chess_game import ChessGame
 from game_logic.events import Event, Pyevent
+from game_logic.input_manager import InputManager
 from game_logic.scene import Scene
 from ui.font import Font
 from utils.errors import StaticClassInstanceError
@@ -36,6 +37,8 @@ class GameManager():
         cls.load_screen(intial_scene)
 
         cls.pygame_events[pygame.QUIT].subscript(lambda _: cls.quit())
+        cls.pygame_events[pygame.MOUSEBUTTONDOWN].subscript(InputManager.mouse_down_map)
+        cls.pygame_events[pygame.MOUSEBUTTONUP].subscript(InputManager.mouse_up_map)
 
     @classmethod
     def update(cls) -> None:
