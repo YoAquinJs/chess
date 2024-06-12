@@ -10,6 +10,7 @@ from typing import Optional
 import pygame
 
 from game_logic.game_object import GameObject
+from game_logic.input_manager import InputManager, InputType
 from ui.elements.label import Label
 from ui.elements.sprite import Sprite
 
@@ -32,10 +33,9 @@ class Button(GameObject):
         IDLE = auto()
         HOOVER = auto()
         PRESSED = auto()
-        RELEASED = auto()
 
     def __init__(self, x: int, y: int, init_data: ButtonInitData) -> None:
-        super().__init__()
+        GameObject.__init__(self)
         self.drag_children = True
 
         self._x = x
@@ -52,55 +52,48 @@ class Button(GameObject):
             init_data.label.y = self.y
             self.add_child(1, init_data.label)
 
+        self._hover = False
         self._state = self.State.IDLE
+        self._on_press_event = InputManager.get(InputType.L_MOUSE_DOWN, self._on_press)
+        self._on_release_event = InputManager.get(InputType.L_MOUSE_UP, self._on_release)
 
     @property
-    def _state(self) -> Button.State:
+    def state(self) -> Button.State:
         """TODO
         """
-        return self.state
+        return self._state
 
-    @_state.setter
-    def _state(self, value: Button.State) -> None:
-        self.state = value
+    @state.setter
+    def state(self, value: Button.State) -> None:
+        self._state = value
 
         shadow = 0
-        if self.state == Button.State.IDLE:
-            shadow = 0
-        elif self.state == Button.State.HOOVER:
-            shadow = 26
-        elif self.state == Button.State.PRESSED:
-            shadow = 33
-        elif self.state == Button.State.RELEASED:
-            shadow = 18
-            self.callback()
+        if self._state == Button.State.HOOVER:
+            shadow = 15
+        elif self._state == Button.State.PRESSED:
+            shadow = 30
 
         self.sprite.tint = (255-shadow,255-shadow,255-shadow)
-
 
     def update(self) -> None:
         """Update the button pressed status, and call the callback when pressed
         """
-        on_hoover = self.sprite.rect.collidepoint(pygame.mouse.get_pos())
-        on_pressed = pygame.mouse.get_pressed()[0]
+        self._hover = self.sprite.rect.collidepoint(pygame.mouse.get_pos())
+        if not self._hover:
+            self.state = Button.State.IDLE
+        elif self._state == Button.State.IDLE:
+            self.state = Button.State.HOOVER
 
-        if self.state == Button.State.IDLE and on_hoover:
-            self._state = Button.State.HOOVER
-        elif self.state == Button.State.HOOVER:
-            if not on_hoover:
-                self._state = Button.State.IDLE
-            elif on_pressed:
-                self._state = Button.State.PRESSED
-        elif self.state == Button.State.PRESSED:
-            if not on_hoover:
-                self._state = Button.State.IDLE
-            elif not on_pressed:
-                self._state = Button.State.RELEASED
-        elif self.state == Button.State.RELEASED:
-            if on_hoover:
-                self._state = Button.State.PRESSED if on_pressed else Button.State.HOOVER
-            else:
-                self._state = Button.State.IDLE
+    def _on_press(self, mouse_pos: tuple[int, int]) -> None:
+        if self._hover:
+            self.state = Button.State.PRESSED
+            print("button press", mouse_pos)
+
+    def _on_release(self, mouse_pos: tuple[int, int]) -> None:
+        if self._state == Button.State.PRESSED:
+            self.state = Button.State.HOOVER
+            self.callback()
+            print("button release", mouse_pos)
 
     def render(self, surface: pygame.Surface):
         pass
